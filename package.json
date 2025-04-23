@@ -1,24 +1,40 @@
 {
-  "name": "bizn3",
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
-  },
-  "devDependencies": {
-    "prettier": "^3.5.3",
-    "turbo": "^2.5.0",
-    "typescript": "5.8.2"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "npm@10.9.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+	"name": "bizn3",
+	"private": true,
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"lint": "turbo run lint",
+		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
+		"check-types": "turbo run check-types",
+		"db:migrate:deploy": "turbo run db:migrate:deploy",
+		"db:migrate:dev": "turbo run db:migrate:dev",
+		"db:push": "turbo run db:push",
+		"db:seed": "turbo run db:seed",
+		"generate": "turbo run generate"
+	},
+	"devDependencies": {
+		"prettier": "^3.5.3",
+		"turbo": "^2.5.0",
+		"typescript": "5.8.2"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "npm@10.9.0",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"dependencies": {
+		"@prisma/client": "^6.5.0",
+		"country-state-city": "^3.2.1",
+		"framer-motion": "^12.6.3",
+		"react-icons": "^5.5.0",
+		"react-toastify": "^11.0.5"
+	},
+	"prisma": {
+		"schema": "packages/database/prisma/schema.prisma",
+		"seed": "tsx packages/database/src/seed.ts"
+	}
 }
