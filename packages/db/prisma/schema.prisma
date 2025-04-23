@@ -1,0 +1,509 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Top-level admin model
+model Admin {
+  id               String             @id @default(uuid())
+  email            String             @unique
+  password         String
+  firstName        String
+  lastName         String?
+  phone            String?
+  address          Json?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  countries        Country[]
+  complaints       Complaint[]        @relation("AdminComplaints")
+  receivedComplaints Complaint[]      @relation("AdminReceivedComplaints")
+}
+
+// Base Franchise model (abstract) - Common fields for all franchise types
+model Franchise {
+  id                 String           @id @default(uuid())
+  businessName       String
+  address            Json?
+  logo               String?
+  motto              String?
+  gstNumber          String?
+  panNumber          String
+  
+  // Business entity details
+  startDate          DateTime
+  endDate            DateTime
+  renewalPeriod      Int              @default(1) // In years
+  isActive           Boolean          @default(true)
+  franchiseType      FranchiseType
+  
+  // Admin relationship
+  franchiseAdmin     FranchiseAdmin?
+  
+  // Complaint relationships
+  complaints         Complaint[]      @relation("FranchiseComplaints")
+  receivedComplaints Complaint[]      @relation("FranchiseReceivedComplaints")
+  
+  // Master Franchise specific
+  countryId          String?          @unique
+  country            Country?         @relation(fields: [countryId], references: [id])
+  
+  // Super Franchise specific
+  zoneId             String?          @unique
+  zone               Zone?            @relation(fields: [zoneId], references: [id])
+  
+  // Regional Franchise specific
+  regionId           String?          @unique
+  region             Region?          @relation(fields: [regionId], references: [id])
+  chapters           Chapter[]
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+// Combined FranchiseAdmin model - Used for all franchise types
+model FranchiseAdmin {
+  id                 String           @id @default(uuid())
+  email              String           @unique
+  firstName          String
+  lastName           String?
+  password           String
+  phone              String
+  address            Json?
+  
+  // Professional details
+  profession         String?
+  experience         Int?
+  
+  // Nominee details
+  nomineeName        String
+  nomineeRelation    String
+  nomineeContact     String
+  
+  // Relationship to franchise
+  franchiseId        String           @unique
+  franchise          Franchise        @relation(fields: [franchiseId], references: [id])
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+// Country model - Created by Admin
+model Country {
+  id                 String           @id @default(uuid())
+  name               String           @unique
+  code               String           @unique
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  // Relationships
+  adminId            String
+  admin              Admin            @relation(fields: [adminId], references: [id])
+  masterFranchise    Franchise?
+  zones              Zone[]
+}
+
+// Zone model - Created by MasterFranchise
+model Zone {
+  id                 String           @id @default(uuid())
+  name               String
+  description        String?
+  
+  // Relationships
+  countryId          String
+  country            Country          @relation(fields: [countryId], references: [id])
+  superFranchise     Franchise?
+  regions            Region[]
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  @@unique([name, countryId]) // Zone names must be unique within a country
+}
+
+// Region model - Created by SuperFranchise
+model Region {
+  id                 String           @id @default(uuid())
+  name               String
+  description        String?
+  
+  // Relationships
+  zoneId             String
+  zone               Zone             @relation(fields: [zoneId], references: [id])
+  superFranchiseId   String
+  regionalFranchise  Franchise?
+  chapters           Chapter[]
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  @@unique([name, zoneId]) // Region names must be unique within a zone
+}
+
+// Chapter model - Created by RegionalFranchise
+model Chapter {
+  id                 String           @id @default(uuid())
+  name               String
+  description        String?
+  
+  // Relationships
+  regionId           String
+  region             Region           @relation(fields: [regionId], references: [id])
+  regionalFranchiseId String
+  regionalFranchise  Franchise        @relation(fields: [regionalFranchiseId], references: [id])
+  clubs              Club[]
+  chapterLeaders     ChapterLeader[]
+
+  chapterEvents      Event[]
+
+  announcements      Announcement[]
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  @@unique([name, regionId]) // Chapter names must be unique within a region
+}
+
+// ChapterLeader model - Three leaders per chapter
+model ChapterLeader {
+  id                 String           @id @default(uuid())
+  role               ChapterLeaderRole
+  chapterLeader       User?       @relation("ChapterLeadership", fields: [chapterLeaderId], references: [id])
+  chapterLeaderId     String?     @unique
+  
+  // Relationship
+  chapterId          String
+  chapter            Chapter          @relation(fields: [chapterId], references: [id])
+  
+  announcements      Announcement[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  @@unique([chapterId, role]) // Each role can only have one leader per chapter
+}
+
+// ChapterLeaderRole enum
+enum ChapterLeaderRole {
+  PRESIDENT
+  SECRETARY
+  TREASURER
+}
+
+// Club model - Created by RegionalFranchise under a Chapter
+model Club {
+  id                 String           @id @default(uuid())
+  name               String
+  description        String?
+  
+  // Relationships
+  chapterId          String
+  chapter            Chapter          @relation(fields: [chapterId], references: [id])
+  clubLeaders        ClubLeader[]
+
+  members            User[] 
+  clubEvents         Event[]
+
+  announcements      Announcement[]
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  @@unique([name, chapterId]) // Club names must be unique within a chapter
+}
+
+// ClubLeader model - Four leaders per club
+model ClubLeader {
+  id                 String           @id @default(uuid())
+  chapterLeaderId     String?         @unique
+  chapterLeader       User?           @relation("ChapterLeadership", fields: [chapterLeaderId], references: [id])
+  
+  // Relationship
+  clubId             String
+  club               Club             @relation(fields: [clubId], references: [id])
+  
+  announcements      Announcement[]
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+// Complaint model for handling complaints between franchise levels
+model Complaint {
+  id                 String           @id @default(uuid())
+  subject            String
+  description        String
+  status             ComplaintStatus  @default(PENDING)
+  
+  // Relationships for complainant (who filed the complaint)
+  complainantType    EntityType
+  adminComplainantId String?
+  admin              Admin?           @relation("AdminComplaints", fields: [adminComplainantId], references: [id])
+  franchiseComplainantId String?
+  franchiseComplainant Franchise?     @relation("FranchiseComplaints", fields: [franchiseComplainantId], references: [id])
+  
+  // Relationships for respondent (against whom the complaint is filed)
+  respondentType     EntityType
+  adminRespondentId  String?
+  adminRespondent    Admin?           @relation("AdminReceivedComplaints", fields: [adminRespondentId], references: [id])
+  franchiseRespondentId String?
+  franchiseRespondent Franchise?      @relation("FranchiseReceivedComplaints", fields: [franchiseRespondentId], references: [id])
+  
+  resolutionNotes    String?
+  
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+// ComplaintStatus enum
+enum ComplaintStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+// EntityType enum for complaint relationships
+enum EntityType {
+  ADMIN
+  FRANCHISE
+}
+
+// FranchiseType enum to differentiate franchise types
+enum FranchiseType {
+  MASTER_FRANCHISE
+  SUPER_FRANCHISE
+  REGIONAL_FRANCHISE
+}
+
+//user app models
+enum UserMembershipType {
+  ONE_CLUB
+  VIP
+  GOLD
+}
+
+enum ReferralType {
+  SELF
+  THIRD_PARTY
+}
+
+enum EventType {
+  VIRTUAL
+  IN_PERSON
+}
+
+// User Model
+model User {
+  id             String      @id @default(cuid())
+  email          String      @unique
+  emailVerified  Boolean     @default(false)
+  phone          String
+  phoneVerified  Boolean     @default(false)
+  password       String
+  firstname      String
+  lastname       String
+  bio            String?
+  profileImage   String?
+  address        Json?    // { street, city, state, zip }
+  deleted        Boolean     @default(false)
+  deactivated    Boolean     @default(false)
+  businessDetails BusinessDetails?
+  membershipType UserMembershipType @default(ONE_CLUB)
+  rsvp           RSVP[]
+  attendance     Attendance[]
+  
+  // Membership Details
+  membershipStartDate DateTime  @default(now())
+  membershipEndDate   DateTime
+
+  order       Order[]
+
+  leadingChapter     ChapterLeader? @relation("ChapterLeadership")
+  leadingChapterId   String? @unique
+
+  leadingClub        ClubLeader? @relation("ChapterLeadership")
+  leadingClubId      String? @unique
+
+  
+  // Club Memberships
+  clubs          Club[]
+  
+  // Referral System
+  referralsCreated   Referral[] @relation("ReferralCreator")
+  referralsReceived  Referral[] @relation("ReferralReceiver")
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model BusinessDetails {
+  id          String   @id @default(uuid())
+  businessName String
+  category    String
+  panNumber   String?  @unique
+  gstNumber   String?  @unique
+  verified    Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+}
+
+enum EventOwnerType {
+  CLUB
+  CHAPTER
+}
+
+// Event Models
+model Event {
+  id             String         @id @default(cuid())
+  title          String
+  description    String
+  date           DateTime
+  address        Json?
+  
+  eventType      EventType      @default(IN_PERSON)
+  
+  // New field to specify the owner type
+  ownerType      EventOwnerType
+
+  // Relations
+  chapter        Chapter?       @relation(fields: [chapterId], references: [id])
+  chapterId      String?
+
+  club           Club?          @relation(fields: [clubId], references: [id])
+  clubId         String?
+
+  rsvp           RSVP[]
+  attendance     Attendance[]
+  
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+}
+
+// Referral Model
+model Referral {
+  id             String      @id @default(cuid())
+  type           ReferralType
+  
+  creator        User        @relation("ReferralCreator", fields: [creatorId], references: [id])
+  creatorId      String
+  
+  receiver       User        @relation("ReferralReceiver", fields: [receiverId], references: [id])
+  receiverId     String
+  
+  businessDetails String?
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+
+model GmailVerificationCode {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String?     // Nullable: Order can be placed by a user or admin
+  cashfreeOrderId String   @unique
+  paymentSessionId String  @unique
+  status         OrderStatus @default(PENDING)
+  totalAmount    Decimal
+  currency       String      @default("INR")
+  notes          String?
+  itemDetailsSnapshot Json?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  payments       Payment[]
+  user           User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+model Payment {
+  id                  String       @id @default(cuid())
+  orderId             String       
+  cashfreeOrderId   String    @unique
+  paymentSessionId    String    @unique 
+  status              PaymentStatus @default(INITIATED)
+  amount              Decimal
+  currency            String       @default("INR")
+  paymentMethod       String?
+  gatewayResponse     Json?
+  errorMessage        String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  processedAt         DateTime?    
+  order               Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  FLAGGED
+}
+
+
+model RSVP {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     String
+  status      String   @default("PENDING") // YES/NO/MAYBE
+  createdAt   DateTime @default(now())
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     String
+  attendedAt  DateTime @default(now())
+}
+
+enum AnnouncementOwnerType {
+  CLUB
+  CHAPTER
+}
+
+model Announcement {
+  id              String                @id @default(uuid())
+  title           String
+  content         String
+  ownerType       AnnouncementOwnerType
+  
+  chapterLeader   ChapterLeader?        @relation(fields: [chapterLeaderId], references: [id])
+  chapterLeaderId String?
+  
+  clubLeader      ClubLeader?           @relation(fields: [clubLeaderId], references: [id])
+  clubLeaderId    String?
+  
+  chapter         Chapter?              @relation(fields: [chapterId], references: [id])
+  chapterId       String?
+  
+  club            Club?                 @relation(fields: [clubId], references: [id])
+  clubId          String?
+  
+  createdAt       DateTime              @default(now())
+  
+  // You would implement validation in your application code to ensure proper relationships
+}
