@@ -57,82 +57,168 @@ export default function CreateFranchiseAdmin() {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto p-4">
-			<h2 className="text-xl font-bold">Create Franchise Admin</h2>
+		<form
+			onSubmit={handleSubmit}
+			className="max-w-xl mx-auto p-8 bg-white rounded-xl shadow-2xl space-y-6">
+			<h2 className="text-3xl font-semibold text-center text-gray-800">
+				Create Franchise Admin
+			</h2>
 
-			<select
-				name="franchiseId"
-				onChange={handleChange}
-				required
-				className="input">
-				<option value="">Select Franchise</option>
-				{franchises.length > 0 &&
-					franchises.map((f) => (
-						<option key={f.id} value={f.id}>
-							{f.businessName}
-						</option>
-					))}
-			</select>
+			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="franchiseId"
+						className="block text-sm font-medium text-gray-700">
+						Select Franchise
+					</label>
+					<select
+						id="franchiseId"
+						name="franchiseId"
+						onChange={handleChange}
+						required
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300">
+						<option value="">Select Franchise</option>
+						{franchises.length > 0 &&
+							franchises.map((f) => (
+								<option key={f.id} value={f.id}>
+									{f.businessName}
+								</option>
+							))}
+					</select>
+				</div>
 
-			<input
-				name="email"
-				onChange={handleChange}
-				placeholder="Email"
-				className="input"
-				required
-			/>
-			<input
-				name="firstName"
-				onChange={handleChange}
-				placeholder="First Name"
-				className="input"
-				required
-			/>
-			<input
-				name="lastName"
-				onChange={handleChange}
-				placeholder="Last Name"
-				className="input"
-			/>
-			<input
-				name="password"
-				type="password"
-				onChange={handleChange}
-				placeholder="Password"
-				className="input"
-				required
-			/>
-			<input
-				name="phone"
-				onChange={handleChange}
-				placeholder="Phone"
-				className="input"
-				required
-			/>
+				<div>
+					<label
+						htmlFor="email"
+						className="block text-sm font-medium text-gray-700">
+						Email
+					</label>
+					<input
+						id="email"
+						name="email"
+						onChange={handleChange}
+						placeholder="Email"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
 
-			<input
-				name="nomineeName"
-				onChange={handleChange}
-				placeholder="Nominee Name"
-				className="input"
-				required
-			/>
-			<input
-				name="nomineeRelation"
-				onChange={handleChange}
-				placeholder="Nominee Relation"
-				className="input"
-				required
-			/>
-			<input
-				name="nomineeContact"
-				onChange={handleChange}
-				placeholder="Nominee Contact"
-				className="input"
-				required
-			/>
+				<div>
+					<label
+						htmlFor="firstName"
+						className="block text-sm font-medium text-gray-700">
+						First Name
+					</label>
+					<input
+						id="firstName"
+						name="firstName"
+						onChange={handleChange}
+						placeholder="First Name"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
 
-			<button type="submit" className="btn btn-primary w-full">
+				<div>
+					<label
+						htmlFor="lastName"
+						className="block text-sm font-medium text-gray-700">
+						Last Name
+					</label>
+					<input
+						id="lastName"
+						name="lastName"
+						onChange={handleChange}
+						placeholder="Last Name"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+					/>
+				</div>
+
+				<div>
+					<label
+						htmlFor="password"
+						className="block text-sm font-medium text-gray-700">
+						Password
+					</label>
+					<input
+						id="password"
+						name="password"
+						type="password"
+						onChange={handleChange}
+						placeholder="Password"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
+
+				<div>
+					<label
+						htmlFor="phone"
+						className="block text-sm font-medium text-gray-700">
+						Phone
+					</label>
+					<input
+						id="phone"
+						name="phone"
+						onChange={handleChange}
+						placeholder="Phone"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
+
+				<div>
+					<label
+						htmlFor="nomineeName"
+						className="block text-sm font-medium text-gray-700">
+						Nominee Name
+					</label>
+					<input
+						id="nomineeName"
+						name="nomineeName"
+						onChange={handleChange}
+						placeholder="Nominee Name"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
+
+				<div>
+					<label
+						htmlFor="nomineeRelation"
+						className="block text-sm font-medium text-gray-700">
+						Nominee Relation
+					</label>
+					<input
+						id="nomineeRelation"
+						name="nomineeRelation"
+						onChange={handleChange}
+						placeholder="Nominee Relation"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
+
+				<div>
+					<label
+						htmlFor="nomineeContact"
+						className="block text-sm font-medium text-gray-700">
+						Nominee Contact
+					</label>
+					<input
+						id="nomineeContact"
+						name="nomineeContact"
+						onChange={handleChange}
+						placeholder="Nominee Contact"
+						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300"
+						required
+					/>
+				</div>
+			</div>
+
+			<button
+				type="submit"
+				className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 transition duration-200">
 				Create Admin
 			</button>
 		</form>

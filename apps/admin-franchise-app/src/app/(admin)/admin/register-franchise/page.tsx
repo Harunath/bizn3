@@ -3,7 +3,7 @@ import CreateFranchise from "../../../../components/admin/franchise/CreateFranch
 
 const page = () => {
 	return (
-		<div>
+		<div className="bg-gray-100">
 			Register franchise page
 			<CreateFranchise />
 		</div>
