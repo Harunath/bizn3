@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../lib/auth"; // Your NextAuth config
 import WithAdmin from "../../hoc/WithAdmin";
 import Navbar from "../../components/common/NavBar";
+import BackButton from "@repo/ui/BackButton";
 
 export default async function Layout({
 	children,
@@ -16,7 +17,11 @@ export default async function Layout({
 		<WithAdmin session={session}>
 			<div className=" w-screen">
 				<Navbar links={links} />
-				<div className="pt-16 px-2">{children}</div>
+
+				<div className="pt-16 px-2">
+					<BackButton />
+					{children}
+				</div>
 			</div>
 		</WithAdmin>
 	);

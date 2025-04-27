@@ -161,8 +161,8 @@ export const authOptions: NextAuthOptions = {
 			if (session.user && token) {
 				session.user.id = token.id as string;
 				session.user.email = token.email as string;
-				session.user.firstName = token.firstname as string;
-				session.user.lastName = token.lastname as string;
+				session.user.firstName = token.firstName as string;
+				session.user.lastName = token.lastName as string;
 				session.user.isAdmin = token.isAdmin as boolean;
 				session.user.isFranchiseAdmin = token.isFranchiseAdmin as boolean;
 				session.user.franchiseType = token.franchiseType as
