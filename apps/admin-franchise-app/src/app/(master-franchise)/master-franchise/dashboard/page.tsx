@@ -5,10 +5,10 @@ const page = () => {
 		<div>
 			<h2 className=" text-3xl text-red-500">master-franchise dashboard</h2>
 			<p>
-				Lorem ipsum dolor, sit amet consectetur adipisicing elit. Molestias
-				iusto officiis fugiat dolorem autem minima impedit sapiente dolorum id!
-				Minus velit, modi quisquam hic sunt odio molestiae officia laboriosam
-				commodi.
+				Welcome to the master franchise dashboard! Here you can manage your
+				franchise operations, including creating and managing countries,
+				franchises, and franchise admins. Use the links above to navigate to
+				different sections of the admin panel.
 			</p>
 		</div>
 	);

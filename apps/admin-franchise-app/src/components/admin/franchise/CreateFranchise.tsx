@@ -67,51 +67,101 @@ export default function CreateFranchise() {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto p-4">
-			<h2 className="text-xl font-semibold">Create Franchise</h2>
-			<input
-				name="businessName"
-				onChange={handleChange}
-				placeholder="Business Name"
-				className="input"
-			/>
-			<select name="franchiseType" onChange={handleChange} className="input">
-				<option value={FranchiseType.MASTER_FRANCHISE}>MASTER FRANCHISE</option>
-				<option value={FranchiseType.SUPER_FRANCHISE}>SUPER FRANCHISE</option>
-				<option value={FranchiseType.REGIONAL_FRANCHISE}>
-					REGIONAL FRANCHISE
-				</option>
-			</select>
-			<select name="franchiseType" onChange={handleChange} className="input">
-				{countries.length > 0 ? (
-					countries.map((country) => (
-						<option key={country.id} value={country.id}>
-							{country.name}
+		<form
+			onSubmit={handleSubmit}
+			className="space-y-6 bg-white p-6 rounded-lg shadow-lg max-w-xl mx-auto">
+			<h2 className="text-2xl font-semibold text-center text-gray-800">
+				Create Franchise
+			</h2>
+
+			<div className="space-y-4">
+				<div>
+					<label
+						htmlFor="businessName"
+						className="block text-sm font-medium text-gray-600">
+						Business Name
+					</label>
+					<input
+						id="businessName"
+						name="businessName"
+						onChange={handleChange}
+						placeholder="Business Name"
+						className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200"
+					/>
+				</div>
+
+				<div>
+					<label
+						htmlFor="franchiseType"
+						className="block text-sm font-medium text-gray-600">
+						Franchise Type
+					</label>
+					<select
+						id="franchiseType"
+						name="franchiseType"
+						onChange={handleChange}
+						className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200">
+						<option value={FranchiseType.MASTER_FRANCHISE}>
+							MASTER FRANCHISE
 						</option>
-					))
-				) : (
-					<option value="">No countries exist</option>
-				)}
-			</select>
-			{/* <input
-				name="countryId"
-				onChange={handleChange}
-				placeholder="Country ID"
-				className="input"
-			/>
-			<input
-				name="zoneId"
-				onChange={handleChange}
-				placeholder="Zone ID"
-				className="input"
-			/>
-			<input
-				name="regionId"
-				onChange={handleChange}
-				placeholder="Region ID"
-				className="input"
-			/> */}
-			<button type="submit" className="btn btn-primary w-full">
+						<option value={FranchiseType.SUPER_FRANCHISE}>
+							SUPER FRANCHISE
+						</option>
+						<option value={FranchiseType.REGIONAL_FRANCHISE}>
+							REGIONAL FRANCHISE
+						</option>
+					</select>
+				</div>
+
+				<div>
+					<label
+						htmlFor="countryId"
+						className="block text-sm font-medium text-gray-600">
+						Select Country
+					</label>
+					<select
+						id="countryId"
+						name="countryId"
+						onChange={handleChange}
+						className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200">
+						{countries.length > 0 ? (
+							countries.map((country) => (
+								<option key={country.id} value={country.id}>
+									{country.name}
+								</option>
+							))
+						) : (
+							<option value="">No countries available</option>
+						)}
+					</select>
+				</div>
+
+				{/* <div>
+      <label htmlFor="zoneId" className="block text-sm font-medium text-gray-600">Zone ID</label>
+      <input
+        id="zoneId"
+        name="zoneId"
+        onChange={handleChange}
+        placeholder="Zone ID"
+        className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200"
+      />
+    </div> */}
+
+				{/* <div>
+      <label htmlFor="regionId" className="block text-sm font-medium text-gray-600">Region ID</label>
+      <input
+        id="regionId"
+        name="regionId"
+        onChange={handleChange}
+        placeholder="Region ID"
+        className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200"
+      />
+    </div> */}
+			</div>
+
+			<button
+				type="submit"
+				className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 transition duration-200">
 				Create Franchise
 			</button>
 		</form>

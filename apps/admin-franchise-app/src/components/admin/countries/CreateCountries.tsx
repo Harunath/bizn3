@@ -44,46 +44,52 @@ const CreateCountry = () => {
 	};
 
 	return (
-		<div className="rounded-2xl">
-			<div className="mb-3">
-				<h3 className="text-3xl">Create Country</h3>
-				<p className="text-xl">Create a new country</p>
-			</div>
-			<div>
-				<form onSubmit={handleSubmit} className="space-y-4">
+		<div className="min-h-screen flex items-center justify-center bg-gray-100  px-4">
+			<div className="max-w-lg w-full p-6 my-6 bg-white  shadow-md">
+				<div className="mb-6 text-center ">
+					<h3 className="text-3xl font-bold text-gray-900">Create Country</h3>
+					<p className="text-lg text-gray-600">Add a new country to the list</p>
+				</div>
+
+				<form onSubmit={handleSubmit} className="space-y-6">
 					<div>
 						<label
 							htmlFor="name"
 							className="block text-sm font-medium text-gray-700">
-							Name
+							Country Name
 						</label>
 						<input
 							id="name"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder="Country Name"
+							placeholder="e.g., India"
 							required
-							className="mt-1"
 							disabled={loading}
+							className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 disabled:opacity-50"
 						/>
 					</div>
+
 					<div>
 						<label
 							htmlFor="code"
 							className="block text-sm font-medium text-gray-700">
-							Code
+							Country Code
 						</label>
 						<input
 							id="code"
 							value={code}
 							onChange={(e) => setCode(e.target.value)}
-							placeholder="Country Code (e.g., US, CA, JP)"
+							placeholder="e.g., IN, US, CA"
 							required
-							className="mt-1"
 							disabled={loading}
+							className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 disabled:opacity-50"
 						/>
 					</div>
-					<button type="submit" disabled={loading} className="w-full">
+
+					<button
+						type="submit"
+						disabled={loading}
+						className="w-full py-2 px-4 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300">
 						{loading ? "Creating..." : "Create Country"}
 					</button>
 				</form>
