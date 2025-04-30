@@ -1,5 +1,5 @@
 import React from "react";
-import CreateFranchise from "../../../../components/admin/franchise/CreateFranchise";
+import CreateFranchise from "../../../../../components/admin/franchise/CreateFranchise";
 
 const page = () => {
 	return (

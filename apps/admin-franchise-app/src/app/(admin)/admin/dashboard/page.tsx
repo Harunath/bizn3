@@ -14,13 +14,8 @@ const page = () => {
 				</Link>
 				<Link
 					className="text-blue-500 hover:text-blue-700 transition duration-300"
-					href="/admin/register-franchise">
-					Register Franchise
-				</Link>
-				<Link
-					className="text-blue-500 hover:text-blue-700 transition duration-300"
-					href="/admin/register-franchise-admin">
-					Register Franchise Admin
+					href="/admin/franchise">
+					Franchise
 				</Link>
 			</div>
 			<h2 className="text-3xl font-semibold text-gray-800 mb-4">

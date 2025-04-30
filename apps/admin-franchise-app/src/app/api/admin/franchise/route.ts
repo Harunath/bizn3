@@ -1,9 +1,86 @@
 // src/app/api/admin/franchise/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@repo/db/client";
+import prisma, { FranchiseType } from "@repo/db/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../lib/auth";
+
+export async function GET() {
+	try {
+		const session = await getServerSession(authOptions);
+		console.log(session);
+		if (!session || !session?.user || !session.user.isAdmin) {
+			return NextResponse.json({ message: "unauthorized" }, { status: 403 });
+		}
+		const franchises = await prisma.franchise.findMany({
+			where: { franchiseType: FranchiseType.MASTER_FRANCHISE },
+			select: {
+				id: true,
+				businessName: true,
+				address: true,
+				logo: true,
+				motto: true,
+				gstNumber: true,
+				gstNumberVerified: true,
+				panNumber: true,
+				panNumberVerified: true,
+
+				// Business entity details
+				startDate: true,
+				endDate: true,
+				renewalPeriod: true,
+				isActive: true,
+				isActiveDescription: true,
+				franchiseType: true,
+
+				// Admin relationship
+				franchiseAdmin: {
+					select: {
+						firstName: true,
+						lastName: true,
+						id: true,
+					},
+				},
+
+				// Master Franchise specific
+				countryId: true,
+				country: {
+					select: {
+						name: true,
+						id: true,
+						code: true,
+					},
+				},
+
+				createdAt: true,
+				updatedAt: true,
+			},
+		});
+		if (franchises.length == 0) {
+			return NextResponse.json(
+				{ message: "success", franchises: [] },
+				{ status: 200 }
+			);
+		}
+		return NextResponse.json(
+			{ message: "success", franchises },
+			{ status: 200 }
+		);
+	} catch (e) {
+		console.log(e);
+		return NextResponse.json(
+			{ message: "Internal Server Error" },
+			{ status: 500 }
+		);
+	}
+}
 
 export async function POST(req: NextRequest) {
 	try {
+		const session = await getServerSession(authOptions);
+		console.log(session);
+		if (!session || !session?.user || !session.user.isAdmin) {
+			return NextResponse.json({ message: "unauthorized" }, { status: 403 });
+		}
 		const data = await req.json();
 		const {
 			businessName,
@@ -33,6 +110,7 @@ export async function POST(req: NextRequest) {
 				countryId: countryId || undefined,
 				zoneId: zoneId || undefined,
 				regionId: regionId || undefined,
+				adminId: session.user.id,
 			},
 		});
 
