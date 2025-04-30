@@ -145,10 +145,10 @@ export const authOptions: NextAuthOptions = {
 					},
 				});
 				if (franchiseAdmin) {
-					token.id = admin?.id;
-					token.email = admin?.email;
-					token.firstName = admin?.firstName;
-					token.lastName = admin?.lastName;
+					token.id = franchiseAdmin?.id;
+					token.email = franchiseAdmin?.email;
+					token.firstName = franchiseAdmin?.firstName;
+					token.lastName = franchiseAdmin?.lastName;
 					token.isAdmin = false;
 					token.isFranchiseAdmin = true;
 					token.franchiseType = franchiseAdmin.franchise.franchiseType;
