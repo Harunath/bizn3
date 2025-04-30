@@ -5,19 +5,19 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { FranchiseType } from "@repo/db/client";
 
-interface CountryType {
+interface ZoneType {
 	id: string;
 	name: string;
 	code: string;
 }
 
-export default function CreateFranchise() {
+export default function CreateSuperFranchise() {
 	const router = useRouter();
-	const [countries, setCountries] = useState<CountryType[]>([]);
+	const [zones, setZones] = useState<ZoneType[]>([]);
 	const [form, setForm] = useState({
 		businessName: "",
 		renewalPeriod: 1,
-		franchiseType: FranchiseType.MASTER_FRANCHISE, // adjust options accordingly
+		franchiseType: FranchiseType.SUPER_FRANCHISE, // adjust options accordingly
 		countryId: "",
 		zoneId: "",
 		regionId: "",
@@ -28,9 +28,9 @@ export default function CreateFranchise() {
 	}, []);
 	const getCountries = async () => {
 		try {
-			const res = await fetch("/api/admin/countries/available");
+			const res = await fetch("/api/master-franchise/zones/available");
 			const result = await res.json();
-			if (result.message == "success") setCountries(result.countries);
+			if (result.message == "success") setZones(result.zones);
 			else toast.error(result.message);
 		} catch (e) {
 			if (e instanceof Error) {
@@ -50,7 +50,7 @@ export default function CreateFranchise() {
 		e.preventDefault();
 
 		try {
-			const res = await fetch("/api/admin/franchise", {
+			const res = await fetch("/api/master-franchise/super-franchise", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(form),
@@ -71,7 +71,7 @@ export default function CreateFranchise() {
 			onSubmit={handleSubmit}
 			className="space-y-6 bg-white p-6 rounded-lg shadow-lg max-w-xl mx-auto">
 			<h2 className="text-2xl font-semibold text-center text-gray-800">
-				Create Franchise
+				Create Super Franchise
 			</h2>
 
 			<div className="space-y-4">
@@ -92,48 +92,25 @@ export default function CreateFranchise() {
 
 				<div>
 					<label
-						htmlFor="franchiseType"
-						className="block text-sm font-medium text-gray-600">
-						Franchise Type
-					</label>
-					<select
-						id="franchiseType"
-						name="franchiseType"
-						onChange={handleChange}
-						className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200">
-						<option value={FranchiseType.MASTER_FRANCHISE}>
-							MASTER FRANCHISE
-						</option>
-						<option value={FranchiseType.SUPER_FRANCHISE}>
-							SUPER FRANCHISE
-						</option>
-						<option value={FranchiseType.REGIONAL_FRANCHISE}>
-							REGIONAL FRANCHISE
-						</option>
-					</select>
-				</div>
-
-				<div>
-					<label
-						htmlFor="countryId"
+						htmlFor="zoneId"
 						className="block text-sm font-medium text-gray-600">
 						Select Country
 					</label>
 					<select
-						id="countryId"
-						name="countryId"
+						id="zoneId"
+						name="zoneId"
 						onChange={handleChange}
 						defaultValue={""}
 						className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-200">
-						<option value="">Select a country</option>
-						{countries.length > 0 ? (
-							countries.map((country) => (
-								<option key={country.id} value={country.id}>
-									{country.name}
+						<option value="">Select a Zone</option>
+						{zones && zones.length > 0 ? (
+							zones.map((zone) => (
+								<option key={zone.id} value={zone.id}>
+									{zone.name}
 								</option>
 							))
 						) : (
-							<option value="">No countries available</option>
+							<option value="">No Zone available</option>
 						)}
 					</select>
 				</div>
@@ -164,7 +141,7 @@ export default function CreateFranchise() {
 			<button
 				type="submit"
 				className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 transition duration-200">
-				Create Franchise
+				Create super Franchise
 			</button>
 		</form>
 	);
