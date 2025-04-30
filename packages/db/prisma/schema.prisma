@@ -1,10 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 // Top-level admin model
@@ -17,6 +18,8 @@ model Admin {
   lastName         String?
   phone            String?
   phoneVerified    Boolean?           @default(false)
+  // franchises
+  franchise        Franchise[]
   address          Json?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -44,9 +47,17 @@ model Franchise {
   isActive           Boolean          @default(true)
   isActiveDescription String?         @default("Franchise is active")
   franchiseType      FranchiseType
+
+    // Relationships
+  adminId            String?
+  admin              Admin?            @relation(fields: [adminId], references: [id])
+
+    // Relationships
+  parentFranchiseAdminId   String?
+  parentFranchiseAdmin     FranchiseAdmin?  @relation(fields: [parentFranchiseAdminId], references: [id])
   
   // Admin relationship
-  franchiseAdmin     FranchiseAdmin?
+  franchiseAdmin     FranchiseAdmin?  @relation("FranchiseAdmin")
   
   // Complaint relationships
   complaints         Complaint[]      @relation("FranchiseComplaints")
@@ -89,10 +100,17 @@ model FranchiseAdmin {
   nomineeName        String
   nomineeRelation    String
   nomineeContact     String
+
+  zones              Zone[]
+  regions            Region[]
+  chapters           Chapter[]
   
   // Relationship to franchise
   franchiseId        String           @unique
-  franchise          Franchise        @relation(fields: [franchiseId], references: [id])
+  franchise         Franchise        @relation("FranchiseAdmin",fields: [franchiseId], references: [id])
+
+  // francises created by franchise Admin
+  franchises          Franchise[]
   
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
@@ -121,6 +139,9 @@ model Zone {
   code               String?
   description        String?
   
+  // parent id
+  parentFranchiseAdminId            String
+  parentFranchiseAdmin              FranchiseAdmin            @relation(fields: [parentFranchiseAdminId], references: [id])
   // Relationships
   countryId          String
   country            Country          @relation(fields: [countryId], references: [id])
@@ -139,6 +160,10 @@ model Region {
   name               String
   code               String?
   description        String?
+
+    // parent id
+  parentFranchiseAdminId            String
+  parentFranchiseAdmin              FranchiseAdmin            @relation(fields: [parentFranchiseAdminId], references: [id])
   
   // Relationships
   zoneId             String
@@ -159,6 +184,10 @@ model Chapter {
   name               String
   description        String?
   images             String[]
+
+  // parent id
+  parentFranchiseAdminId            String
+  parentFranchiseAdmin              FranchiseAdmin            @relation(fields: [parentFranchiseAdminId], references: [id])
   
   // Relationships
   regionId           String
@@ -188,6 +217,8 @@ model ChapterLeader {
   // Relationship
   chapterId          String
   chapter            Chapter          @relation(fields: [chapterId], references: [id])
+
+  clubs              Club[]
   
   announcements      Announcement[]
   createdAt          DateTime         @default(now())
@@ -209,6 +240,10 @@ model Club {
   name               String
   description        String?
   images             String[]
+
+    // parent id
+  creatorId            String
+  creator              ChapterLeader  @relation(fields: [creatorId], references: [id])
   
   // Relationships
   chapterId          String
