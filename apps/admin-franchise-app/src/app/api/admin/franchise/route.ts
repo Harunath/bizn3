@@ -82,17 +82,10 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ message: "unauthorized" }, { status: 403 });
 		}
 		const data = await req.json();
-		const {
-			businessName,
-			renewalPeriod,
-			franchiseType,
-			countryId,
-			zoneId,
-			regionId,
-		} = data;
-		if (!businessName || !franchiseType) {
+		const { businessName, countryId } = data;
+		if (!businessName || !countryId) {
 			return NextResponse.json(
-				{ message: "businessName or franchiseType does not exist" },
+				{ message: "businessName or countryId does not exist" },
 				{ status: 400 }
 			);
 		}
@@ -104,12 +97,10 @@ export async function POST(req: NextRequest) {
 				businessName: businessName,
 				startDate,
 				endDate,
-				renewalPeriod: renewalPeriod || 1,
+				renewalPeriod: 1,
 				isActive: true,
-				franchiseType: franchiseType,
-				countryId: countryId || undefined,
-				zoneId: zoneId || undefined,
-				regionId: regionId || undefined,
+				franchiseType: FranchiseType.MASTER_FRANCHISE,
+				countryId: countryId,
 				adminId: session.user.id,
 			},
 		});
