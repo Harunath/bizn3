@@ -11,7 +11,7 @@ CREATE TYPE "EntityType" AS ENUM ('ADMIN', 'FRANCHISE');
 CREATE TYPE "FranchiseType" AS ENUM ('MASTER_FRANCHISE', 'SUPER_FRANCHISE', 'REGIONAL_FRANCHISE');
 
 -- CreateEnum
-CREATE TYPE "UserMembershipType" AS ENUM ('ONE_CLUB', 'VIP', 'GOLD');
+CREATE TYPE "UserMembershipType" AS ENUM ('FREE', 'VIP', 'GOLD');
 
 -- CreateEnum
 CREATE TYPE "ReferralType" AS ENUM ('SELF', 'THIRD_PARTY');
@@ -21,6 +21,9 @@ CREATE TYPE "EventType" AS ENUM ('VIRTUAL', 'IN_PERSON');
 
 -- CreateEnum
 CREATE TYPE "EventOwnerType" AS ENUM ('CLUB', 'CHAPTER');
+
+-- CreateEnum
+CREATE TYPE "ReferralStatus" AS ENUM ('ACCEPTED', 'REJECTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED');
 
 -- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PROCESSING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELLED');
@@ -35,10 +38,12 @@ CREATE TYPE "AnnouncementOwnerType" AS ENUM ('CLUB', 'CHAPTER');
 CREATE TABLE "Admin" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "password" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT,
     "phone" TEXT,
+    "phoneVerified" BOOLEAN DEFAULT false,
     "address" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -54,12 +59,18 @@ CREATE TABLE "Franchise" (
     "logo" TEXT,
     "motto" TEXT,
     "gstNumber" TEXT,
-    "panNumber" TEXT NOT NULL,
+    "gstNumberVerified" BOOLEAN NOT NULL DEFAULT false,
+    "panNumber" TEXT,
+    "panNumberVerified" BOOLEAN NOT NULL DEFAULT false,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "renewalPeriod" INTEGER NOT NULL DEFAULT 1,
+    "renewalDate" TIMESTAMP(3),
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "isActiveDescription" TEXT DEFAULT 'Franchise is active',
     "franchiseType" "FranchiseType" NOT NULL,
+    "adminId" TEXT,
+    "parentFranchiseAdminId" TEXT,
     "countryId" TEXT,
     "zoneId" TEXT,
     "regionId" TEXT,
@@ -73,10 +84,12 @@ CREATE TABLE "Franchise" (
 CREATE TABLE "FranchiseAdmin" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT,
     "password" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
+    "phoneVerified" BOOLEAN DEFAULT false,
     "address" JSONB,
     "profession" TEXT,
     "experience" INTEGER,
@@ -95,6 +108,7 @@ CREATE TABLE "Country" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "code" TEXT NOT NULL,
+    "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "adminId" TEXT NOT NULL,
@@ -106,7 +120,9 @@ CREATE TABLE "Country" (
 CREATE TABLE "Zone" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "code" TEXT,
     "description" TEXT,
+    "parentFranchiseAdminId" TEXT NOT NULL,
     "countryId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -118,7 +134,9 @@ CREATE TABLE "Zone" (
 CREATE TABLE "Region" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "code" TEXT,
     "description" TEXT,
+    "parentFranchiseAdminId" TEXT NOT NULL,
     "zoneId" TEXT NOT NULL,
     "superFranchiseId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -132,6 +150,8 @@ CREATE TABLE "Chapter" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
+    "images" TEXT[],
+    "parentFranchiseAdminId" TEXT NOT NULL,
     "regionId" TEXT NOT NULL,
     "regionalFranchiseId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -157,6 +177,8 @@ CREATE TABLE "Club" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
+    "images" TEXT[],
+    "creatorId" TEXT NOT NULL,
     "chapterId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -209,7 +231,7 @@ CREATE TABLE "User" (
     "address" JSONB,
     "deleted" BOOLEAN NOT NULL DEFAULT false,
     "deactivated" BOOLEAN NOT NULL DEFAULT false,
-    "membershipType" "UserMembershipType" NOT NULL DEFAULT 'ONE_CLUB',
+    "membershipType" "UserMembershipType" NOT NULL DEFAULT 'FREE',
     "membershipStartDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "membershipEndDate" TIMESTAMP(3) NOT NULL,
     "leadingChapterId" TEXT,
@@ -224,9 +246,12 @@ CREATE TABLE "User" (
 CREATE TABLE "BusinessDetails" (
     "id" TEXT NOT NULL,
     "businessName" TEXT NOT NULL,
+    "images" TEXT[],
     "category" TEXT NOT NULL,
     "panNumber" TEXT,
+    "panNumberVerified" BOOLEAN NOT NULL DEFAULT false,
     "gstNumber" TEXT,
+    "gstNumberVerified" BOOLEAN NOT NULL DEFAULT false,
     "verified" BOOLEAN NOT NULL DEFAULT false,
     "userId" TEXT NOT NULL,
 
@@ -238,6 +263,7 @@ CREATE TABLE "Event" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "images" TEXT[],
     "date" TIMESTAMP(3) NOT NULL,
     "address" JSONB,
     "eventType" "EventType" NOT NULL DEFAULT 'IN_PERSON',
@@ -257,6 +283,9 @@ CREATE TABLE "Referral" (
     "creatorId" TEXT NOT NULL,
     "receiverId" TEXT NOT NULL,
     "businessDetails" TEXT,
+    "thirdPartyDetails" JSONB,
+    "status" "ReferralStatus" NOT NULL DEFAULT 'WAITING',
+    "updates" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -336,6 +365,7 @@ CREATE TABLE "Announcement" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
+    "images" TEXT[],
     "ownerType" "AnnouncementOwnerType" NOT NULL,
     "chapterLeaderId" TEXT,
     "clubLeaderId" TEXT,
@@ -436,6 +466,12 @@ CREATE UNIQUE INDEX "Payment_paymentSessionId_key" ON "Payment"("paymentSessionI
 CREATE INDEX "_ClubToUser_B_index" ON "_ClubToUser"("B");
 
 -- AddForeignKey
+ALTER TABLE "Franchise" ADD CONSTRAINT "Franchise_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Franchise" ADD CONSTRAINT "Franchise_parentFranchiseAdminId_fkey" FOREIGN KEY ("parentFranchiseAdminId") REFERENCES "FranchiseAdmin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Franchise" ADD CONSTRAINT "Franchise_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -451,10 +487,19 @@ ALTER TABLE "FranchiseAdmin" ADD CONSTRAINT "FranchiseAdmin_franchiseId_fkey" FO
 ALTER TABLE "Country" ADD CONSTRAINT "Country_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Zone" ADD CONSTRAINT "Zone_parentFranchiseAdminId_fkey" FOREIGN KEY ("parentFranchiseAdminId") REFERENCES "FranchiseAdmin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Zone" ADD CONSTRAINT "Zone_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Region" ADD CONSTRAINT "Region_parentFranchiseAdminId_fkey" FOREIGN KEY ("parentFranchiseAdminId") REFERENCES "FranchiseAdmin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Region" ADD CONSTRAINT "Region_zoneId_fkey" FOREIGN KEY ("zoneId") REFERENCES "Zone"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chapter" ADD CONSTRAINT "Chapter_parentFranchiseAdminId_fkey" FOREIGN KEY ("parentFranchiseAdminId") REFERENCES "FranchiseAdmin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Chapter" ADD CONSTRAINT "Chapter_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -467,6 +512,9 @@ ALTER TABLE "ChapterLeader" ADD CONSTRAINT "ChapterLeader_chapterLeaderId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "ChapterLeader" ADD CONSTRAINT "ChapterLeader_chapterId_fkey" FOREIGN KEY ("chapterId") REFERENCES "Chapter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Club" ADD CONSTRAINT "Club_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "ChapterLeader"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Club" ADD CONSTRAINT "Club_chapterId_fkey" FOREIGN KEY ("chapterId") REFERENCES "Chapter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -52,7 +52,7 @@ const SF = () => {
 				</Link>
 				<Link
 					className="text-blue-500 hover:text-blue-700 transition duration-300"
-					href="/admin/franchise/register-franchise-admin">
+					href="/master-franchise/super-franchise/register-super-franchise-admin">
 					Register SF Admin
 				</Link>
 			</div>

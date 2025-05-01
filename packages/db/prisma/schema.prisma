@@ -44,6 +44,7 @@ model Franchise {
   startDate          DateTime
   endDate            DateTime
   renewalPeriod      Int              @default(1) // In years
+  renewalDate        DateTime?
   isActive           Boolean          @default(true)
   isActiveDescription String?         @default("Franchise is active")
   franchiseType      FranchiseType

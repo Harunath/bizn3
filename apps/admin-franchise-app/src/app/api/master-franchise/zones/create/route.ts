@@ -5,7 +5,6 @@ import { authOptions } from "../../../../../lib/auth";
 
 export const POST = async (request: NextRequest) => {
 	try {
-		console.log("hitting master-franchise/super-franchise - post");
 		const session = await getServerSession(authOptions);
 		console.log(session);
 		if (

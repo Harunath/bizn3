@@ -92,12 +92,15 @@ export async function POST(req: NextRequest) {
 		const startDate = new Date();
 		const endDate = new Date(startDate);
 		endDate.setFullYear(startDate.getFullYear() + 5);
+		const renewalDate = new Date(startDate);
+		renewalDate.setFullYear(startDate.getFullYear() + 1);
 		const newFranchise = await prisma.franchise.create({
 			data: {
 				businessName: businessName,
 				startDate,
 				endDate,
 				renewalPeriod: 1,
+				renewalDate,
 				isActive: true,
 				franchiseType: FranchiseType.MASTER_FRANCHISE,
 				countryId: countryId,

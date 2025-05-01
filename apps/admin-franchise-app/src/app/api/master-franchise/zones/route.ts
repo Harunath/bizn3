@@ -11,7 +11,6 @@ country auth check(only the master admin of that country can get the zones of th
 export const GET = async () => {
 	try {
 		const session = await getServerSession(authOptions);
-		console.log(session);
 		if (
 			!session ||
 			!session?.user ||

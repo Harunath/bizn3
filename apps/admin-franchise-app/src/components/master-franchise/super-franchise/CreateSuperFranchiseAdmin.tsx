@@ -86,7 +86,8 @@ export default function CreateSuperFranchiseAdmin() {
 						required
 						className="mt-2 p-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-red-600 transition duration-300">
 						<option value="">Select Franchise</option>
-						{franchises.length > 0 &&
+						{franchises &&
+							franchises.length > 0 &&
 							franchises.map((f) => (
 								<option key={f.id} value={f.id}>
 									{f.businessName}
