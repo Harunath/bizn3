@@ -169,7 +169,6 @@ model Region {
   // Relationships
   zoneId             String
   zone               Zone             @relation(fields: [zoneId], references: [id])
-  superFranchiseId   String
   regionalFranchise  Franchise?
   chapters           Chapter[]
   
