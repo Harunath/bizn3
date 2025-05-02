@@ -6,7 +6,6 @@ import { authOptions } from "../../../../../lib/auth";
 export const POST = async (request: NextRequest) => {
 	try {
 		const session = await getServerSession(authOptions);
-		console.log(session);
 		if (
 			!session ||
 			!session?.user ||
