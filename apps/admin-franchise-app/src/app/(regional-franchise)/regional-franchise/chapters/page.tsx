@@ -8,23 +8,11 @@ const page = () => {
 			<Link
 				href="/regional-franchise/chapters/create"
 				className="px-4 py-2 bg-red-600 text-white  shadow-md hover:bg-red-700 transition duration-300 ease-in-out w-max">
-				Create Zone
+				Create Chapter
 			</Link>
 
 			<div className="w-full max-w-3xl">
 				<Chapters />
-				<div className="flex items-center gap-4">
-					<Link
-						href="/regional-franchise/chapters/abc"
-						className="px-4 py-2 rounded text-blue-400  shadow-md hover:bg-blue-400 hover:text-white transition duration-300 ease-in-out w-max">
-						Chapter ABC
-					</Link>
-					<Link
-						href="/regional-franchise/chapters/xyz"
-						className="px-4 py-2 rounded text-blue-400  shadow-md hover:bg-blue-400 hover:text-white transition duration-300 ease-in-out w-max">
-						Chapter XYZ
-					</Link>
-				</div>
 			</div>
 		</div>
 	);

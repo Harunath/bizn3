@@ -1,5 +1,6 @@
 import React from "react";
-import Clubs from "../../../../../components/regional-franchise/chapters/Clubs";
+import ChapterPage from "../../../../../components/regional-franchise/chapters/Chapter";
+import CreateClub from "../../../../../components/regional-franchise/clubs/CreateClub";
 
 const page = async ({
 	params,
@@ -12,7 +13,10 @@ const page = async ({
 	return (
 		<div>
 			<p>Chapter : {slug.chapterId}</p>
-			<Clubs />
+			<CreateClub chapterId={slug.chapterId} />
+			<div className=" relative">
+				<ChapterPage chapterId={slug.chapterId} />
+			</div>
 		</div>
 	);
 };
