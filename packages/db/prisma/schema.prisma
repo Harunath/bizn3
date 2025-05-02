@@ -105,6 +105,8 @@ model FranchiseAdmin {
   zones              Zone[]
   regions            Region[]
   chapters           Chapter[]
+  clubs              Club[]
+
   
   // Relationship to franchise
   franchiseId        String           @unique
@@ -121,7 +123,9 @@ model FranchiseAdmin {
 model Country {
   id                 String           @id @default(uuid())
   name               String           @unique
-  code               String           @unique 
+  code               String           @unique
+  image              String?
+  flagImage          String?
   description        String?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
@@ -137,7 +141,8 @@ model Country {
 model Zone {
   id                 String           @id @default(uuid())
   name               String
-  code               String?
+  code               String           @unique
+  image              String?
   description        String?
   
   // parent id
@@ -159,7 +164,8 @@ model Zone {
 model Region {
   id                 String           @id @default(uuid())
   name               String
-  code               String?
+  code               String           @unique
+  image              String?
   description        String?
 
     // parent id
@@ -182,6 +188,7 @@ model Region {
 model Chapter {
   id                 String           @id @default(uuid())
   name               String
+  code               String           @unique
   description        String?
   images             String[]
 
@@ -238,12 +245,15 @@ enum ChapterLeaderRole {
 model Club {
   id                 String           @id @default(uuid())
   name               String
+  code               String           @unique
   description        String?
   images             String[]
 
     // parent id
-  creatorId            String
-  creator              ChapterLeader  @relation(fields: [creatorId], references: [id])
+  CLcreatorId        String?
+  creator            ChapterLeader?  @relation(fields: [CLcreatorId], references: [id])
+  FAcreatorId        String?
+  franchiseAdmin     FranchiseAdmin?  @relation(fields: [FAcreatorId], references: [id])
   
   // Relationships
   chapterId          String
