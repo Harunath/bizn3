@@ -1,11 +1,7 @@
 import React from "react";
 
 const page = () => {
-	return (
-		<>
-			<div>VIP Dashboard</div>
-		</>
-	);
+	return <div>Unauthorized</div>;
 };
 
 export default page;

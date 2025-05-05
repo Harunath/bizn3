@@ -1,9 +1,10 @@
 import React from "react";
+import BizLoading from "../../components/common/BizLoading";
 
 const page = () => {
 	return (
 		<>
-			<div>VIP Dashboard</div>
+			<BizLoading />
 		</>
 	);
 };

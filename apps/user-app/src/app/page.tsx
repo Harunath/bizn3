@@ -1,5 +1,12 @@
-import { redirect } from "next/navigation";
+import React from "react";
+import BizLoading from "../components/common/BizLoading";
 
-export default function page() {
-	redirect("/login");
-}
+const page = () => {
+	return (
+		<>
+			<BizLoading />
+		</>
+	);
+};
+
+export default page;
