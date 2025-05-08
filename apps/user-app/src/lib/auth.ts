@@ -63,16 +63,22 @@ export const authOptions: NextAuthOptions = {
 	callbacks: {
 		async signIn({ user }) {
 			// Check if user already exists in the database
+			if (!user) {
+				return false;
+			}
 			const member = await prisma.user.findUnique({
 				where: {
 					email: user.email!,
 				},
 			});
-
-			// If user doesn't exist, create a new record
 			if (member) {
+				if (!member?.registrationCompleted) {
+					// If user doesn't exist, create a new record
+					return "/register";
+				}
 				return true;
 			}
+
 			return false;
 		},
 		async redirect({ baseUrl }) {
