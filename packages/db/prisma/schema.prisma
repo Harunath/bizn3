@@ -260,7 +260,8 @@ model Club {
   chapter            Chapter          @relation(fields: [chapterId], references: [id])
   clubLeaders        ClubLeader[]
 
-  members            User[] 
+  members            User[]           @relation("allClubs")
+  homeClubMembers    User[]
   clubEvents         Event[]
 
   announcements      Announcement[]
@@ -359,6 +360,7 @@ model User {
   emailVerified  Boolean     @default(false)
   phone          String
   phoneVerified  Boolean     @default(false)
+  registrationCompleted Boolean @default(false)
   password       String
   firstname      String
   lastname       String
@@ -386,7 +388,9 @@ model User {
 
   
   // Club Memberships
-  clubs          Club[]
+  clubs              Club[]   @relation("allClubs")
+  homeClubId         String?
+  homeClub           Club? @relation(fields: [homeClubId], references: [id])
   
   // Referral System
   referralsCreated   Referral[] @relation("ReferralCreator")
