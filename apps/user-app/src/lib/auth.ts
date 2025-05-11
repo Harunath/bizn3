@@ -72,10 +72,6 @@ export const authOptions: NextAuthOptions = {
 				},
 			});
 			if (member) {
-				if (!member?.registrationCompleted) {
-					// If user doesn't exist, create a new record
-					return "/register";
-				}
 				return true;
 			}
 
