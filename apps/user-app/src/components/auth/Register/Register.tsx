@@ -1,12 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { z } from "zod";
 
 const baseRegisterSchema = z.object({
-	firstName: z.string().min(1, "First name is required"),
-	lastName: z.string().min(1, "Last name is required"),
+	firstname: z.string().min(1, "First name is required"),
+	lastname: z.string().min(1, "Last name is required"),
 	email: z.string().email("Invalid email address"),
 	phone: z.string().min(10, "Phone number must be at least 10 digits"),
 	password: z
@@ -28,11 +27,10 @@ const registerSchema = baseRegisterSchema.refine(
 		path: ["confirmPassword"],
 	}
 );
-
-function Register() {
+function Register({ nextStep }: { nextStep: () => void }) {
 	const [formData, setFormData] = useState({
-		firstName: "",
-		lastName: "",
+		firstname: "",
+		lastname: "",
 		email: "",
 		phone: "",
 		password: "",
@@ -44,7 +42,6 @@ function Register() {
 	const [error, setError] = useState("");
 	const [otpSent, setOtpSent] = useState(false);
 	const [successMessage, setSuccessMessage] = useState("");
-	const router = useRouter();
 	const [token, setToken] = useState("");
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +78,7 @@ function Register() {
 	const verifyOtp = async () => {
 		try {
 			registerSchema.parse(formData);
-			const res = await fetch("/api/auth/register/admin", {
+			const res = await fetch("/api/auth/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ ...formData, token }),
@@ -93,7 +90,7 @@ function Register() {
 					"Email verified successfully! You can now continue registration."
 				);
 				// Redirect or show next registration step
-				router.push("/login");
+				nextStep();
 			}
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -106,25 +103,25 @@ function Register() {
 	};
 
 	return (
-		<div className="flex justify-center items-center h-screen bg-white">
+		<div className="flex justify-center items-center">
 			<div className="w-full max-w-sm p-6 bg-gray-100 rounded-lg shadow-md">
 				<h2 className="text-xl font-semibold text-center text-red-600 mb-4">
-					Registration
+					Registration{" "}
 				</h2>
 				<input
 					type="text"
-					name="firstName"
+					name="firstname"
 					placeholder="First Name"
 					className="w-full p-2 border rounded mb-3"
-					value={formData.firstName}
+					value={formData.firstname}
 					onChange={handleChange}
 				/>
 				<input
 					type="text"
-					name="lastName"
+					name="lastname"
 					placeholder="Last Name"
 					className="w-full p-2 border rounded mb-3"
-					value={formData.lastName}
+					value={formData.lastname}
 					onChange={handleChange}
 				/>
 				<input

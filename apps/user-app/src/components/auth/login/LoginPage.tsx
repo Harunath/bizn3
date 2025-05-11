@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useSession } from "next-auth/react";
-import { UserMembershipType } from "@repo/db/client";
+import Link from "next/link";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
@@ -19,14 +19,17 @@ export default function LoginPage() {
 	useEffect(() => {
 		setLoading(true);
 		if (session && session.user) {
-			if (session.user.membershipType === UserMembershipType.VIP) {
-				router.push("/vip/dashboard");
-			} else if (session.user.membershipType === UserMembershipType.GOLD) {
-				router.push("/gold/dashboard");
-			} else if (session.user.membershipType === UserMembershipType.FREE)
-				router.push("/free/dashboard");
+			const getUser = async () => {
+				const res = await fetch(`/api/user/${session.user.id}`);
+				const data = await res.json();
+				if (data.message == "success" && data.data.registrationCompleted) {
+					router.push("/");
+				} else {
+					router.push("/register");
+				}
+			};
+			getUser();
 		}
-
 		setLoading(false);
 	}, [session]);
 	const handleGoogleSignIn = async () => {
@@ -116,6 +119,12 @@ export default function LoginPage() {
 						{loading ? "Signing in..." : "Sign In"}
 					</button>
 				</form>
+				<p className=" text-xs mt-2">
+					create an account?{" "}
+					<Link className=" text-green-500 font-medium" href="/register">
+						Register
+					</Link>
+				</p>
 			</div>
 		</div>
 	);
