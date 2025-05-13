@@ -22,10 +22,13 @@ export default function LoginPage() {
 			const getUser = async () => {
 				const res = await fetch(`/api/user/${session.user.id}`);
 				const data = await res.json();
-				if (data.message == "success" && data.data.registrationCompleted) {
-					router.push("/");
-				} else {
-					router.push("/register");
+				console.log();
+				if (data.message == "success") {
+					if (data.data.registrationCompleted) {
+						router.push("/");
+					} else {
+						router.push("/register");
+					}
 				}
 			};
 			getUser();

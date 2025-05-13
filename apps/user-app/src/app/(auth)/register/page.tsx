@@ -51,7 +51,7 @@ const page = async () => {
 		} else if (!user.registrationCompleted) {
 			return (
 				<div>
-					<RegisterSteps user={user} />
+					<RegisterSteps user={user} session={session} />
 				</div>
 			);
 		}

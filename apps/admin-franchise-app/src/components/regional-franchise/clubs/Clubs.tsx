@@ -13,7 +13,7 @@ const Clubs = ({ clubs }: { clubs: Club[] }) => {
 					))}
 				</div>
 			) : (
-				<div>No franchises found.</div>
+				<div>No Clubs found.</div>
 			)}
 		</div>
 	);

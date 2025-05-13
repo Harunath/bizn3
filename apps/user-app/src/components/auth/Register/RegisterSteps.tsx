@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import HomeClub from "./HomeClub";
 import { useRouter } from "next/navigation";
 import { RegisterUserProps } from "../../../app/(auth)/register/page";
+import { Session } from "next-auth";
 enum Steps {
 	USER,
 	BUSINESS,
@@ -16,8 +17,14 @@ enum Steps {
 	HOMECLUB,
 }
 
-const RegisterSteps = ({ user }: { user?: RegisterUserProps }) => {
-	const [step, setStep] = useState<Steps>(Steps.VERIFYBUSINESS);
+const RegisterSteps = ({
+	user,
+	session,
+}: {
+	user?: RegisterUserProps;
+	session?: Session;
+}) => {
+	const [step, setStep] = useState<Steps>(Steps.USER);
 	const [progress, setProgress] = useState(1 / 3);
 	const [initialProgress, setInitialProgress] = useState(0);
 	const router = useRouter();
@@ -26,6 +33,7 @@ const RegisterSteps = ({ user }: { user?: RegisterUserProps }) => {
 	useEffect(() => {
 		setLoading(true);
 		if (user) {
+			console.log(user);
 			if (!user.businessDetails) {
 				setStep(Steps.BUSINESS);
 				setLoading(false);
@@ -34,6 +42,8 @@ const RegisterSteps = ({ user }: { user?: RegisterUserProps }) => {
 				router.push("/");
 				setLoading(false);
 			}
+		} else if (!session || !session.user) {
+			router.push("/login");
 		}
 		setLoading(false);
 	}, [user, router]);
@@ -111,25 +121,29 @@ const RegisterSteps = ({ user }: { user?: RegisterUserProps }) => {
 		<>
 			<AnimatePresence mode="wait">
 				<FullScreenDialog key={JSON.stringify(step)}>
-					<div className="h-2 w-80 bg-white rounded-full overflow-hidden">
-						<motion.div
-							initial={{
-								width: 320 * initialProgress,
-							}}
-							animate={{
-								width: 320 * progress,
-								transition: {
-									duration: 0.3,
-									ease: "linear",
-								},
-							}}
-							className={`h-full rounded-full bg-blue-400 transition-all duration-300`}></motion.div>
-					</div>
-					<button
-						className="p-2 rounded bg-white text-red-500"
-						onClick={() => nextStep()}>
-						Next step
-					</button>
+					{step != Steps.USER && (
+						<>
+							<div className="h-2 w-80 bg-white rounded-full overflow-hidden">
+								<motion.div
+									initial={{
+										width: 320 * initialProgress,
+									}}
+									animate={{
+										width: 320 * progress,
+										transition: {
+											duration: 0.3,
+											ease: "linear",
+										},
+									}}
+									className={`h-full rounded-full bg-blue-400 transition-all duration-300`}></motion.div>
+							</div>
+							<button
+								className="p-2 rounded bg-white text-red-500"
+								onClick={() => nextStep()}>
+								Next step
+							</button>
+						</>
+					)}
 					{renderStep()}
 				</FullScreenDialog>
 			</AnimatePresence>
