@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from "react";
 import Register from "./Register";
 import RegisterBusiness from "./RegisterBusiness";
-import { AnimatePresence } from "framer-motion";
-import FullScreenDialog from "../../hs-ui/dialog/FullScreenDialog";
 import VerifyBusiness from "./VerifyBusiness";
 import { motion } from "framer-motion";
 import HomeClub from "./HomeClub";
@@ -38,12 +36,12 @@ const RegisterSteps = ({
 				setStep(Steps.BUSINESS);
 				setLoading(false);
 			} else if (!user.homeClub) setStep(Steps.HOMECLUB);
-			else {
-				router.push("/");
+			else if (!session || !session.user) {
+				router.push("/login");
 				setLoading(false);
+			} else {
+				router.push("/");
 			}
-		} else if (!session || !session.user) {
-			router.push("/login");
 		}
 		setLoading(false);
 	}, [user, router]);
@@ -118,36 +116,32 @@ const RegisterSteps = ({
 	} else {
 	}
 	return (
-		<>
-			<AnimatePresence mode="wait">
-				<FullScreenDialog key={JSON.stringify(step)}>
-					{step != Steps.USER && (
-						<>
-							<div className="h-2 w-80 bg-white rounded-full overflow-hidden">
-								<motion.div
-									initial={{
-										width: 320 * initialProgress,
-									}}
-									animate={{
-										width: 320 * progress,
-										transition: {
-											duration: 0.3,
-											ease: "linear",
-										},
-									}}
-									className={`h-full rounded-full bg-blue-400 transition-all duration-300`}></motion.div>
-							</div>
-							<button
-								className="p-2 rounded bg-white text-red-500"
-								onClick={() => nextStep()}>
-								Next step
-							</button>
-						</>
-					)}
-					{renderStep()}
-				</FullScreenDialog>
-			</AnimatePresence>
-		</>
+		<div className="min-h-screen h-full w-full flex justify-center items-center">
+			{step != Steps.USER && (
+				<>
+					<div className="h-2 w-80 bg-white rounded-full overflow-hidden">
+						<motion.div
+							initial={{
+								width: 320 * initialProgress,
+							}}
+							animate={{
+								width: 320 * progress,
+								transition: {
+									duration: 0.3,
+									ease: "linear",
+								},
+							}}
+							className={`h-full rounded-full bg-blue-400 transition-all duration-300`}></motion.div>
+					</div>
+					<button
+						className="p-2 rounded bg-white text-red-500"
+						onClick={() => nextStep()}>
+						Next step
+					</button>
+				</>
+			)}
+			{renderStep()}
+		</div>
 	);
 };
 

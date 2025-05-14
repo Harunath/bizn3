@@ -3,9 +3,9 @@ import RegisterSteps from "../../../components/auth/Register/RegisterSteps";
 import prisma from "@repo/db/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../lib/auth";
+import { redirect } from "next/navigation";
 
 import { User, BusinessDetails, Club } from "@repo/db/client";
-
 export interface RegisterUserProps
 	extends Omit<
 		User,
@@ -47,7 +47,7 @@ const page = async () => {
 			},
 		});
 		if (!user) {
-			<RegisterSteps />;
+			redirect("/logout");
 		} else if (!user.registrationCompleted) {
 			return (
 				<div>

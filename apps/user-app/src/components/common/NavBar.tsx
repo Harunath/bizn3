@@ -14,7 +14,7 @@ const ProfileOrSignin = dynamic(() => import("./ProfileOrSignin"), {
 	loading: () => <LoadingSkeleton />,
 });
 
-export default function Navbar({ links }: { links: linksType[] }) {
+export default function Navbar({ links }: { links?: linksType[] }) {
 	const [menuOpen, setMenuOpen] = useState(false);
 
 	return (
@@ -44,22 +44,24 @@ export default function Navbar({ links }: { links: linksType[] }) {
 					onClick={() => setMenuOpen(!menuOpen)}>
 					{menuOpen ? <HiX size={28} /> : <HiMenu size={28} />}
 				</button>
+				{links && (
+					<ul
+						className={`md:flex md:space-x-6 font-small absolute md:static top-14 left-0 w-full md:w-auto bg-white md:bg-transparent shadow-md md:shadow-none p-5 md:p-0 transition-all duration-300 ${
+							menuOpen ? "block" : "hidden"
+						}`}>
+						{links.length > 0 &&
+							links.map((link, index) => (
+								<li key={index} className="py-2 md:py-0">
+									<Link
+										href={link.href}
+										className="text-black hover:text-red-600 no-underline">
+										{link.name}
+									</Link>
+								</li>
+							))}
+					</ul>
+				)}
 
-				<ul
-					className={`md:flex md:space-x-6 font-small absolute md:static top-14 left-0 w-full md:w-auto bg-white md:bg-transparent shadow-md md:shadow-none p-5 md:p-0 transition-all duration-300 ${
-						menuOpen ? "block" : "hidden"
-					}`}>
-					{links.length > 0 &&
-						links.map((link, index) => (
-							<li key={index} className="py-2 md:py-0">
-								<Link
-									href={link.href}
-									className="text-black hover:text-red-600 no-underline">
-									{link.name}
-								</Link>
-							</li>
-						))}
-				</ul>
 				<div className="hidden md:flex items-center space-x-4 px-3">
 					<ProfileOrSignin />
 				</div>

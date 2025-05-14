@@ -12,6 +12,7 @@ const ProfileOrSignin = () => {
 		VIP: "/vip/profile",
 	};
 	const session = useSession();
+	console.log("profile : ", session);
 	return (
 		<div>
 			{session.data?.user.id ? (

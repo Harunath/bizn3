@@ -103,105 +103,111 @@ function Register({ nextStep }: { nextStep: () => void }) {
 	};
 
 	return (
-		<div className="flex justify-center items-center">
-			<div className="w-full max-w-sm p-6 bg-gray-100 rounded-lg shadow-md">
-				<h2 className="text-xl font-semibold text-center text-red-600 mb-4">
-					Registration{" "}
-				</h2>
-				<input
-					type="text"
-					name="firstname"
-					placeholder="First Name"
-					className="w-full p-2 border rounded mb-3"
-					value={formData.firstname}
-					onChange={handleChange}
-				/>
-				<input
-					type="text"
-					name="lastname"
-					placeholder="Last Name"
-					className="w-full p-2 border rounded mb-3"
-					value={formData.lastname}
-					onChange={handleChange}
-				/>
-				<input
-					type="email"
-					name="email"
-					placeholder="Mail"
-					className="w-full p-2 border rounded mb-3"
-					value={formData.email}
-					onChange={handleChange}
-				/>
-				<input
-					type="text"
-					name="phone"
-					placeholder="Phone Number"
-					className="w-full p-2 border rounded mb-3"
-					value={formData.phone}
-					onChange={handleChange}
-				/>
-				<div className="relative mb-3">
-					<input
-						type={showPassword ? "text" : "password"}
-						name="password"
-						placeholder="Password"
-						className="w-full p-2 border rounded"
-						value={formData.password}
-						onChange={handleChange}
-					/>
-					<button
-						type="button"
-						className="absolute right-3 top-3 text-red-600"
-						onClick={() => setShowPassword(!showPassword)}>
-						{showPassword ? <FaEyeSlash /> : <FaEye />}
-					</button>
-				</div>
-				<div className="relative mb-3">
-					<input
-						type={showConfirmPassword ? "text" : "password"}
-						name="confirmPassword"
-						placeholder="Confirm Password"
-						className="w-full p-2 border rounded"
-						value={formData.confirmPassword}
-						onChange={handleChange}
-					/>
-					<button
-						type="button"
-						className="absolute right-3 top-3 text-red-600"
-						onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-						{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-					</button>
-				</div>
-				<div className="flex items-center gap-2 mb-3">
+		<div className="min-w-[360px] w-[360px] lg:w-[80%] flex justify-center items-center">
+			<div className="hidden lg:block w-1/2">
+				<p className="text-4xl text-red-600 text-center">Biz Network</p>
+				<p className="text-xl text-red-600 text-center">Registration</p>
+			</div>
+			<div className="flex-1 flex flex-col justify-center items-center rounded-lg">
+				<div className="lg:w-[70%] max-w-lg p-4">
+					<h2 className="text-xl font-semibold text-center text-red-600 mb-4">
+						Biz network Registration{" "}
+					</h2>
 					<input
 						type="text"
-						name="otp"
-						placeholder="Verify Mail"
-						className="flex-grow p-2 border rounded"
-						value={formData.otp}
+						name="firstname"
+						placeholder="First Name"
+						className="w-full p-2 border rounded mb-3"
+						value={formData.firstname}
 						onChange={handleChange}
 					/>
+					<input
+						type="text"
+						name="lastname"
+						placeholder="Last Name"
+						className="w-full p-2 border rounded mb-3"
+						value={formData.lastname}
+						onChange={handleChange}
+					/>
+					<input
+						type="email"
+						name="email"
+						placeholder="Mail"
+						className="w-full p-2 border rounded mb-3"
+						value={formData.email}
+						onChange={handleChange}
+					/>
+					<input
+						type="text"
+						name="phone"
+						placeholder="Phone Number"
+						className="w-full p-2 border rounded mb-3"
+						value={formData.phone}
+						onChange={handleChange}
+					/>
+					<div className="relative mb-3">
+						<input
+							type={showPassword ? "text" : "password"}
+							name="password"
+							placeholder="Password"
+							className="w-full p-2 border rounded"
+							value={formData.password}
+							onChange={handleChange}
+						/>
+						<button
+							type="button"
+							className="absolute right-3 top-3 text-red-600"
+							onClick={() => setShowPassword(!showPassword)}>
+							{showPassword ? <FaEyeSlash /> : <FaEye />}
+						</button>
+					</div>
+					<div className="relative mb-3">
+						<input
+							type={showConfirmPassword ? "text" : "password"}
+							name="confirmPassword"
+							placeholder="Confirm Password"
+							className="w-full p-2 border rounded"
+							value={formData.confirmPassword}
+							onChange={handleChange}
+						/>
+						<button
+							type="button"
+							className="absolute right-3 top-3 text-red-600"
+							onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+							{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+						</button>
+					</div>
+					<div className="flex items-center gap-2 mb-3">
+						<input
+							type="text"
+							name="otp"
+							placeholder="Verify Mail"
+							className="flex-grow p-2 border rounded"
+							value={formData.otp}
+							onChange={handleChange}
+						/>
+						<button
+							onClick={handleGetOtp}
+							className="text-red-600 text-sm border p-2 rounded"
+							disabled={otpSent}>
+							{otpSent ? "OTP Sent" : "Get OTP"}
+						</button>
+					</div>
 					<button
-						onClick={handleGetOtp}
-						className="text-red-600 text-sm border p-2 rounded"
-						disabled={otpSent}>
-						{otpSent ? "OTP Sent" : "Get OTP"}
+						onClick={verifyOtp}
+						className="w-full bg-red-600 text-white p-2 rounded mt-2"
+						disabled={!otpSent}>
+						Register
 					</button>
+					{successMessage && (
+						<p className="text-green-600 text-sm mt-3 text-center">
+							{successMessage}
+						</p>
+					)}
+					{error && (
+						<p className="text-red-600 text-sm mt-3 text-center">{error}</p>
+					)}
 				</div>
-				<button
-					onClick={verifyOtp}
-					className="w-full bg-red-600 text-white p-2 rounded mt-2"
-					disabled={!otpSent}>
-					Register
-				</button>
-				{successMessage && (
-					<p className="text-green-600 text-sm mt-3 text-center">
-						{successMessage}
-					</p>
-				)}
-				{error && (
-					<p className="text-red-600 text-sm mt-3 text-center">{error}</p>
-				)}
 			</div>
 		</div>
 	);
