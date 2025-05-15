@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import Register from "./Register";
 import RegisterBusiness from "./RegisterBusiness";
-import VerifyBusiness from "./VerifyBusiness";
 import { motion } from "framer-motion";
 import HomeClub from "./HomeClub";
 import { useRouter } from "next/navigation";
@@ -11,7 +10,6 @@ import { Session } from "next-auth";
 enum Steps {
 	USER,
 	BUSINESS,
-	VERIFYBUSINESS,
 	HOMECLUB,
 }
 
@@ -22,7 +20,7 @@ const RegisterSteps = ({
 	user?: RegisterUserProps;
 	session?: Session;
 }) => {
-	const [step, setStep] = useState<Steps>(Steps.USER);
+	const [step, setStep] = useState<Steps>(Steps.BUSINESS);
 	const [progress, setProgress] = useState(1 / 3);
 	const [initialProgress, setInitialProgress] = useState(0);
 	const router = useRouter();
@@ -30,8 +28,10 @@ const RegisterSteps = ({
 
 	useEffect(() => {
 		setLoading(true);
+		if ((!user && step == Steps.BUSINESS) || step == Steps.HOMECLUB) {
+			router.push("/login");
+		}
 		if (user) {
-			console.log(user);
 			if (!user.businessDetails) {
 				setStep(Steps.BUSINESS);
 				setLoading(false);
@@ -52,9 +52,6 @@ const RegisterSteps = ({
 				setStep(Steps.BUSINESS);
 				break;
 			case Steps.BUSINESS:
-				setStep(Steps.VERIFYBUSINESS);
-				break;
-			case Steps.VERIFYBUSINESS:
 				setStep(Steps.HOMECLUB);
 				break;
 			case Steps.HOMECLUB:
@@ -69,11 +66,9 @@ const RegisterSteps = ({
 	const renderStep = () => {
 		switch (step) {
 			case Steps.USER:
-				return <Register nextStep={nextStep} />;
+				return <Register />;
 			case Steps.BUSINESS:
 				return <RegisterBusiness nextStep={nextStep} />;
-			case Steps.VERIFYBUSINESS:
-				return <VerifyBusiness nextStep={nextStep} />;
 			case Steps.HOMECLUB:
 				return <HomeClub />;
 			default:
@@ -85,20 +80,16 @@ const RegisterSteps = ({
 		const process = () => {
 			switch (step) {
 				case Steps.USER:
-					setProgress(1 / 4);
+					setProgress(1 / 3);
 					setInitialProgress(0);
 					break;
 				case Steps.BUSINESS:
-					setProgress(1 / 2);
-					setInitialProgress(1 / 4);
-					break;
-				case Steps.VERIFYBUSINESS:
-					setProgress(3 / 4);
-					setInitialProgress(1 / 2);
+					setProgress(2 / 3);
+					setInitialProgress(1 / 3);
 					break;
 				case Steps.HOMECLUB:
 					setProgress(1);
-					setInitialProgress(3 / 4);
+					setInitialProgress(2 / 3);
 					break;
 				default:
 					break;
@@ -116,10 +107,10 @@ const RegisterSteps = ({
 	} else {
 	}
 	return (
-		<div className="min-h-screen h-full w-full flex justify-center items-center">
+		<div className="min-h-screen h-full w-full flex flex-col justify-center items-center">
 			{step != Steps.USER && (
 				<>
-					<div className="h-2 w-80 bg-white rounded-full overflow-hidden">
+					<div className="h-2 w-80 bg-gray-200 rounded-full overflow-hidden">
 						<motion.div
 							initial={{
 								width: 320 * initialProgress,

@@ -40,18 +40,15 @@ export const GET = async () => {
 
 export const POST = async (req: NextRequest) => {
 	try {
-		console.log("hitting api/user/business ");
-		console.log(authOptions);
 		const session = await getServerSession(authOptions);
-		console.log(session, " user session");
 		if (!session || !session.user.id) {
 			return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 		}
 		const body = await req.json();
 		const { name, images, category } = body;
-		if (!name) {
+		if (!name || !images) {
 			return NextResponse.json(
-				{ message: "name is required" },
+				{ message: "name, images are required" },
 				{ status: 400 }
 			);
 		}
@@ -75,28 +72,15 @@ export const POST = async (req: NextRequest) => {
 				{ status: 400 }
 			);
 		}
-		const uploadImages = [];
-		if (!images || !images.length) {
-			uploadImages.push(
-				"https://res.cloudinary.com/degrggosz/image/upload/v1746781128/Web__What-is-Bussines-Analytics_je92qe.webp"
-			);
-		}
-		const res = await fetch(
-			`${process.env.NEXTAUTH_URL}/api/user/upload-image`,
-			{
-				method: "POST",
-				body: JSON.stringify({ images }),
-			}
-		);
-		const result = await res.json();
-		if (result.message == "success") {
-			uploadImages.push(...result.data);
-		}
 
 		const businessDetails = await prisma.businessDetails.create({
 			data: {
 				businessName: name as string,
-				images: uploadImages,
+				images: images
+					? images
+					: [
+							"https://res.cloudinary.com/degrggosz/image/upload/v1746781128/Web__What-is-Bussines-Analytics_je92qe.webp",
+						],
 				category: category || "Business",
 				user: {
 					connect: { id: session.user.id },
