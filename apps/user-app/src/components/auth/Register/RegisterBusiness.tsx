@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { z } from "zod";
+import { upload } from "@repo/common/upload";
 
 // Define the Zod schema for BusinessDetails
 const businessDetailsSchema = z.object({
@@ -92,30 +93,23 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (!files) return;
-
-		const newImages: string[] = [];
-
-		for (let i = 0; i < files.length; i++) {
-			const file = files[i];
-			if (file) {
-				const reader = new FileReader();
-				reader.readAsDataURL(file);
-				// Wrap FileReader in a Promise so we can await it
-				await new Promise<void>((resolve) => {
-					reader.onloadend = () => {
-						if (reader.result && typeof reader.result === "string") {
-							newImages.push(reader.result);
-						}
-						resolve();
-					};
-				});
-			}
-		}
-
+		const res = await fetch("/api/user/upload-image", {
+			method: "POST",
+		});
+		const result = await res.json();
+		const { signature, timestamp, folder, apiKey, cloudName } = result;
+		const filesArray = Array.from(files);
+		const urls = await upload({
+			signature,
+			files: filesArray,
+			timestamp,
+			folder,
+			apiKey,
+			cloudName,
+		});
 		// Limit to 5 images total
-		setImages((prevImages) => [...prevImages, ...newImages].slice(0, 5));
+		setImages([...urls]);
 	};
-
 	// const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 	// 	const files = event.target.files;
 	// 	if (files) {
@@ -138,146 +132,166 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 	// };
 
 	return (
-		<form
-			onSubmit={handleSubmit}
-			className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-			<div className="mb-4">
-				<label
-					htmlFor="businessName"
-					className="block text-gray-700 text-sm font-bold mb-2">
-					Business Name
-				</label>
-				<input
-					type="text"
-					id="businessName"
-					className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-					value={businessName}
-					onChange={(e) => setBusinessName(e.target.value)}
-				/>
-				{errors?.formErrors.fieldErrors.businessName && (
-					<p className="text-red-500 text-xs italic">
-						{errors.formErrors.fieldErrors.businessName.join(", ")}
-					</p>
-				)}
+		<div className="min-w-[360px] w-[360px] lg:w-[80%] flex justify-center items-center">
+			<div className="hidden lg:block w-1/3">
+				<p className="text-4xl text-red-600 text-center">Biz Network</p>
+				<p className="text-xl text-red-600 text-center">Registration</p>
 			</div>
-
-			<div className="mb-4">
-				<label
-					htmlFor="images"
-					className="block text-gray-700 text-sm font-bold mb-2">
-					Images
-				</label>
-				<input
-					type="file"
-					id="images"
-					accept="image/*"
-					multiple
-					className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-					onChange={handleImageChange}
-				/>
-				{/* {images.length > 0 && (
-					<div className="mt-2 flex space-x-2">
-						{images.map((image, index) => (
-							<Image
-								key={index}
-								src={image}
-								alt={`Uploaded ${index + 1}`}
-								className="w-20 h-20 object-cover rounded"
-							/>
-						))}
+			<form
+				onSubmit={handleSubmit}
+				className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-2">
+				<div className=" text-3xl text-red-600">
+					<p>Business Registration</p>
+				</div>
+				<div className="flex gap-x-4">
+					<div>
+						<label
+							htmlFor="businessName"
+							className="block text-gray-700 text-sm font-bold mb-2">
+							Business Name
+						</label>
+						<input
+							type="text"
+							id="businessName"
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							value={businessName}
+							onChange={(e) => setBusinessName(e.target.value)}
+						/>
+						{errors?.formErrors.fieldErrors.businessName && (
+							<p className="text-red-500 text-xs italic">
+								{errors.formErrors.fieldErrors.businessName.join(", ")}
+							</p>
+						)}
 					</div>
-				)} */}
-				{errors?.formErrors.fieldErrors.images && (
-					<p className="text-red-500 text-xs italic">
-						{errors.formErrors.fieldErrors.images.join(", ")}
-					</p>
-				)}
-			</div>
-
-			<div className="mb-4">
-				<label
-					htmlFor="category"
-					className="block text-gray-700 text-sm font-bold mb-2">
-					Category
-				</label>
-				<input
-					type="text"
-					id="category"
-					className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-					value={category}
-					onChange={(e) => setCategory(e.target.value)}
-				/>
-				{errors?.formErrors.fieldErrors.category && (
-					<p className="text-red-500 text-xs italic">
-						{errors.formErrors.fieldErrors.category.join(", ")}
-					</p>
-				)}
-			</div>
-
-			<div className="mb-4">
-				<label
-					htmlFor="panNumber"
-					className="block text-gray-700 text-sm font-bold mb-2">
-					PAN Number (Optional)
-				</label>
-				<input
-					type="text"
-					id="panNumber"
-					className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-					value={panNumber}
-					onChange={(e) => setPanNumber(e.target.value)}
-				/>
-				{errors?.formErrors.fieldErrors.panNumber && (
-					<p className="text-red-500 text-xs italic">
-						{errors.formErrors.fieldErrors.panNumber.join(", ")}
-					</p>
-				)}
-			</div>
-
-			<div className="mb-6">
-				<label
-					htmlFor="gstNumber"
-					className="block text-gray-700 text-sm font-bold mb-2">
-					GST Number (Optional)
-				</label>
-				<input
-					type="text"
-					id="gstNumber"
-					className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-					value={gstNumber}
-					onChange={(e) => setGstNumber(e.target.value)}
-				/>
-				{errors?.formErrors.fieldErrors.gstNumber && (
-					<p className="text-red-500 text-xs italic">
-						{errors.formErrors.fieldErrors.gstNumber.join(", ")}
-					</p>
-				)}
-			</div>
-
-			{errors &&
-				!errors.formErrors.fieldErrors.businessName &&
-				!errors.formErrors.fieldErrors.images &&
-				!errors.formErrors.fieldErrors.category &&
-				!errors.formErrors.fieldErrors.panNumber &&
-				!errors.formErrors.fieldErrors.gstNumber && (
-					<div
-						className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-						role="alert">
-						<strong className="font-bold">Validation Error!</strong>
-						<span className="block sm:inline">
-							Please check the form for errors.
-						</span>
+					<div>
+						<label
+							htmlFor="category"
+							className="block text-gray-700 text-sm font-bold mb-2">
+							Category
+						</label>
+						<input
+							type="text"
+							id="category"
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							value={category}
+							onChange={(e) => setCategory(e.target.value)}
+						/>
+						{errors?.formErrors.fieldErrors.category && (
+							<p className="text-red-500 text-xs italic">
+								{errors.formErrors.fieldErrors.category.join(", ")}
+							</p>
+						)}
 					</div>
-				)}
+				</div>
+				<div>
+					<label
+						htmlFor="images"
+						className="block text-gray-700 text-sm font-bold mb-2">
+						Images
+					</label>
+					<input
+						type="file"
+						id="images"
+						accept="image/*"
+						multiple
+						className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+						onChange={handleImageChange}
+					/>
+					{images && (
+						<div className="w-[400px] flex gap-x-4 mt-2 overflow-x-auto flex-nowrap scrollbar-hide">
+							{images.map((src, idx) => (
+								<div
+									key={idx}
+									className="relative group w-60 h-60 flex-shrink-0">
+									<img
+										src={src}
+										alt={`Preview ${idx + 1}`}
+										className="rounded shadow w-60 h-fit object-fill"
+									/>
+									<button
+										onClick={() =>
+											setImages((prev) => prev.filter((_, i) => i !== idx))
+										}
+										className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs hidden group-hover:block">
+										&times;
+									</button>
+								</div>
+							))}
+						</div>
+					)}
 
-			<div className="flex items-center justify-between">
-				<button
-					className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-					type="submit">
-					Submit Details
-				</button>
-			</div>
-		</form>
+					{errors?.formErrors.fieldErrors.images && (
+						<p className="text-red-500 text-xs italic">
+							{errors.formErrors.fieldErrors.images.join(", ")}
+						</p>
+					)}
+				</div>
+
+				<div>
+					<label
+						htmlFor="panNumber"
+						className="block text-gray-700 text-sm font-bold mb-2">
+						PAN Number (Optional)
+					</label>
+					<input
+						type="text"
+						id="panNumber"
+						className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+						value={panNumber}
+						onChange={(e) => setPanNumber(e.target.value)}
+					/>
+					{errors?.formErrors.fieldErrors.panNumber && (
+						<p className="text-red-500 text-xs italic">
+							{errors.formErrors.fieldErrors.panNumber.join(", ")}
+						</p>
+					)}
+				</div>
+
+				<div className="mb-6">
+					<label
+						htmlFor="gstNumber"
+						className="block text-gray-700 text-sm font-bold mb-2">
+						GST Number (Optional)
+					</label>
+					<input
+						type="text"
+						id="gstNumber"
+						className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+						value={gstNumber}
+						onChange={(e) => setGstNumber(e.target.value)}
+					/>
+					{errors?.formErrors.fieldErrors.gstNumber && (
+						<p className="text-red-500 text-xs italic">
+							{errors.formErrors.fieldErrors.gstNumber.join(", ")}
+						</p>
+					)}
+				</div>
+
+				{errors &&
+					!errors.formErrors.fieldErrors.businessName &&
+					!errors.formErrors.fieldErrors.images &&
+					!errors.formErrors.fieldErrors.category &&
+					!errors.formErrors.fieldErrors.panNumber &&
+					!errors.formErrors.fieldErrors.gstNumber && (
+						<div
+							className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+							role="alert">
+							<strong className="font-bold">Validation Error!</strong>
+							<span className="block sm:inline">
+								Please check the form for errors.
+							</span>
+						</div>
+					)}
+
+				<div className="flex items-center justify-between">
+					<button
+						className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+						type="submit">
+						Submit Details
+					</button>
+				</div>
+			</form>
+		</div>
 	);
 };
 

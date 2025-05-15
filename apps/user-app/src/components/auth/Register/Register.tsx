@@ -1,6 +1,8 @@
 "use client";
+import { redirect } from "next/navigation";
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { z } from "zod";
 
 const baseRegisterSchema = z.object({
@@ -27,7 +29,7 @@ const registerSchema = baseRegisterSchema.refine(
 		path: ["confirmPassword"],
 	}
 );
-function Register({ nextStep }: { nextStep: () => void }) {
+function Register() {
 	const [formData, setFormData] = useState({
 		firstname: "",
 		lastname: "",
@@ -60,7 +62,7 @@ function Register({ nextStep }: { nextStep: () => void }) {
 			const data = await res.json();
 			if (data.success) {
 				setToken(data.token);
-				alert("OTP sent to your email!");
+				toast.success("OTP sent to your email!");
 				setError("");
 				setOtpSent(true);
 				setSuccessMessage("OTP sent successfully. Check your email.");
@@ -68,6 +70,7 @@ function Register({ nextStep }: { nextStep: () => void }) {
 		} catch (err) {
 			console.log(err);
 			if (err instanceof z.ZodError) {
+				toast.success("Failed to send OTP to your email!");
 				setError(err.message);
 			} else {
 				setError("An unexpected error occurred.");
@@ -86,11 +89,9 @@ function Register({ nextStep }: { nextStep: () => void }) {
 
 			const data = await res.json();
 			if (data.success) {
-				alert(
-					"Email verified successfully! You can now continue registration."
-				);
+				toast.success("User is register");
 				// Redirect or show next registration step
-				nextStep();
+				redirect("/login");
 			}
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -103,102 +104,145 @@ function Register({ nextStep }: { nextStep: () => void }) {
 	};
 
 	return (
-		<div className="min-w-[360px] w-[360px] lg:w-[80%] flex justify-center items-center">
-			<div className="hidden lg:block w-1/2">
-				<p className="text-4xl text-red-600 text-center">Biz Network</p>
-				<p className="text-xl text-red-600 text-center">Registration</p>
-			</div>
+		<div className="h-full min-w-[360px] w-[360px] lg:w-[80%] flex justify-center">
 			<div className="flex-1 flex flex-col justify-center items-center rounded-lg">
-				<div className="lg:w-[70%] max-w-lg p-4">
+				<div className="lg:w-[70%] p-4 space-y-3">
 					<h2 className="text-xl font-semibold text-center text-red-600 mb-4">
 						Biz network Registration{" "}
 					</h2>
-					<input
-						type="text"
-						name="firstname"
-						placeholder="First Name"
-						className="w-full p-2 border rounded mb-3"
-						value={formData.firstname}
-						onChange={handleChange}
-					/>
-					<input
-						type="text"
-						name="lastname"
-						placeholder="Last Name"
-						className="w-full p-2 border rounded mb-3"
-						value={formData.lastname}
-						onChange={handleChange}
-					/>
-					<input
-						type="email"
-						name="email"
-						placeholder="Mail"
-						className="w-full p-2 border rounded mb-3"
-						value={formData.email}
-						onChange={handleChange}
-					/>
-					<input
-						type="text"
-						name="phone"
-						placeholder="Phone Number"
-						className="w-full p-2 border rounded mb-3"
-						value={formData.phone}
-						onChange={handleChange}
-					/>
-					<div className="relative mb-3">
-						<input
-							type={showPassword ? "text" : "password"}
-							name="password"
-							placeholder="Password"
-							className="w-full p-2 border rounded"
-							value={formData.password}
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="firstname"
+							className="text-left md:text-right min-w-64 font-medium">
+							First name
+						</label>
+						<CustomTextInput
+							name="firstname"
+							placeholder="First Name"
+							autoFocus={true}
+							value={formData.firstname}
 							onChange={handleChange}
 						/>
-						<button
-							type="button"
-							className="absolute right-3 top-3 text-red-600"
-							onClick={() => setShowPassword(!showPassword)}>
-							{showPassword ? <FaEyeSlash /> : <FaEye />}
-						</button>
 					</div>
-					<div className="relative mb-3">
-						<input
-							type={showConfirmPassword ? "text" : "password"}
-							name="confirmPassword"
-							placeholder="Confirm Password"
-							className="w-full p-2 border rounded"
-							value={formData.confirmPassword}
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="lastname"
+							className="text-left md:text-right min-w-64 font-medium">
+							Last name
+						</label>
+						<CustomTextInput
+							name="lastname"
+							placeholder="Last Name"
+							value={formData.lastname}
 							onChange={handleChange}
 						/>
-						<button
-							type="button"
-							className="absolute right-3 top-3 text-red-600"
-							onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-							{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-						</button>
 					</div>
-					<div className="flex items-center gap-2 mb-3">
-						<input
-							type="text"
-							name="otp"
-							placeholder="Verify Mail"
-							className="flex-grow p-2 border rounded"
-							value={formData.otp}
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="email"
+							className="text-left md:text-right min-w-64 font-medium">
+							email
+						</label>
+						<CustomTextInput
+							name="email"
+							placeholder="Mail"
+							value={formData.email}
 							onChange={handleChange}
 						/>
+					</div>
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="phone"
+							className="text-left md:text-right min-w-64 font-medium">
+							phone
+						</label>
+						<CustomTextInput
+							name="phone"
+							placeholder="Phone Number"
+							value={formData.phone}
+							onChange={handleChange}
+						/>
+					</div>
+
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="password"
+							className="text-left md:text-right min-w-64 font-medium">
+							password
+						</label>
+						<div className="space-x-2">
+							<input
+								type={showPassword ? "text" : "password"}
+								name="password"
+								placeholder="Password"
+								className="relative bg-white min-w-64 p-2 border rounded border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+								value={formData.password}
+								onChange={handleChange}
+							/>
+							<button
+								type="button"
+								className="text-red-600"
+								onClick={() => setShowPassword(!showPassword)}>
+								{showPassword ? <FaEyeSlash /> : <FaEye />}
+							</button>
+						</div>
+					</div>
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="confirmPassword"
+							className="text-left md:text-right min-w-64 font-medium">
+							Confirm Password
+						</label>
+						<div className="space-x-2">
+							<input
+								type={showConfirmPassword ? "text" : "password"}
+								name="confirmPassword"
+								placeholder="Confirm Password"
+								className="relative bg-white min-w-64 p-2 border rounded border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+								value={formData.confirmPassword}
+								onChange={handleChange}
+							/>
+							<button
+								type="button"
+								className="text-red-600"
+								onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+								{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+							</button>
+						</div>
+					</div>
+					<div className="flex flex-col md:flex-row gap-2 items-center">
+						<label
+							htmlFor="otp"
+							className="text-left md:text-right min-w-64 font-medium">
+							Verify Mail
+						</label>
+						<div className="flex items-center gap-x-2">
+							<input
+								type="text"
+								name="otp"
+								placeholder="Verify Mail"
+								disabled={!otpSent}
+								className={`min-w-64 p-2 border rounded border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400  ${otpSent ? "bg-white" : "bg-gray-300"}`}
+								value={formData.otp}
+								onChange={handleChange}
+							/>
+							<button
+								onClick={handleGetOtp}
+								className={`min-w-32 text-red-600 text-sm border p-2 rounded ${otpSent ? "bg-gray-300 cursor-no-drop" : "bg-white cursor-pointer"}`}
+								disabled={otpSent}>
+								{otpSent ? "OTP Sent" : "Get OTP"}
+							</button>
+						</div>
+					</div>
+					<div className="flex justify-center items-center">
 						<button
-							onClick={handleGetOtp}
-							className="text-red-600 text-sm border p-2 rounded"
-							disabled={otpSent}>
-							{otpSent ? "OTP Sent" : "Get OTP"}
+							onClick={verifyOtp}
+							className="max-w-64 w-full bg-red-600 text-white p-2 rounded mt-2"
+							disabled={!otpSent}>
+							Register
 						</button>
 					</div>
-					<button
-						onClick={verifyOtp}
-						className="w-full bg-red-600 text-white p-2 rounded mt-2"
-						disabled={!otpSent}>
-						Register
-					</button>
+
 					{successMessage && (
 						<p className="text-green-600 text-sm mt-3 text-center">
 							{successMessage}
@@ -214,3 +258,29 @@ function Register({ nextStep }: { nextStep: () => void }) {
 }
 
 export default Register;
+
+const CustomTextInput = ({
+	name,
+	placeholder,
+	autoFocus,
+	value,
+	onChange,
+}: {
+	name: string;
+	placeholder: string;
+	autoFocus?: boolean;
+	value: string;
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
+	return (
+		<input
+			type="text"
+			name={name}
+			placeholder={placeholder}
+			className="bg-white min-w-64 p-2 border rounded border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+			autoFocus={autoFocus ? true : false}
+			value={value}
+			onChange={onChange}
+		/>
+	);
+};
