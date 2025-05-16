@@ -21,11 +21,14 @@ export const POST = async (request: NextRequest) => {
 			"token"
 		);
 		if (otp) {
-			const res = await fetch("http://localhost:3001/api/auth/verify-otp", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email, otp, token, password }),
-			});
+			const res = await fetch(
+				`${process.env.NEXTAUTH_URL}/api/auth/verify-otp`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email, otp, token, password }),
+				}
+			);
 			const data = await res.json();
 			if (data.success) {
 				if (!email || !phone || !password || !firstname || !lastname) {
