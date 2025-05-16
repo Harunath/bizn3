@@ -21,25 +21,18 @@ const page = async () => {
 		`${process.env.NEXTAUTH_URL}/api/user/${session.user.id}`
 	);
 	console.log(`${process.env.NEXTAUTH_URL}/api/user`);
-	console.log(res, "response");
-	// if (!res.ok) {
-	// 	return (
-	// 		<div>
-	// 			<SignOutButton>
-	// 				<div className=" bg-red-600 min-w-20 p-2 rounded-full">Logout</div>
-	// 			</SignOutButton>
-	// 			failed to fetch user details
-	// 		</div>
-	// 	);
-	// }
 	const data = await res.json();
 	console.log(data);
 	const user = data.data;
 	return (
 		<div>
-			<SignOutButton>
-				<div className=" bg-red-600 min-w-20 p-2 rounded-full">Logout</div>
-			</SignOutButton>
+			<div className="w-fit">
+				<SignOutButton>
+					<div className=" bg-red-600 min-w-20 p-2 rounded-full text-center">
+						Logout
+					</div>
+				</SignOutButton>
+			</div>
 			<ProfilePage user={user} />
 		</div>
 	);

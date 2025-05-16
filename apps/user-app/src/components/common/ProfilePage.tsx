@@ -12,8 +12,8 @@ interface ProfileProps extends Omit<User, "password"> {
 const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 	const { data: session } = useSession();
 	return (
-		<div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-			<div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+		<div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+			<div className="bg-white p-8 rounded-2xl  border-gray-200">
 				<h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
 					Profile
 				</h1>
@@ -53,30 +53,20 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 								</span>
 							</p>
 							<p>{user.bio ? user.bio : "no bio"}</p>
-							<p>
-								<span>Email :</span> {user.phone}{" "}
+							<p className="flex items-center gap-x-2">
+								<span>Email :</span> {user.email}
 								{user.emailVerified ? (
-									<span className="text-xs">
-										{" "}
-										verified :<RiVerifiedBadgeLine className="text-green-400" />
-									</span>
+									<RiVerifiedBadgeLine className="text-green-400" />
 								) : (
-									<span>
-										Unverified : <GoUnverified className="text-red-600" />
-									</span>
+									<GoUnverified className="text-red-600" />
 								)}
 							</p>
-							<p>
+							<p className="flex items-center gap-x-2">
 								<span>Phone :</span> {user.phone}{" "}
 								{user.phoneVerified ? (
-									<span className="text-xs">
-										{" "}
-										verified :<RiVerifiedBadgeLine className="text-green-400" />
-									</span>
+									<RiVerifiedBadgeLine className="text-green-400" />
 								) : (
-									<span>
-										Unverified : <GoUnverified className="text-red-600" />
-									</span>
+									<GoUnverified className="text-red-600" />
 								)}
 							</p>
 							<Image
