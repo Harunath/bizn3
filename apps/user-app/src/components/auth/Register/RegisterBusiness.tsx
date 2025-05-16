@@ -202,11 +202,11 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 							{images.map((src, idx) => (
 								<div
 									key={idx}
-									className="relative group w-60 h-60 flex-shrink-0">
+									className="relative group w-auto h-60 flex-shrink-0">
 									<img
 										src={src}
 										alt={`Preview ${idx + 1}`}
-										className="rounded shadow w-60 h-fit object-fill"
+										className="rounded shadow w-auto h-60 object-fill"
 									/>
 									<button
 										onClick={() =>

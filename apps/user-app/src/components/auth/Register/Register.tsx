@@ -90,7 +90,6 @@ function Register() {
 			const data = await res.json();
 			if (data.success) {
 				toast.success("User is register");
-				// Redirect or show next registration step
 				redirect("/login");
 			}
 		} catch (err) {
@@ -222,13 +221,13 @@ function Register() {
 								name="otp"
 								placeholder="Verify Mail"
 								disabled={!otpSent}
-								className={`min-w-64 p-2 border rounded border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400  ${otpSent ? "bg-white" : "bg-gray-300"}`}
+								className={`min-w-64 p-2 border rounded border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400  ${otpSent ? "bg-white" : "bg-gray-300 cursor-not-allowed"}`}
 								value={formData.otp}
 								onChange={handleChange}
 							/>
 							<button
 								onClick={handleGetOtp}
-								className={`min-w-32 text-red-600 text-sm border p-2 rounded ${otpSent ? "bg-gray-300 cursor-no-drop" : "bg-white cursor-pointer"}`}
+								className={`min-w-32 text-red-600 text-sm border p-2 rounded ${otpSent ? "bg-gray-300 cursor-not-allowed" : "bg-white cursor-pointer"}`}
 								disabled={otpSent}>
 								{otpSent ? "OTP Sent" : "Get OTP"}
 							</button>

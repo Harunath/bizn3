@@ -20,7 +20,7 @@ const RegisterSteps = ({
 	user?: RegisterUserProps;
 	session?: Session;
 }) => {
-	const [step, setStep] = useState<Steps>(Steps.BUSINESS);
+	const [step, setStep] = useState<Steps>(Steps.USER);
 	const [progress, setProgress] = useState(1 / 3);
 	const [initialProgress, setInitialProgress] = useState(0);
 	const router = useRouter();

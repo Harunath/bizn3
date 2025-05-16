@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Country, Zone, Region, Chapter, Club } from "@repo/db/client";
+import { useSession } from "next-auth/react";
 
 interface chaptersAndClubsType extends Chapter {
 	clubs: Club[];
@@ -52,13 +53,16 @@ const HomeClub = () => {
 	const [zones, setZones] = useState<Zone[]>([]);
 	const [regions, setRegions] = useState<Region[]>([]);
 	const [chapters, setChapters] = useState<chaptersAndClubsType[]>([]);
+	const [clubs, setClubs] = useState<Club[]>([]);
 
 	const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 	const [selectedZone, setSelectedZone] = useState<string | null>(null);
 	const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-	const [selectedChapter, setSelectedChapter] = useState<number | null>();
+	const [selectedChapter, setSelectedChapter] = useState<string | null>();
 	const [selectedClub, setSelectedClub] = useState<string | null>(null);
 
+	const session = useSession();
+	const { update } = session;
 	const router = useRouter();
 
 	useEffect(() => {
@@ -97,6 +101,7 @@ const HomeClub = () => {
 				const res = await fetch("/api/auth/register/registrationCompleted", {
 					method: "POST",
 				});
+				await update();
 				const result = await res.json();
 				if (result.message == "success") {
 					toast.success("Registration completed successfully");
@@ -105,7 +110,6 @@ const HomeClub = () => {
 			}
 		}
 	};
-	console.log(selectedChapter);
 	return (
 		<motion.div
 			className="p-6 bg-white rounded-xl shadow-xl max-w-md mx-auto mt-10 space-y-4"
@@ -145,26 +149,28 @@ const HomeClub = () => {
 						selectedRegion ? "" : "bg-gray-300 text-gray-500 cursor-not-allowed"
 					}`}
 					disabled={selectedRegion ? false : true}
-					value={selectedChapter || ""}
+					value={selectedChapter != null ? selectedChapter : ""}
 					onChange={(e) => {
-						console.log(e.target.value);
-						setSelectedChapter(Number(e.target.value));
+						setSelectedChapter(e.target.value);
+						const chapter = chapters.find(
+							(chapter) => chapter.id == e.target.value
+						);
+						if (chapter?.clubs && chapter?.clubs.length > 0)
+							setClubs(chapter.clubs);
+						else setClubs([]);
 					}}>
 					<option value="">Select Chapter</option>
-					{chapters.map((opt, index) => (
-						<option key={opt?.id} value={index}>
+					{chapters.map((opt) => (
+						<option key={opt?.id} value={opt.id}>
 							{opt.name}
 						</option>
 					))}
 				</select>
 			</motion.div>
-			{selectedChapter !== null &&
-			chapters &&
-			selectedChapter &&
-			chapters[selectedChapter]?.clubs ? (
+			{selectedChapter && clubs ? (
 				<SelectBox
 					label="Club"
-					options={chapters[selectedChapter].clubs}
+					options={clubs}
 					value={selectedClub}
 					onChange={setSelectedClub}
 					color={colors.black}
