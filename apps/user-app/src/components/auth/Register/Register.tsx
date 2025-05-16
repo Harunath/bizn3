@@ -1,9 +1,9 @@
 "use client";
-import { redirect } from "next/navigation";
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 const baseRegisterSchema = z.object({
 	firstname: z.string().min(1, "First name is required"),
@@ -45,6 +45,8 @@ function Register() {
 	const [otpSent, setOtpSent] = useState(false);
 	const [successMessage, setSuccessMessage] = useState("");
 	const [token, setToken] = useState("");
+
+	const router = useRouter();
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -90,7 +92,7 @@ function Register() {
 			const data = await res.json();
 			if (data.success) {
 				toast.success("User is register");
-				redirect("/login");
+				router.push("/login");
 			}
 		} catch (err) {
 			if (err instanceof z.ZodError) {
