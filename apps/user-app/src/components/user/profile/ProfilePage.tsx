@@ -42,11 +42,11 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 						Personal details
 					</h2>
 					<div className="space-y-2">
-						<div className="flex items-center gap-x-2">
+						<div className="flex items-center gap-x-2  flex-wrap">
 							<div className="w-1/2 flex justify-between items-center gap-x-2">
 								<p>Name</p> <span>:</span>
 							</div>
-							<p className="flex-1 flex items-center gap-x-2">
+							<p className="flex-1 flex items-center gap-x-2 whitespace-nowrap">
 								{user.firstname + " " + user.lastname + " "}
 								<span>
 									{user.registrationCompleted ? (
@@ -65,11 +65,11 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 								{user.bio ? user.bio : "no bio"}
 							</p>
 						</div>
-						<div className="flex items-center gap-x-2">
+						<div className="flex items-center gap-x-2 flex-wrap">
 							<div className="w-1/2 flex justify-between items-center gap-x-2">
 								<p>Email</p> <span>:</span>
 							</div>
-							<p className="flex-1 flex items-center gap-x-2">
+							<p className="flex-1 flex items-center gap-x-2  whitespace-nowrap">
 								{user.email}
 
 								<span>
@@ -130,17 +130,21 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 						Business Details
 					</h2>
 					<div className="space-y-2">
-						<div className="flex items-center gap-x-2">
+						<div className="flex items-center gap-x-2 flex-wrap">
 							<div className="w-1/2 flex justify-between items-center gap-x-2">
 								<p>Business name</p> <span>:</span>
 							</div>
-							<p className="flex-1">{user.businessDetails.businessName}</p>
+							<p className="flex-1  whitespace-nowrap">
+								{user.businessDetails.businessName}
+							</p>
 						</div>
-						<div className="flex items-center gap-x-2">
+						<div className="flex items-center gap-x-2 flex-wrap">
 							<div className="w-1/2 flex justify-between items-center gap-x-2">
 								<p>Category</p> <span>:</span>
 							</div>
-							<p className="flex-1">{user.businessDetails.category}</p>
+							<p className="flex-1  whitespace-nowrap">
+								{user.businessDetails.category}
+							</p>
 						</div>
 
 						<div className="grid gap-2">

@@ -24,18 +24,18 @@ const page = async () => {
 	const user = data.data;
 	return (
 		<div>
-			<div className="flex items-center justify-between p-4">
-				<div className="flex-1 flex items-center justify-center gap-x-2">
-					<h1 className="text-4xl font-medium text-center">
-						Biz network Profile
-					</h1>
-					<span className="text-5xl font-semibold text-red-600">
+			<div className="flex items-center justify-between p-4 flex-wrap">
+				<div className="flex-1 flex justify-center items-baseline-last gap-x-2 flex-wrap">
+					<span className="text-4xl font-semibold text-red-600">
 						{session.user.firstname}
 					</span>
+					<h1 className="text-4xl font-medium text-center">
+						Biz Network Profile
+					</h1>
 				</div>
 				<div className="w-fit">
 					<SignOutButton>
-						<div className=" bg-red-600 min-w-20 p-2 rounded-full text-center">
+						<div className=" bg-red-600 text-white min-w-20 p-2 rounded-full text-center">
 							Logout
 						</div>
 					</SignOutButton>
