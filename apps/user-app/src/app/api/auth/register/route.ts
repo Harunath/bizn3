@@ -6,20 +6,6 @@ export const POST = async (request: NextRequest) => {
 	try {
 		const body = await request.json();
 		const { email, phone, password, firstname, lastname, otp, token } = body;
-		console.log(
-			email + "email",
-			phone + " phone",
-			password,
-			"password",
-			firstname,
-			"firstname",
-			lastname,
-			"lastname",
-			otp,
-			"otp",
-			token,
-			"token"
-		);
 		if (otp) {
 			const res = await fetch(
 				`${process.env.NEXTAUTH_URL}/api/auth/verify-otp`,

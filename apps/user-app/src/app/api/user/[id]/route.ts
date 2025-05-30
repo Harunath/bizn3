@@ -19,9 +19,7 @@ export const GET = async (
 				registrationCompleted: true,
 				firstname: true,
 				lastname: true,
-				bio: true,
 				profileImage: true,
-				address: true, // { street, city, state, zip }
 				deleted: true,
 				deactivated: true,
 				businessDetails: true,

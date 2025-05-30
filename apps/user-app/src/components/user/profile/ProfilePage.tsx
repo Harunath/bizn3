@@ -57,14 +57,6 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 								</span>
 							</p>
 						</div>
-						<div className="flex flex-col gap-x-2">
-							<div className="flex items-center gap-x-2">
-								<p>Bio</p> <span>:</span>
-							</div>
-							<p className="flex-1 flex items-center gap-x-2 text-sm font-normal border border-gray-200 p-2 mx-4 rounded">
-								{user.bio ? user.bio : "no bio"}
-							</p>
-						</div>
 						<div className="flex items-center gap-x-2 flex-wrap">
 							<div className="w-1/2 flex justify-between items-center gap-x-2">
 								<p>Email</p> <span>:</span>
