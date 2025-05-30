@@ -362,11 +362,22 @@ model User {
   phoneVerified  Boolean     @default(false)
   registrationCompleted Boolean @default(false)
   password       String
+  profileImage   String?
+
+  personalDetails   PersonalDetails?
+  contactDetails    ContactDetails?
+  fullAddress       Address?
+
+  connections     User[]   @relation("UserConnections")
+  connectedWith   User[]   @relation("UserConnections")
+
+  myBio             MyBio?
+  topsProfile       TopsProfile?
+  gainsProfile      GainsProfile?
+  weeklyPresentations  WeeklyPresentations?
+
   firstname      String
   lastname       String
-  bio            String?
-  profileImage   String?
-  address        Json?    // { street, city, state, zip }
   deleted        Boolean     @default(false)
   deactivated    Boolean     @default(false)
   businessDetails BusinessDetails?
@@ -399,6 +410,135 @@ model User {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
+
+enum TitleTypes {
+  Mr
+  Ms
+  Mrs
+  Dr
+  Miss
+  Prof
+  None
+}
+
+enum GenderType {
+  Male
+  Female
+  Others
+  None
+}
+
+model PersonalDetails {
+  id             String      @id @default(cuid())
+  title       TitleTypes @default(None)
+  firstname   String
+  lastname    String
+  suffix      String?
+  displayname String
+  gender      GenderType @default(None)
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model ContactDetails {
+  id           String      @id @default(cuid())
+  billingAddress Json?
+  phone        String?
+  mobile       String?
+  website      String?
+  links        String[]
+  houseNo      String?
+  pager        String?
+  voiceMail    String?
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  addressLane1 String
+  state        String
+  country      String
+  addressLane2 String?
+  city         String?
+  pincode      String?
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model MyBio {
+  id          String   @id @default(uuid())
+  yearsInBusiness Int 
+  yearsInCity     Int
+  previousJobs String[]
+  burningDesire String
+  hobbiesIntrests String[]
+  NoOneKnowsAboutMe String?
+  cityOfResidence  String?
+  keyToSuccess  String?
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model TopsProfile {
+  id          String   @id @default(uuid())
+  idealReferral String[] 
+  story     String[]
+  topProduct String[]
+  idealReferralPartner String[]
+  topProblemSolved String[]
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model GainsProfile {
+  id          String   @id @default(uuid())
+  goals String[] 
+  networks     String[]
+  accomplishments String[]
+  skills String[]
+  intrests String[]
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+
+model WeeklyPresentations {
+  id          String   @id @default(uuid())
+  title String
+  descriptions String
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
 
 model BusinessDetails {
   id          String   @id @default(uuid())
