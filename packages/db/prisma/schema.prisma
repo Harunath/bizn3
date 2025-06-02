@@ -374,7 +374,7 @@ model User {
   myBio             MyBio?
   topsProfile       TopsProfile?
   gainsProfile      GainsProfile?
-  weeklyPresentations  WeeklyPresentations?
+  weeklyPresentations  WeeklyPresentations[]
 
   firstname      String
   lastname       String
