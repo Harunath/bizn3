@@ -43,6 +43,7 @@ const page = async () => {
 				</div>
 			</div>
 			<Link href="/free/profile/bios">Bios</Link>
+			<Link className="ml-2" href="/free/profile/personal-details">personal details</Link>
 			<ProfilePage user={user} />
 		</div>
 	);
