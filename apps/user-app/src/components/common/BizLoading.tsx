@@ -41,7 +41,9 @@ const BizLoading = () => {
 				<div>
 					<p className="text-5xl">Biz Network</p>
 					<p className="text-sm">
-						Biz Network tagline Biz Network tagline Biz Network tagline
+						Welcome{" "}
+						{session?.user ? " " + session?.user.firstname + " " : " User "} To
+						Biz Network
 					</p>
 				</div>
 			</div>

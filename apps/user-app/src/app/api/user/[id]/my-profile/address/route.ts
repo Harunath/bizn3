@@ -44,10 +44,11 @@ export const GET = async (
 
 export async function POST(
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const userId = params.id;
+		const slugs = await params;
+		const userId = slugs.id;
 
 		// Parse body
 		const body = await req.json();
@@ -105,10 +106,11 @@ const addressUpdateSchema = z.object({
 
 export const PUT = async (
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) => {
 	try {
-		const id = params.id;
+		const slug = await params;
+		const id = slug.id;
 		const body = await req.json();
 
 		// Validate request body
