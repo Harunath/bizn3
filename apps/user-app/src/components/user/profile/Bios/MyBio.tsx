@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function MyBio() {
-	const userId = "123"; 
-	
-
+export default function MyBio({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
 		yearsInBusiness: "",
 		previousJobs: "",
@@ -53,7 +50,7 @@ export default function MyBio() {
 		e.preventDefault();
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/my-bio`, {
-				method: "POST", 
+				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},

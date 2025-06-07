@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function WeeklyPresentation() {
-	const userId = "123";
-
+export default function WeeklyPresentation({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
 		weeklyPresentation1: "",
 		weeklyPresentation2: "",

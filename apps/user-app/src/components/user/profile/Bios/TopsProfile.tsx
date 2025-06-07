@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function TopsProfile() {
-	const userId = "123"; // Replace with dynamic ID if needed
-
+export default function TopsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
 		idealReferral: "",
 		topProducts: "",
@@ -18,7 +16,7 @@ export default function TopsProfile() {
 	useEffect(() => {
 		const fetchProfile = async () => {
 			try {
-				const res = await fetch(`/api/user/${userId}/bios/tops-profile`, {
+				const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
 					method: "GET",
 					headers: {
 						"Content-Type": "application/json",
@@ -45,7 +43,7 @@ export default function TopsProfile() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			const res = await fetch(`/api/user/${userId}/bios/tops-profile`, {
+			const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
 				method: "POST", // or PUT if your backend uses it
 				headers: {
 					"Content-Type": "application/json",

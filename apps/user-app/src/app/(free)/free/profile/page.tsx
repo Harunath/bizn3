@@ -3,6 +3,7 @@ import SignOutButton from "../../../../components/common/SignOutButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/auth";
 import ProfilePage from "../../../../components/user/profile/ProfilePage";
+import Link from "next/link";
 
 const page = async () => {
 	const session = await getServerSession(authOptions);
@@ -41,7 +42,7 @@ const page = async () => {
 					</SignOutButton>
 				</div>
 			</div>
-
+			<Link href="/free/profile/bios">Bios</Link>
 			<ProfilePage user={user} />
 		</div>
 	);

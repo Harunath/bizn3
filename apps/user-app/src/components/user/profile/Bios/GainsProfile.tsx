@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function GainsProfile() {
-	const userId = "123"; 
-
+export default function GainsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
 		goals: "",
 		accomplishments: "",
@@ -46,7 +44,7 @@ export default function GainsProfile() {
 		e.preventDefault();
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/gains-profile`, {
-				method: "POST", 
+				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
