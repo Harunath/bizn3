@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 
 export default function TopsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
-		idealReferral: "",
-		topProducts: "",
-		topProblemSolved: "",
-		bniStory: "",
-		referralPartners: "",
+		idealReferral: [] as string[],
+		topProduct: [] as string[],
+		topProblemSolved: [] as string[],
+		story: [] as string[],
+		idealReferralPartner: [] as string[],
 	});
 
 	const [loading, setLoading] = useState(true);
@@ -24,7 +24,13 @@ export default function TopsProfile({ userId }: { userId: string }) {
 				});
 				if (!res.ok) throw new Error("Failed to fetch profile");
 				const data = await res.json();
-				setFormData(data);
+				setFormData({
+					idealReferral: data.idealReferral || [],
+					topProduct: data.topProduct || [],
+					topProblemSolved: data.topProblemSolved || [],
+					story: data.story || [],
+					idealReferralPartner: data.idealReferralPartner || [],
+				});
 			} catch (error) {
 				console.error("Error fetching profile:", error);
 			} finally {
@@ -37,14 +43,20 @@ export default function TopsProfile({ userId }: { userId: string }) {
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
+		const lines = value
+			.split("\n")
+			.map((line) => line.trim())
+			.filter(Boolean);
+		setFormData((prev) => ({ ...prev, [name]: lines }));
 	};
+
+	const formatArray = (arr: string[]) => arr.join("\n");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
-				method: "POST", // or PUT if your backend uses it
+				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -72,10 +84,10 @@ export default function TopsProfile({ userId }: { userId: string }) {
 					</label>
 					<textarea
 						name="idealReferral"
-						value={formData.idealReferral}
+						value={formatArray(formData.idealReferral)}
 						onChange={handleChange}
 						rows={4}
-						placeholder="Describe your ideal referral..."
+						placeholder="Describe your ideal referral (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -86,11 +98,11 @@ export default function TopsProfile({ userId }: { userId: string }) {
 						Top Product
 					</label>
 					<textarea
-						name="topProducts"
-						value={formData.topProducts}
+						name="topProduct"
+						value={formatArray(formData.topProduct)}
 						onChange={handleChange}
 						rows={3}
-						placeholder="List your top products or services..."
+						placeholder="List your top products or services (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -102,10 +114,10 @@ export default function TopsProfile({ userId }: { userId: string }) {
 					</label>
 					<textarea
 						name="topProblemSolved"
-						value={formData.topProblemSolved}
+						value={formatArray(formData.topProblemSolved)}
 						onChange={handleChange}
 						rows={4}
-						placeholder="Explain the key problems you've solved..."
+						placeholder="Explain the key problems you've solved (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -116,11 +128,11 @@ export default function TopsProfile({ userId }: { userId: string }) {
 						My Favourite BNI Story
 					</label>
 					<textarea
-						name="bniStory"
-						value={formData.bniStory}
+						name="story"
+						value={formatArray(formData.story)}
 						onChange={handleChange}
 						rows={4}
-						placeholder="Share your favorite BNI experience..."
+						placeholder="Share your favorite BNI experiences (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -131,11 +143,11 @@ export default function TopsProfile({ userId }: { userId: string }) {
 						My Ideal Referral Partner
 					</label>
 					<textarea
-						name="referralPartners"
-						value={formData.referralPartners}
+						name="idealReferralPartner"
+						value={formatArray(formData.idealReferralPartner)}
 						onChange={handleChange}
 						rows={3}
-						placeholder="List ideal partners you'd like to work with..."
+						placeholder="List ideal partners you'd like to work with (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
