@@ -2,13 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@repo/db/client";
 import { z } from "zod";
 
-// const topsProfileSchema = z.object({
-// 	idealReferral: z.array(z.string()).optional(),
-// 	story: z.array(z.string()).optional(),
-// 	topProduct: z.array(z.string()).optional(),
-// 	idealReferralPartner: z.array(z.string()).optional(),
-// 	topProblemSolved: z.array(z.string()).optional(),
-// });
 
 export const GET = async (
 	_req: NextRequest,

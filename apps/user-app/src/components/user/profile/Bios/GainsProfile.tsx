@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 
 export default function GainsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
-		goals: "",
-		accomplishments: "",
-		interests: "",
-		networks: "",
-		skills: "",
+		goals: [] as string[],
+		accomplishments: [] as string[],
+		interests: [] as string[],
+		networks: [] as string[],
+		skills: [] as string[],
 	});
 
 	const [loading, setLoading] = useState(true);
@@ -24,7 +24,13 @@ export default function GainsProfile({ userId }: { userId: string }) {
 				});
 				if (!res.ok) throw new Error("Failed to fetch profile");
 				const data = await res.json();
-				setFormData(data);
+				setFormData({
+					goals: data.goals || [],
+					accomplishments: data.accomplishments || [],
+					interests: data.interests || data.intrests || [],
+					networks: data.networks || [],
+					skills: data.skills || [],
+				});
 			} catch (error) {
 				console.error("Error fetching profile:", error);
 			} finally {
@@ -37,8 +43,14 @@ export default function GainsProfile({ userId }: { userId: string }) {
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
+		const lines = value
+			.split("\n")
+			.map((line) => line.trim())
+			.filter(Boolean);
+		setFormData((prev) => ({ ...prev, [name]: lines }));
 	};
+
+	const formatArray = (arr: string[]) => arr.join("\n");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -72,11 +84,11 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					</label>
 					<textarea
 						name="goals"
-						value={formData.goals}
+						value={formatArray(formData.goals)}
 						onChange={handleChange}
 						rows={5}
 						required
-						placeholder="Enter your family, relationship, and business goals..."
+						placeholder="Enter your family, relationship, and business goals (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -88,10 +100,10 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					</label>
 					<textarea
 						name="accomplishments"
-						value={formData.accomplishments}
+						value={formatArray(formData.accomplishments)}
 						onChange={handleChange}
 						rows={4}
-						placeholder="Enter your key accomplishments..."
+						placeholder="Enter your key accomplishments (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -103,10 +115,10 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					</label>
 					<textarea
 						name="interests"
-						value={formData.interests}
+						value={formatArray(formData.interests)}
 						onChange={handleChange}
 						rows={4}
-						placeholder="List your interests..."
+						placeholder="List your interests (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -118,10 +130,10 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					</label>
 					<textarea
 						name="networks"
-						value={formData.networks}
+						value={formatArray(formData.networks)}
 						onChange={handleChange}
 						rows={3}
-						placeholder="Mention the networks you're part of..."
+						placeholder="Mention the networks you're part of (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
@@ -131,10 +143,10 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					<label className="block font-semibold text-black mb-1">Skills</label>
 					<textarea
 						name="skills"
-						value={formData.skills}
+						value={formatArray(formData.skills)}
 						onChange={handleChange}
 						rows={4}
-						placeholder="List your skills..."
+						placeholder="List your skills (one per line)..."
 						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
