@@ -145,7 +145,7 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 									<Image
 										src={image}
 										alt={user.businessDetails + " image " + index}
-										key={user.businessDetails.id + index}
+										key={user.businessDetails.id + index + "desktop-view"}
 										width={600}
 										height={400}
 										className="hidden lg:block"
@@ -153,7 +153,7 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 									<Image
 										src={image}
 										alt={user.businessDetails + " image " + index}
-										key={user.businessDetails.id + index}
+										key={user.businessDetails.id + index + "mobile-view"}
 										width={300}
 										height={200}
 										className="block lg:hidden"

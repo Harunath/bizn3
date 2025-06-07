@@ -78,7 +78,7 @@ export const authOptions: NextAuthOptions = {
 			return false;
 		},
 		async redirect({ baseUrl }) {
-			return baseUrl + "/login";
+			return baseUrl + "/";
 		},
 		async jwt({ token, user }) {
 			if (user && user.email) {

@@ -46,10 +46,11 @@ const contactDetailsSchema = z.object({
 
 export const POST = async (
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) => {
 	try {
-		const userId = params.id;
+		const slugs = await params;
+		const userId = slugs.id;
 		const body = await req.json();
 
 		const parsed = contactDetailsSchema.safeParse(body);
@@ -110,10 +111,11 @@ const updateContactDetailsSchema = z.object({
 
 export const PUT = async (
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) => {
 	try {
-		const userId = params.id;
+		const slugs = await params;
+		const userId = slugs.id;
 		const body = await req.json();
 
 		const parsed = updateContactDetailsSchema.safeParse(body);

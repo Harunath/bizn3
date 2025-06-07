@@ -7,8 +7,10 @@ import HomeClub from "./HomeClub";
 import { useRouter } from "next/navigation";
 import { RegisterUserProps } from "../../../app/(auth)/register/page";
 import { Session } from "next-auth";
+import Phone from "./Phone";
 enum Steps {
 	USER,
+	PHONE,
 	BUSINESS,
 	HOMECLUB,
 }
@@ -32,10 +34,11 @@ const RegisterSteps = ({
 			router.push("/login");
 		}
 		if (user) {
-			if (!user.businessDetails) {
-				setStep(Steps.BUSINESS);
+			if (!user.phone) {
+				setStep(Steps.PHONE);
 				setLoading(false);
-			} else if (!user.homeClub) setStep(Steps.HOMECLUB);
+			} else if (!user.businessDetails) setStep(Steps.BUSINESS);
+			else if (!user.homeClub) setStep(Steps.HOMECLUB);
 			else if (!session || !session.user) {
 				router.push("/login");
 				setLoading(false);
@@ -44,12 +47,15 @@ const RegisterSteps = ({
 			}
 		}
 		setLoading(false);
-	}, [user, router]);
+	}, [user, router, step]);
 
 	const nextStep = () => {
 		switch (step) {
 			case Steps.USER:
 				setStep(Steps.BUSINESS);
+				break;
+			case Steps.PHONE:
+				setStep(Steps.PHONE);
 				break;
 			case Steps.BUSINESS:
 				setStep(Steps.HOMECLUB);
@@ -67,6 +73,8 @@ const RegisterSteps = ({
 		switch (step) {
 			case Steps.USER:
 				return <Register />;
+			case Steps.PHONE:
+				return <Phone nextStep={nextStep} />;
 			case Steps.BUSINESS:
 				return <RegisterBusiness nextStep={nextStep} />;
 			case Steps.HOMECLUB:
