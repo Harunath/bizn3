@@ -39,8 +39,12 @@ export default function ProfileForm() {
 			});
 			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
 			return await res.json();
-		} catch (error: any) {
-			throw new Error(error.message || "Unknown error");
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new Error(error.message || "Unknown error");
+			} else {
+				throw new Error("Unknown error");
+			}
 		}
 	}
 
@@ -55,8 +59,24 @@ export default function ProfileForm() {
 		try {
 			await postData("/api/update-username", { username });
 			setStatusMessage("Username updated successfully.");
-		} catch (e: any) {
-			setErrorMessage(e.message);
+		} catch (e) {
+			if (e instanceof Error) {
+				if (e instanceof Error) {
+					if (e instanceof Error) {
+						if (e instanceof Error) {
+							setErrorMessage(e.message);
+						} else {
+							setErrorMessage("An unknown error occurred.");
+						}
+					} else {
+						setErrorMessage("An unknown error occurred.");
+					}
+				} else {
+					setErrorMessage("An unknown error occurred.");
+				}
+			} else {
+				setErrorMessage("An unknown error occurred.");
+			}
 		}
 	};
 
@@ -70,8 +90,12 @@ export default function ProfileForm() {
 		try {
 			await postData("/api/update-password", { password });
 			setStatusMessage("Password updated successfully.");
-		} catch (e: any) {
-			setErrorMessage(e.message);
+		} catch (e) {
+			if (e instanceof Error) {
+				setErrorMessage(e.message);
+			} else {
+				setErrorMessage("An unknown error occurred.");
+			}
 		}
 	};
 
@@ -85,8 +109,12 @@ export default function ProfileForm() {
 		try {
 			await postData("/api/update-language", { language });
 			setStatusMessage("Language updated successfully.");
-		} catch (e: any) {
-			setErrorMessage(e.message);
+		} catch (e) {
+			if (e instanceof Error) {
+				setErrorMessage(e.message);
+			} else {
+				setErrorMessage("An unknown error occurred.");
+			}
 		}
 	};
 
@@ -100,8 +128,12 @@ export default function ProfileForm() {
 		try {
 			await postData("/api/update-timezone", { timezone });
 			setStatusMessage("Timezone updated successfully.");
-		} catch (e: any) {
-			setErrorMessage(e.message);
+		} catch (e) {
+			if (e instanceof Error) {
+				setErrorMessage(e.message);
+			} else {
+				setErrorMessage("An unknown error occurred.");
+			}
 		}
 	};
 
@@ -115,8 +147,12 @@ export default function ProfileForm() {
 		try {
 			await postData("/api/update-profile-image", { profileImage });
 			setStatusMessage("Profile image updated successfully.");
-		} catch (e: any) {
-			setErrorMessage(e.message);
+		} catch (e) {
+			if (e instanceof Error) {
+				setErrorMessage(e.message);
+			} else {
+				setErrorMessage("An unknown error occurred.");
+			}
 		}
 	};
 
