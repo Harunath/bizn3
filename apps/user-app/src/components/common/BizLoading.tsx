@@ -43,13 +43,22 @@ const BizLoading = () => {
 
 	return (
 		<div className="h-screen w-screen">
-			<div className="relative h-full w-full flex justify-center items-center bg-red-500 text-white">
+			<div className="relative h-full w-full flex justify-center items-center bg-red-600 text-white">
 				<div>
-					<p className="text-5xl">Biz Network</p>
-					<p className="text-sm">
-						Welcome{" "}
-						{session?.user ? " " + session?.user.firstname + " " : " User "} To
-						Biz Network
+					<h1 className="text-5xl font-bold inline-flex items-center">
+						Biz
+						<span className="text-black inline-flex items-center">
+							-Network<span className="text-sm align-top ml-0.5">®</span>
+						</span>
+					</h1>
+					<p className="text-sm mt-2">
+						Welcome {session?.user ? session.user.firstname : "User"} to{" "}
+						<span className="inline-flex items-center">
+							Biz
+							<span className="text-black inline-flex items-center">
+								-Network<span className="text-sm align-top ml-0.5">®</span>
+							</span>
+						</span>
 					</p>
 				</div>
 			</div>

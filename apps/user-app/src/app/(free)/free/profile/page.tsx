@@ -3,7 +3,6 @@ import SignOutButton from "../../../../components/common/SignOutButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/auth";
 import ProfilePage from "../../../../components/user/profile/ProfilePage";
-import Link from "next/link";
 
 const page = async () => {
 	const session = await getServerSession(authOptions);
@@ -27,11 +26,13 @@ const page = async () => {
 		<div>
 			<div className="flex items-center justify-between p-4 flex-wrap">
 				<div className="flex-1 flex justify-center items-baseline-last gap-x-2 flex-wrap">
-					<span className="text-4xl font-semibold text-red-600">
-						{session.user.firstname}
-					</span>
-					<h1 className="text-4xl font-medium text-center">
-						Biz Network Profile
+					<h1 className="text-3xl font-semibold flex items-center space-x-2">
+						<span className="text-red-600">{session.user.firstname}</span>
+						<span className="inline-flex items-center">
+							Biz-<span className="text-black">Network</span>
+							<span className="text-sm align-top ml-0.5">®</span>
+						</span>
+						<span>Profile</span>
 					</h1>
 				</div>
 				<div className="w-fit">
@@ -42,8 +43,6 @@ const page = async () => {
 					</SignOutButton>
 				</div>
 			</div>
-			<Link href="/free/profile/bios">Bios</Link>
-			<Link className="ml-2" href="/free/profile/personal-details">personal details</Link>
 			<ProfilePage user={user} />
 		</div>
 	);
