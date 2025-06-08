@@ -8,6 +8,8 @@ declare module "next-auth" {
 		lastname: string;
 		membershipType: UserMembershipType;
 		businessId: null | string;
+		registrationCompleted: boolean;
+		homeClub: null | string;
 	}
 
 	interface Session {

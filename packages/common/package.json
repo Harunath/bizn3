@@ -11,7 +11,9 @@
 	"license": "ISC",
 	"description": "",
 	"exports": {
-		"./upload": "./src/upload.ts"
+		"./upload": "./src/upload.ts",
+		"./verifyPhone": "./src/verifyPhone.ts",
+		"./verifyPhoneCheck": "./src/verifyPhoneCheck.ts"
 	},
 	"devDependencies": {
 		"@repo/eslint-config": "*",

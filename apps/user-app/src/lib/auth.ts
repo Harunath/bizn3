@@ -31,6 +31,8 @@ export const authOptions: NextAuthOptions = {
 						password: true,
 						firstname: true,
 						lastname: true,
+						registrationCompleted: true,
+						homeClubId: true,
 						businessDetails: {
 							select: {
 								id: true,
@@ -56,6 +58,8 @@ export const authOptions: NextAuthOptions = {
 					lastname: user.lastname,
 					membershipType: user.membershipType,
 					businessId: user.businessDetails ? user.businessDetails.id : null,
+					homeClub: user.homeClubId,
+					registrationCompleted: true,
 				};
 			},
 		}),
@@ -90,11 +94,13 @@ export const authOptions: NextAuthOptions = {
 						password: true,
 						firstname: true,
 						lastname: true,
+						registrationCompleted: true,
 						businessDetails: {
 							select: {
 								id: true,
 							},
 						},
+						homeClub: true,
 						membershipType: true,
 					},
 				});
@@ -105,6 +111,8 @@ export const authOptions: NextAuthOptions = {
 					token.lastname = member?.lastname;
 					token.membershipType = member?.membershipType;
 					token.businessId = member?.businessDetails?.id;
+					token.registrationCompleted = member?.registrationCompleted;
+					token.homeClub = member?.homeClub;
 				}
 			}
 			return token;
@@ -119,6 +127,9 @@ export const authOptions: NextAuthOptions = {
 				session.user.businessId = token.businessId as string;
 				session.user.membershipType =
 					token.membershipType as UserMembershipType;
+				session.user.registrationCompleted =
+					token.registrationCompleted as boolean;
+				session.user.homeClub = token.homeClub as string | null;
 			}
 			return session;
 		},

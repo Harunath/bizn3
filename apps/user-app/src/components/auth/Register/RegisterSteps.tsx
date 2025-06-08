@@ -30,11 +30,15 @@ const RegisterSteps = ({
 
 	useEffect(() => {
 		setLoading(true);
-		if ((!user && step == Steps.BUSINESS) || step == Steps.HOMECLUB) {
+		if (
+			(!user && step == Steps.PHONE) ||
+			step == Steps.BUSINESS ||
+			step == Steps.HOMECLUB
+		) {
 			router.push("/login");
 		}
 		if (user) {
-			if (!user.phone) {
+			if (!user.phoneVerified) {
 				setStep(Steps.PHONE);
 				setLoading(false);
 			} else if (!user.businessDetails) setStep(Steps.BUSINESS);
@@ -74,7 +78,9 @@ const RegisterSteps = ({
 			case Steps.USER:
 				return <Register />;
 			case Steps.PHONE:
-				return <Phone nextStep={nextStep} />;
+				return (
+					<Phone phone={user?.phone ? user?.phone : ""} nextStep={nextStep} />
+				);
 			case Steps.BUSINESS:
 				return <RegisterBusiness nextStep={nextStep} />;
 			case Steps.HOMECLUB:
