@@ -10,7 +10,7 @@ export default function PhoneVerification({
 	nextStep: () => void;
 }) {
 	const [status, setStatus] = useState<"idle" | "sent" | "error" | "limit">(
-		"sent"
+		"idle"
 	);
 	const [attempts, setAttempts] = useState(0);
 	const [loading, setLoading] = useState(false);
