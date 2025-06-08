@@ -27,8 +27,10 @@ const RegisterSteps = ({
 	const [initialProgress, setInitialProgress] = useState(0);
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
+	const [skipped, setSkipped] = useState(false);
 
 	useEffect(() => {
+		console.log(skipped, "skipped");
 		setLoading(true);
 		console.log(step);
 		if (
@@ -38,7 +40,7 @@ const RegisterSteps = ({
 			router.push("/login");
 		}
 		if (user) {
-			if (!user.phoneVerified) {
+			if (!user.phoneVerified && !skipped) {
 				setStep(Steps.PHONE);
 				setLoading(false);
 			} else if (!user.businessDetails) setStep(Steps.BUSINESS);
@@ -79,7 +81,14 @@ const RegisterSteps = ({
 				return <Register />;
 			case Steps.PHONE:
 				return (
-					<Phone phone={user?.phone ? user?.phone : ""} nextStep={nextStep} />
+					<Phone
+						phone={user?.phone ? user?.phone : ""}
+						nextStep={nextStep}
+						skip={() => {
+							setSkipped(true);
+							nextStep();
+						}}
+					/>
 				);
 			case Steps.BUSINESS:
 				return <RegisterBusiness nextStep={nextStep} />;
@@ -93,7 +102,7 @@ const RegisterSteps = ({
 	useEffect(() => {
 		const process = () => {
 			switch (step) {
-				case Steps.USER:
+				case Steps.PHONE:
 					setProgress(1 / 3);
 					setInitialProgress(0);
 					break;

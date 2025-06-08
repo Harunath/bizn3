@@ -5,9 +5,11 @@ import { useState } from "react";
 export default function PhoneVerification({
 	phone,
 	nextStep,
+	skip,
 }: {
 	phone: string;
 	nextStep: () => void;
+	skip: () => void;
 }) {
 	const [status, setStatus] = useState<"idle" | "sent" | "error" | "limit">(
 		"idle"
@@ -109,7 +111,7 @@ export default function PhoneVerification({
 			)}
 
 			<button
-				onClick={nextStep}
+				onClick={skip}
 				className="text-blue-600 underline hover:text-blue-800 cursor-pointer">
 				Skip
 			</button>
