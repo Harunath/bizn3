@@ -16,7 +16,7 @@ export default async function Layout({
 
 	return (
 		<WithRole allowedRole={UserMembershipType.FREE} session={session}>
-			<div className=" w-screen">
+			<div className=" w-screen bg-white text-black">
 				<Navbar links={links} />
 				<div className="pt-16 px-2">
 					<BackButton />

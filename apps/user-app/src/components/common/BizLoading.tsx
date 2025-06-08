@@ -18,19 +18,25 @@ const BizLoading = () => {
 			return;
 		}
 
-		if (session && session.user) {
-			switch (session.user.membershipType) {
-				case UserMembershipType.VIP:
-					setRoute("/vip/dashboard");
-					break;
-				case UserMembershipType.GOLD:
-					setRoute("/gold/dashboard");
-					break;
-				case UserMembershipType.FREE:
-					setRoute("/free/dashboard");
-					break;
-				default:
-					router.push("/login");
+		if (session) {
+			if (session.user) {
+				if (!session.user.businessId || !session.user.homeClub) {
+					router.push("/register");
+					return;
+				}
+				switch (session.user.membershipType) {
+					case UserMembershipType.VIP:
+						setRoute("/vip/dashboard");
+						break;
+					case UserMembershipType.GOLD:
+						setRoute("/gold/dashboard");
+						break;
+					case UserMembershipType.FREE:
+						setRoute("/free/dashboard");
+						break;
+					default:
+						router.push("/login");
+				}
 			}
 		}
 	}, [status, session, router]);
