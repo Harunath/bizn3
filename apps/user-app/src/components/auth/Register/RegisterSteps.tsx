@@ -56,10 +56,10 @@ const RegisterSteps = ({
 	const nextStep = () => {
 		switch (step) {
 			case Steps.USER:
-				setStep(Steps.BUSINESS);
+				setStep(Steps.PHONE);
 				break;
 			case Steps.PHONE:
-				setStep(Steps.PHONE);
+				setStep(Steps.BUSINESS);
 				break;
 			case Steps.BUSINESS:
 				setStep(Steps.HOMECLUB);
