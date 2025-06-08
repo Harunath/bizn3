@@ -3,11 +3,35 @@
 import { useState } from "react";
 import { FiTrash } from "react-icons/fi";
 import Image from "next/image";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import { upload } from "@repo/common/upload";
+import { z } from "zod";
 
-export default function ProfileForm() {
-	const [profileImage, setProfileImage] = useState<string | null>(null);
-	const [username, setUsername] = useState("");
+const passwordSchema = z.object({
+	oldPassword: z.string().min(1, "Old password is required"),
+	password: z
+		.string()
+		.min(8, "Password must be at least 8 characters")
+		.regex(
+			/(?=.*[A-Z])(?=.*[!@#$%^&*])/,
+			"Password must contain an uppercase letter and a special character"
+		),
+});
+
+export default function UserProfile({
+	userId,
+	profileImageUrl,
+}: {
+	userId: string;
+	profileImageUrl: string;
+}) {
+	const [profileImage, setProfileImage] = useState<string | null>(
+		profileImageUrl
+	);
 	const [password, setPassword] = useState("");
+	const [oldPassword, setOldPassword] = useState("");
+	const [open, setOpen] = useState(false);
 	const [language, setLanguage] = useState("English (IN)");
 	const [timezone, setTimezone] = useState("Asia/Kolkata");
 
@@ -15,13 +39,30 @@ export default function ProfileForm() {
 	const [statusMessage, setStatusMessage] = useState<string | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
 			const reader = new FileReader();
 			reader.onload = () => setProfileImage(reader.result as string);
 			reader.readAsDataURL(file);
 		}
+		const files = e.target.files;
+		if (!files) return;
+		const res = await fetch("/api/user/upload-image", {
+			method: "POST",
+		});
+		const result = await res.json();
+		const { signature, timestamp, folder, apiKey, cloudName } = result;
+		const filesArray = Array.from(files);
+		const urls = await upload({
+			signature,
+			files: filesArray,
+			timestamp,
+			folder,
+			apiKey,
+			cloudName,
+		});
+		setProfileImage(urls[0] ?? null);
 	};
 
 	const handleDeleteImage = () => {
@@ -29,130 +70,79 @@ export default function ProfileForm() {
 		setStatusMessage("Profile image deleted.");
 	};
 
-	// Utility function to simulate API POST calls
-	async function postData(url = "", data = {}) {
-		try {
-			const res = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
-			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
-			return await res.json();
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(error.message || "Unknown error");
-			} else {
-				throw new Error("Unknown error");
-			}
-		}
-	}
-
-	// Handlers for update buttons
-	const updateUsername = async () => {
-		setStatusMessage(null);
-		setErrorMessage(null);
-		if (!username.trim()) {
-			setErrorMessage("Username cannot be empty.");
-			return;
-		}
-		try {
-			await postData("/api/update-username", { username });
-			setStatusMessage("Username updated successfully.");
-		} catch (e) {
-			if (e instanceof Error) {
-				if (e instanceof Error) {
-					if (e instanceof Error) {
-						if (e instanceof Error) {
-							setErrorMessage(e.message);
-						} else {
-							setErrorMessage("An unknown error occurred.");
-						}
-					} else {
-						setErrorMessage("An unknown error occurred.");
-					}
-				} else {
-					setErrorMessage("An unknown error occurred.");
-				}
-			} else {
-				setErrorMessage("An unknown error occurred.");
-			}
-		}
-	};
-
+	// Your updatePassword function
 	const updatePassword = async () => {
 		setStatusMessage(null);
 		setErrorMessage(null);
-		if (!password.trim()) {
-			setErrorMessage("Password cannot be empty.");
+
+		// Validate using schema
+		const result = passwordSchema.safeParse({ oldPassword, password });
+
+		if (!result.success) {
+			const firstError = result.error.errors[0]?.message || "Invalid input.";
+			setErrorMessage(firstError);
+			toast.error(firstError);
 			return;
 		}
+
 		try {
-			await postData("/api/update-password", { password });
+			const res = await fetch(
+				`/api/user/${userId}/my-profile/user-profile/update-password`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						oldPassword,
+						newPassword: password, // Adjust based on what your API expects
+					}),
+				}
+			);
+
+			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
+
+			const response = await res.json();
 			setStatusMessage("Password updated successfully.");
+			toast.success(response.data);
+			setPassword("");
+			setOldPassword("");
+			setOpen(false);
 		} catch (e) {
 			if (e instanceof Error) {
 				setErrorMessage(e.message);
 			} else {
 				setErrorMessage("An unknown error occurred.");
 			}
+			toast.error("Failed to change password");
 		}
 	};
 
-	const updateLanguage = async () => {
+	const updateProfileImage = async (imageUrl: string) => {
 		setStatusMessage(null);
 		setErrorMessage(null);
-		if (!language.trim()) {
-			setErrorMessage("Language cannot be empty.");
-			return;
-		}
-		try {
-			await postData("/api/update-language", { language });
-			setStatusMessage("Language updated successfully.");
-		} catch (e) {
-			if (e instanceof Error) {
-				setErrorMessage(e.message);
-			} else {
-				setErrorMessage("An unknown error occurred.");
-			}
-		}
-	};
-
-	const updateTimezone = async () => {
-		setStatusMessage(null);
-		setErrorMessage(null);
-		if (!timezone.trim()) {
-			setErrorMessage("Timezone cannot be empty.");
-			return;
-		}
-		try {
-			await postData("/api/update-timezone", { timezone });
-			setStatusMessage("Timezone updated successfully.");
-		} catch (e) {
-			if (e instanceof Error) {
-				setErrorMessage(e.message);
-			} else {
-				setErrorMessage("An unknown error occurred.");
-			}
-		}
-	};
-
-	const updateProfileImage = async () => {
-		setStatusMessage(null);
-		setErrorMessage(null);
-		if (!profileImage) {
+		if (!imageUrl) {
 			setErrorMessage("No profile image to update.");
 			return;
 		}
 		try {
-			await postData("/api/update-profile-image", { profileImage });
-			setStatusMessage("Profile image updated successfully.");
+			const res = await fetch(
+				`/api/user/${userId}/my-profile/user-profile/profile-image`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ imageUrl: imageUrl }),
+				}
+			);
+			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
+			const response = await res.json();
+			setStatusMessage("profileImage updated successfully.");
+			toast.success(response.data);
 		} catch (e) {
 			if (e instanceof Error) {
 				setErrorMessage(e.message);
 			} else {
 				setErrorMessage("An unknown error occurred.");
 			}
+			toast.error("Failed to change profileImage");
 		}
 	};
 
@@ -167,43 +157,67 @@ export default function ProfileForm() {
 							<label className="block text-gray-700 font-semibold mb-1">
 								Username
 							</label>
-							<div className="flex items-center gap-4">
-								<input
-									type="email"
-									value={username}
-									onChange={(e) => setUsername(e.target.value)}
-									placeholder="Enter new username"
-									className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
-								/>
-								<button
-									type="button"
-									onClick={updateUsername}
-									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-									Change Username
-								</button>
-							</div>
+							<div className="flex items-center gap-4">{/* User name */}</div>
 						</div>
 
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Password
 							</label>
-							<div className="flex items-center gap-4">
+							<div className="flex items-center gap-4 relative">
 								<input
 									type="password"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
+									value="password"
 									placeholder="Enter new password"
 									className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
+									disabled
 								/>
-								<button
+								<motion.button
+									transition={{ duration: 0.1 }}
+									layoutId="updatePassword"
 									type="button"
-									onClick={updatePassword}
-									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+									onClick={() => setOpen(true)}
+									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer">
 									Change Password
-								</button>
+								</motion.button>
 							</div>
 						</div>
+						{open && (
+							<motion.div
+								className=" fixed z-50 inset-0 backdrop-blur-md flex items-center justify-center"
+								layoutId="updatePassword"
+								transition={{ duration: 0.1 }}>
+								<div className="flex flex-col gap-y-4 bg-gray-100 p-8 rounded-2xl relative">
+									<button
+										type="button"
+										onClick={() => setOpen(false)}
+										className=" absolute -right-8 -top-8 text-gray-400  p-2 rounded hover:text-black">
+										X
+									</button>
+									<input
+										type="password"
+										value={oldPassword}
+										onChange={(e) => setOldPassword(e.target.value)}
+										placeholder="Enter old password"
+										className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
+									/>
+									<input
+										type="password"
+										value={password}
+										onChange={(e) => setPassword(e.target.value)}
+										placeholder="Enter new password"
+										className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
+									/>
+									<button
+										type="button"
+										onClick={updatePassword}
+										className={`bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 ${password != oldPassword ? "cursor-pointer" : "cursor-not-allowed"}`}
+										disabled={!password || !oldPassword}>
+										Update password
+									</button>
+								</div>
+							</motion.div>
+						)}
 
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
@@ -243,7 +257,9 @@ export default function ProfileForm() {
 									</button>
 									<button
 										type="button"
-										onClick={updateProfileImage}
+										onClick={() =>
+											profileImage && updateProfileImage(profileImage)
+										}
 										disabled={!profileImage}
 										className={`bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-2 ${
 											!profileImage ? "opacity-50 cursor-not-allowed" : ""
@@ -266,13 +282,8 @@ export default function ProfileForm() {
 									value={language}
 									onChange={(e) => setLanguage(e.target.value)}
 									className="bg-white border border-gray-300 rounded px-4 py-2 flex-1 focus:outline-none"
+									disabled
 								/>
-								<button
-									type="button"
-									onClick={updateLanguage}
-									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-									Change Language
-								</button>
 							</div>
 						</div>
 
@@ -286,13 +297,8 @@ export default function ProfileForm() {
 									value={timezone}
 									onChange={(e) => setTimezone(e.target.value)}
 									className="bg-white border border-gray-300 rounded px-4 py-2 flex-1 focus:outline-none"
+									disabled
 								/>
-								<button
-									type="button"
-									onClick={updateTimezone}
-									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-									Change Timezone
-								</button>
 							</div>
 						</div>
 					</div>

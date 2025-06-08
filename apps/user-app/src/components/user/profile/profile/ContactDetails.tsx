@@ -1,56 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiTrash } from "react-icons/fi";
+import { ContactDetails } from "@repo/db/client";
 
 interface ContactDetailsProps {
 	userId: string;
+	contactDetails: ContactDetails;
 }
 
-export default function ContactDetails({ userId }: ContactDetailsProps) {
-	const [fullName, setFullName] = useState("");
-	const [city, setCity] = useState("");
-	const [state, setState] = useState("");
+export default function ContactDetailsComp({
+	userId,
+	contactDetails,
+}: ContactDetailsProps) {
+	const [address, setAddress] = useState("");
 	const [phone, setPhone] = useState("");
 	const [mobileNumber, setMobileNumber] = useState("");
 	const [homeNumber, setHomeNumber] = useState("");
 	const [pager, setPager] = useState("");
 	const [voiceMail, setVoiceMail] = useState("");
-	const [email, setEmail] = useState("");
-	const [emailVerified, setEmailVerified] = useState(false);
-	const [website, setWebsite] = useState("");
-	const [socialLinks, setSocialLinks] = useState([""]);
+	const [website, setWebsite] = useState<string>("");
+	const [socialLinks, setSocialLinks] = useState<string[]>([]);
 
+	useEffect(() => {
+		if (contactDetails) {
+			setAddress(JSON.stringify(contactDetails.billingAddress));
+			setPhone(contactDetails.phone || "");
+			setMobileNumber(contactDetails.mobile || "");
+			setHomeNumber(contactDetails.houseNo || "");
+			setPager(contactDetails.pager || "");
+			setVoiceMail(contactDetails.voiceMail || "");
+			setWebsite(contactDetails.website || "");
+			setSocialLinks(contactDetails.links || []);
+		}
+	}, []);
 	const handleAddSocialLink = () => {
-		setSocialLinks([...socialLinks, ""]);
+		setSocialLinks([...(socialLinks ?? []), ""]);
 	};
 
 	const handleSocialChange = (index: number, value: string) => {
-		const newLinks = [...socialLinks];
+		const newLinks = [...(socialLinks ?? [])];
 		newLinks[index] = value;
 		setSocialLinks(newLinks);
 	};
 
 	const handleDeleteSocialLink = (index: number) => {
-		setSocialLinks((prev) => prev.filter((_, i) => i !== index));
+		setSocialLinks((prev = []) => prev.filter((_, i) => i !== index));
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
 		const dataToSend = {
-			fullName,
-			city,
-			state,
+			billingAddress: address,
 			phone,
 			mobileNumber,
 			homeNumber,
 			pager,
 			voiceMail,
-			email,
-			emailVerified,
 			website,
-			socialLinks: socialLinks.filter((link) => link.trim() !== ""),
+			socialLinks: (socialLinks ?? []).filter((link) => link.trim() !== ""),
 		};
 
 		try {
@@ -84,39 +93,15 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 				{/* Full Name */}
 				<div>
 					<label className="block font-semibold text-black mb-1">
-						Full Name
+						Name and Address
 					</label>
 					<input
 						type="text"
-						value={fullName}
-						onChange={(e) => setFullName(e.target.value)}
+						value={address || ""}
+						onChange={(e) => setAddress(e.target.value)}
 						placeholder="Enter Full Name"
 						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
-				</div>
-
-				{/* City & State */}
-				<div className="grid grid-cols-2 gap-6">
-					<div>
-						<label className="block font-semibold text-black mb-1">City</label>
-						<input
-							type="text"
-							value={city}
-							onChange={(e) => setCity(e.target.value)}
-							placeholder="Enter City"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">State</label>
-						<input
-							type="text"
-							value={state}
-							onChange={(e) => setState(e.target.value)}
-							placeholder="Enter State"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
 				</div>
 
 				{/* Phone Numbers */}
@@ -127,7 +112,7 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						</label>
 						<input
 							type="tel"
-							value={phone}
+							value={phone || ""}
 							onChange={(e) => setPhone(e.target.value)}
 							placeholder="Enter Phone Number"
 							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -140,7 +125,7 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						</label>
 						<input
 							type="tel"
-							value={mobileNumber}
+							value={mobileNumber || ""}
 							onChange={(e) => setMobileNumber(e.target.value)}
 							placeholder="Enter Mobile Number"
 							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -150,7 +135,7 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						<label className="block font-semibold text-black mb-1">Home</label>
 						<input
 							type="text"
-							value={homeNumber}
+							value={homeNumber || ""}
 							onChange={(e) => setHomeNumber(e.target.value)}
 							placeholder="Enter Home Number"
 							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -160,7 +145,7 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						<label className="block font-semibold text-black mb-1">Pager</label>
 						<input
 							type="text"
-							value={pager}
+							value={pager || ""}
 							onChange={(e) => setPager(e.target.value)}
 							placeholder="Enter Pager Details"
 							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -172,7 +157,7 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						</label>
 						<input
 							type="text"
-							value={voiceMail}
+							value={voiceMail || ""}
 							onChange={(e) => setVoiceMail(e.target.value)}
 							placeholder="Enter Voice Mail"
 							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -180,39 +165,12 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 					</div>
 				</div>
 
-				{/* Email */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Email<span className="text-red-600">*</span>
-					</label>
-					<input
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Enter Email Address"
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						required
-					/>
-					{emailVerified ? (
-						<p className="text-green-700 mt-2 font-semibold">
-							Email address verified
-						</p>
-					) : (
-						<button
-							type="button"
-							onClick={() => setEmailVerified(true)}
-							className="mt-2 text-sm text-red-600 underline hover:text-red-700">
-							Mark as Verified
-						</button>
-					)}
-				</div>
-
 				{/* Website */}
 				<div>
 					<label className="block font-semibold text-black mb-1">Website</label>
 					<input
 						type="url"
-						value={website}
+						value={website || ""}
 						onChange={(e) => setWebsite(e.target.value)}
 						placeholder="Enter Website URL"
 						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -225,7 +183,7 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						Social Networking Links
 					</label>
 
-					{socialLinks.map((link, index) => (
+					{(socialLinks ?? []).map((link, index) => (
 						<div key={index} className="flex items-center mb-3 gap-3">
 							<input
 								type="url"

@@ -30,10 +30,10 @@ const RegisterSteps = ({
 
 	useEffect(() => {
 		setLoading(true);
+		console.log(step);
 		if (
-			(!user && step == Steps.PHONE) ||
-			step == Steps.BUSINESS ||
-			step == Steps.HOMECLUB
+			!user &&
+			(step == Steps.PHONE || step == Steps.BUSINESS || step == Steps.HOMECLUB)
 		) {
 			router.push("/login");
 		}

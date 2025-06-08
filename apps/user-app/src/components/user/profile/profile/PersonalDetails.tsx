@@ -1,65 +1,42 @@
 "use client";
-
+import { PersonalDetails, TitleTypes } from "@repo/db/client";
 import { useState, useEffect } from "react";
 
 interface Props {
 	userId: string;
+	personalDetails: PersonalDetails;
 }
 
-export default function PersonalDetails({ userId }: Props) {
-	const [title, setTitle] = useState("Mr");
-	const [firstName, setFirstName] = useState("");
-	const [lastName, setLastName] = useState("");
-	const [gender, setGender] = useState("Male");
-	const [suffix, setSuffix] = useState("");
-	const [displayName, setDisplayName] = useState("");
+export default function PersonalDetailsComp({
+	userId,
+	personalDetails,
+}: Props) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
-	const [recordExists, setRecordExists] = useState(false); // NEW
+	const [title, setTitle] = useState<TitleTypes | "">("");
+	const [firstName, setFirstName] = useState<string>("");
+	const [lastName, setLastName] = useState<string>("");
+	const [gender, setGender] = useState<"Male" | "Female" | "">("");
+	const [suffix, setSuffix] = useState<string>("");
+	const [displayName, setDisplayName] = useState<string>("");
+	const [recordExists, setRecordExists] = useState(false);
+
+	useEffect(() => {
+		if (personalDetails) {
+			setTitle(personalDetails.title || "");
+			setFirstName(personalDetails.firstname || "");
+			setLastName(personalDetails.lastname || "");
+			setGender((personalDetails.gender as "Male" | "Female") || "");
+			setSuffix(personalDetails.suffix || "");
+			setDisplayName(personalDetails.displayname || "");
+			setRecordExists(true);
+		}
+	}, [personalDetails]);
 
 	useEffect(() => {
 		setDisplayName(`${firstName} ${lastName}`.trim());
 	}, [firstName, lastName]);
-
-	useEffect(() => {
-		async function fetchPersonalDetails() {
-			setLoading(true);
-			setError(null);
-			setSuccess(null);
-			try {
-				const res = await fetch(
-					`/api/user/${userId}/my-profile/personal-details`,
-					{ method: "GET", headers: { "Content-Type": "application/json" } }
-				);
-
-				if (!res.ok) throw new Error("Failed to fetch personal details");
-
-				const result = await res.json();
-				const data = result.data;
-
-				if (data) {
-					setRecordExists(true);
-					setTitle(data.title || "Mr");
-					setFirstName(data.firstname || "");
-					setLastName(data.lastname || "");
-					setGender(data.gender || "Male");
-					setSuffix(data.suffix || "");
-					setDisplayName(data.displayname || "");
-				}
-			} catch (err) {
-				if (err instanceof Error) {
-					setError(err.message);
-				} else {
-					setError("Unknown error");
-				}
-			} finally {
-				setLoading(false);
-			}
-		}
-
-		fetchPersonalDetails();
-	}, [userId]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -72,7 +49,7 @@ export default function PersonalDetails({ userId }: Props) {
 			firstname: firstName.trim(),
 			lastname: lastName.trim(),
 			gender,
-			suffix: suffix.trim(),
+			suffix: (suffix ?? "").trim(),
 			displayname: displayName.trim(),
 		};
 
@@ -127,16 +104,19 @@ export default function PersonalDetails({ userId }: Props) {
 							</label>
 							<select
 								id="title"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
+								value={title || ""}
+								onChange={(e) => setTitle(e.target.value as TitleTypes)}
 								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
 								disabled={loading}>
-								<option>Mr</option>
-								<option>Mrs</option>
-								<option>Miss</option>
-								<option>Dr</option>
-								<option>None</option>
+								<option>Select</option>
+								<option>{TitleTypes.None}</option>
+								<option>{TitleTypes.Mr}</option>
+								<option>{TitleTypes.Mrs}</option>
+								<option>{TitleTypes.Ms}</option>
+								<option>{TitleTypes.Miss}</option>
+								<option>{TitleTypes.Dr}</option>
+								<option>{TitleTypes.Prof}</option>
 							</select>
 						</div>
 
@@ -147,7 +127,7 @@ export default function PersonalDetails({ userId }: Props) {
 							<input
 								id="firstName"
 								type="text"
-								value={firstName}
+								value={firstName || ""}
 								onChange={(e) => setFirstName(e.target.value)}
 								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
@@ -210,7 +190,7 @@ export default function PersonalDetails({ userId }: Props) {
 							<input
 								id="suffix"
 								type="text"
-								value={suffix}
+								value={suffix || ""}
 								onChange={(e) => setSuffix(e.target.value)}
 								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
 								disabled={loading}

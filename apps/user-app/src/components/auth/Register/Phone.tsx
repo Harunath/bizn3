@@ -31,7 +31,7 @@ export default function PhoneVerification({
 		const data = await res.json();
 		setLoading(false);
 
-		if (data.success) {
+		if (data.message == "success") {
 			setAttempts((prev) => prev + 1);
 			setStatus("sent");
 		} else {
@@ -53,9 +53,10 @@ export default function PhoneVerification({
 		const data = await res.json();
 		setLoading(false);
 
-		if (data.success) {
+		if (data.message == "success") {
 			setAttempts((prev) => prev + 1);
 			setStatus("sent");
+			nextStep();
 		} else {
 			setStatus("error");
 		}
@@ -109,7 +110,7 @@ export default function PhoneVerification({
 
 			<button
 				onClick={nextStep}
-				className="text-blue-600 underline hover:text-blue-800">
+				className="text-blue-600 underline hover:text-blue-800 cursor-pointer">
 				Skip
 			</button>
 		</div>

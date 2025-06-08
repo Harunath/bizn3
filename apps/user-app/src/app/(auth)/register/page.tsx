@@ -22,6 +22,8 @@ export interface RegisterUserProps
 const page = async () => {
 	const session = await getServerSession(authOptions);
 	if (session && session?.user && session.user.id) {
+		console.log("inside", session);
+
 		const user: RegisterUserProps | null = await prisma.user.findUnique({
 			where: { id: session.user.id },
 			select: {
@@ -44,15 +46,17 @@ const page = async () => {
 				updatedAt: true,
 			},
 		});
+		console.log(user);
 		if (!user) {
 			redirect("/logout");
-		} else if (!user.registrationCompleted) {
+		} else if (user && !user.registrationCompleted) {
+			console.log("registration not finished");
 			return (
 				<div>
 					<RegisterSteps user={user} session={session} />
 				</div>
 			);
-		}
+		} else if (user && user.registrationCompleted) redirect("/logout");
 	}
 	return (
 		<div>

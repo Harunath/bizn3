@@ -1,36 +1,36 @@
 "use client";
 
-import { useState } from "react";
-
-type AddressType = {
-	addressLane1: string;
-	addressLane2?: string;
-	city?: string;
-	state: string;
-	country: string;
-	pincode?: string;
-};
+import { useEffect, useState } from "react";
+import { Address } from "@repo/db/client";
 
 interface AddressProps {
 	userId: string;
+	addressProp: Address;
 }
 
-export default function Address({ userId }: AddressProps) {
-	const [address, setAddress] = useState<AddressType>({
-		addressLane1: "Hyderabad",
-		addressLane2: "",
-		city: "",
-		state: "Telangana",
-		country: "IN",
-		pincode: "",
-	});
+export default function AddressComp({ userId, addressProp }: AddressProps) {
+	const [addressLane1, setAddressLane1] = useState("");
+	const [addressLane2, setAddressLane2] = useState("");
+	const [city, setCity] = useState("");
+	const [state, setState] = useState("");
+	const [country, setCountry] = useState("");
+	const [pincode, setPincode] = useState("");
+	const [exist, setExist] = useState(false);
+
+	useEffect(() => {
+		if (addressProp) {
+			setExist(true);
+			setAddressLane1(addressProp.addressLane1 || "");
+			setAddressLane2(addressProp.addressLane2 || "");
+			setCity(addressProp.city || "");
+			setState(addressProp.state || "");
+			setCountry(addressProp.country || "");
+			setPincode(addressProp.pincode || "");
+		}
+	}, []);
 
 	const [loading, setLoading] = useState(false);
 	const [message, setMessage] = useState("");
-
-	const handleChange = (key: keyof AddressType, value: string) => {
-		setAddress((prev) => ({ ...prev, [key]: value }));
-	};
 
 	const apiBase = `/api/user/${userId}/my-profile/address`;
 
@@ -40,9 +40,16 @@ export default function Address({ userId }: AddressProps) {
 		setMessage("");
 		try {
 			const res = await fetch(apiBase, {
-				method: "POST",
+				method: exist ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(address),
+				body: JSON.stringify({
+					addressLane1,
+					addressLane2,
+					city,
+					state,
+					country,
+					pincode,
+				}),
 			});
 
 			if (!res.ok) throw new Error("Failed to save address");
@@ -54,29 +61,6 @@ export default function Address({ userId }: AddressProps) {
 			} else {
 				setMessage("Something went wrong");
 			}
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const handleUpdate = async () => {
-		setLoading(true);
-		setMessage("");
-		try {
-			const res = await fetch(apiBase, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(address),
-			});
-
-			if (!res.ok) throw new Error("Failed to update address");
-
-			setMessage("Address updated successfully.");
-		} catch (error) {
-			if( error instanceof Error) {
-				setMessage(error.message);
-			}
-			setMessage("Something went wrong");
 		} finally {
 			setLoading(false);
 		}
@@ -95,8 +79,8 @@ export default function Address({ userId }: AddressProps) {
 						<label className="block font-semibold mb-1">Address Lane 1</label>
 						<input
 							type="text"
-							value={address.addressLane1}
-							onChange={(e) => handleChange("addressLane1", e.target.value)}
+							value={addressLane1}
+							onChange={(e) => setAddressLane1(e.target.value)}
 							className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 							required
 						/>
@@ -106,8 +90,8 @@ export default function Address({ userId }: AddressProps) {
 						<label className="block font-semibold mb-1">Address Lane 2</label>
 						<input
 							type="text"
-							value={address.addressLane2 || ""}
-							onChange={(e) => handleChange("addressLane2", e.target.value)}
+							value={addressLane2 || ""}
+							onChange={(e) => setAddressLane2(e.target.value)}
 							className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 						/>
 					</div>
@@ -117,8 +101,8 @@ export default function Address({ userId }: AddressProps) {
 							<label className="block font-semibold mb-1">City</label>
 							<input
 								type="text"
-								value={address.city || ""}
-								onChange={(e) => handleChange("city", e.target.value)}
+								value={city || ""}
+								onChange={(e) => setCity(e.target.value)}
 								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 							/>
 						</div>
@@ -126,8 +110,8 @@ export default function Address({ userId }: AddressProps) {
 							<label className="block font-semibold mb-1">State</label>
 							<input
 								type="text"
-								value={address.state}
-								onChange={(e) => handleChange("state", e.target.value)}
+								value={state}
+								onChange={(e) => setState(e.target.value)}
 								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 								required
 							/>
@@ -139,8 +123,8 @@ export default function Address({ userId }: AddressProps) {
 							<label className="block font-semibold mb-1">Country</label>
 							<input
 								type="text"
-								value={address.country}
-								onChange={(e) => handleChange("country", e.target.value)}
+								value={country}
+								onChange={(e) => setCountry(e.target.value)}
 								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 								required
 							/>
@@ -149,8 +133,8 @@ export default function Address({ userId }: AddressProps) {
 							<label className="block font-semibold mb-1">PIN Code</label>
 							<input
 								type="text"
-								value={address.pincode || ""}
-								onChange={(e) => handleChange("pincode", e.target.value)}
+								value={pincode || ""}
+								onChange={(e) => setPincode(e.target.value)}
 								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 							/>
 						</div>
@@ -159,13 +143,6 @@ export default function Address({ userId }: AddressProps) {
 
 				{/* Submit Buttons */}
 				<div className="flex justify-end gap-4 pt-6">
-					<button
-						type="button"
-						disabled={loading}
-						onClick={handleUpdate}
-						className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-semibold disabled:opacity-50">
-						{loading ? "Updating..." : "Update"}
-					</button>
 					<button
 						type="submit"
 						disabled={loading}
