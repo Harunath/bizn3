@@ -63,7 +63,7 @@ function ProfileHome() {
 						onClick={() => setActiveTab(tab.id)}
 						className={`px-4 py-2 rounded-t-md font-medium ${
 							activeTab === tab.id
-								? "bg-blue-500 text-white"
+								? "bg-red-600 text-white"
 								: "bg-gray-100 text-gray-800"
 						}`}>
 						{tab.label}

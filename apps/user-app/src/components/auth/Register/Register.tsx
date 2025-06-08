@@ -109,7 +109,7 @@ function Register() {
 			<div className="flex-1 flex flex-col justify-center items-center rounded-lg">
 				<div className="lg:w-[70%] p-4 space-y-3">
 					<h2 className="text-xl font-semibold text-center text-red-600 mb-4">
-						Biz network Registration{" "}
+						Biz-Network Registration{" "}
 					</h2>
 					<div className="flex flex-col md:flex-row gap-2 items-center">
 						<label

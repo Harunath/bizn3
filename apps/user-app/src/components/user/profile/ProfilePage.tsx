@@ -5,6 +5,8 @@ import { User, BusinessDetails } from "@repo/db/client";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
 import { GoUnverified } from "react-icons/go";
 import Image from "next/image";
+import Link from "next/link";
+import { FaEdit } from "react-icons/fa";
 
 interface ProfileProps extends Omit<User, "password"> {
 	businessDetails: BusinessDetails;
@@ -37,7 +39,13 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 			</div>
 
 			{user && (
-				<div className="border border-gray-200 rounded-xl p-4 text-lg font-semibold text-gray-800">
+				<div className="border border-gray-200 rounded-xl p-4 text-lg font-semibold text-gray-800  relative">
+					<Link
+						href={"/free/profile/personal-details"}
+						className="absolute right-4 top-4 opacity-30 hover:opacity-100 rounded-lg text-sm text-red-600 flex items-center gap-x-2">
+						Edit <FaEdit />
+					</Link>
+
 					<h2 className="text-3xl font-bold text-red-600 mb-6 text-center">
 						Personal details
 					</h2>
