@@ -20,6 +20,12 @@ CREATE TYPE "ReferralType" AS ENUM ('SELF', 'THIRD_PARTY');
 CREATE TYPE "EventType" AS ENUM ('VIRTUAL', 'IN_PERSON');
 
 -- CreateEnum
+CREATE TYPE "TitleTypes" AS ENUM ('Mr', 'Ms', 'Mrs', 'Dr', 'Miss', 'Prof', 'None');
+
+-- CreateEnum
+CREATE TYPE "GenderType" AS ENUM ('Male', 'Female', 'Others', 'None');
+
+-- CreateEnum
 CREATE TYPE "EventOwnerType" AS ENUM ('CLUB', 'CHAPTER');
 
 -- CreateEnum
@@ -108,6 +114,8 @@ CREATE TABLE "Country" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "code" TEXT NOT NULL,
+    "image" TEXT,
+    "flagImage" TEXT,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -120,7 +128,8 @@ CREATE TABLE "Country" (
 CREATE TABLE "Zone" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "code" TEXT,
+    "code" TEXT NOT NULL,
+    "image" TEXT,
     "description" TEXT,
     "parentFranchiseAdminId" TEXT NOT NULL,
     "countryId" TEXT NOT NULL,
@@ -134,11 +143,11 @@ CREATE TABLE "Zone" (
 CREATE TABLE "Region" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "code" TEXT,
+    "code" TEXT NOT NULL,
+    "image" TEXT,
     "description" TEXT,
     "parentFranchiseAdminId" TEXT NOT NULL,
     "zoneId" TEXT NOT NULL,
-    "superFranchiseId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -149,6 +158,7 @@ CREATE TABLE "Region" (
 CREATE TABLE "Chapter" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "description" TEXT,
     "images" TEXT[],
     "parentFranchiseAdminId" TEXT NOT NULL,
@@ -176,9 +186,11 @@ CREATE TABLE "ChapterLeader" (
 CREATE TABLE "Club" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "description" TEXT,
     "images" TEXT[],
-    "creatorId" TEXT NOT NULL,
+    "CLcreatorId" TEXT,
+    "FAcreatorId" TEXT,
     "chapterId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -223,12 +235,11 @@ CREATE TABLE "User" (
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "phone" TEXT NOT NULL,
     "phoneVerified" BOOLEAN NOT NULL DEFAULT false,
+    "registrationCompleted" BOOLEAN NOT NULL DEFAULT false,
     "password" TEXT NOT NULL,
+    "profileImage" TEXT,
     "firstname" TEXT NOT NULL,
     "lastname" TEXT NOT NULL,
-    "bio" TEXT,
-    "profileImage" TEXT,
-    "address" JSONB,
     "deleted" BOOLEAN NOT NULL DEFAULT false,
     "deactivated" BOOLEAN NOT NULL DEFAULT false,
     "membershipType" "UserMembershipType" NOT NULL DEFAULT 'FREE',
@@ -236,10 +247,121 @@ CREATE TABLE "User" (
     "membershipEndDate" TIMESTAMP(3) NOT NULL,
     "leadingChapterId" TEXT,
     "leadingClubId" TEXT,
+    "homeClubId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PersonalDetails" (
+    "id" TEXT NOT NULL,
+    "title" "TitleTypes" NOT NULL DEFAULT 'None',
+    "firstname" TEXT NOT NULL,
+    "lastname" TEXT NOT NULL,
+    "suffix" TEXT,
+    "displayname" TEXT NOT NULL,
+    "gender" "GenderType" NOT NULL DEFAULT 'None',
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PersonalDetails_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContactDetails" (
+    "id" TEXT NOT NULL,
+    "billingAddress" JSONB,
+    "phone" TEXT,
+    "mobile" TEXT,
+    "website" TEXT,
+    "links" TEXT[],
+    "houseNo" TEXT,
+    "pager" TEXT,
+    "voiceMail" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ContactDetails_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Address" (
+    "id" TEXT NOT NULL,
+    "addressLane1" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "addressLane2" TEXT,
+    "city" TEXT,
+    "pincode" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MyBio" (
+    "id" TEXT NOT NULL,
+    "yearsInBusiness" INTEGER NOT NULL,
+    "yearsInCity" INTEGER NOT NULL,
+    "previousJobs" TEXT[],
+    "burningDesire" TEXT NOT NULL,
+    "hobbiesIntrests" TEXT[],
+    "NoOneKnowsAboutMe" TEXT,
+    "cityOfResidence" TEXT,
+    "keyToSuccess" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MyBio_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TopsProfile" (
+    "id" TEXT NOT NULL,
+    "idealReferral" TEXT[],
+    "story" TEXT[],
+    "topProduct" TEXT[],
+    "idealReferralPartner" TEXT[],
+    "topProblemSolved" TEXT[],
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TopsProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "GainsProfile" (
+    "id" TEXT NOT NULL,
+    "goals" TEXT[],
+    "networks" TEXT[],
+    "accomplishments" TEXT[],
+    "skills" TEXT[],
+    "intrests" TEXT[],
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "GainsProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "WeeklyPresentations" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "descriptions" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "WeeklyPresentations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -377,11 +499,19 @@ CREATE TABLE "Announcement" (
 );
 
 -- CreateTable
-CREATE TABLE "_ClubToUser" (
+CREATE TABLE "_allClubs" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
 
-    CONSTRAINT "_ClubToUser_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "_allClubs_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_UserConnections" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_UserConnections_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -409,10 +539,19 @@ CREATE UNIQUE INDEX "Country_name_key" ON "Country"("name");
 CREATE UNIQUE INDEX "Country_code_key" ON "Country"("code");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Zone_code_key" ON "Zone"("code");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Zone_name_countryId_key" ON "Zone"("name", "countryId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Region_code_key" ON "Region"("code");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Region_name_zoneId_key" ON "Region"("name", "zoneId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Chapter_code_key" ON "Chapter"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Chapter_name_regionId_key" ON "Chapter"("name", "regionId");
@@ -422,6 +561,9 @@ CREATE UNIQUE INDEX "ChapterLeader_chapterLeaderId_key" ON "ChapterLeader"("chap
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ChapterLeader_chapterId_role_key" ON "ChapterLeader"("chapterId", "role");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Club_code_key" ON "Club"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Club_name_chapterId_key" ON "Club"("name", "chapterId");
@@ -437,6 +579,27 @@ CREATE UNIQUE INDEX "User_leadingChapterId_key" ON "User"("leadingChapterId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_leadingClubId_key" ON "User"("leadingClubId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PersonalDetails_userId_key" ON "PersonalDetails"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ContactDetails_userId_key" ON "ContactDetails"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Address_userId_key" ON "Address"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MyBio_userId_key" ON "MyBio"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TopsProfile_userId_key" ON "TopsProfile"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GainsProfile_userId_key" ON "GainsProfile"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "WeeklyPresentations_userId_key" ON "WeeklyPresentations"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BusinessDetails_panNumber_key" ON "BusinessDetails"("panNumber");
@@ -463,7 +626,10 @@ CREATE UNIQUE INDEX "Payment_cashfreeOrderId_key" ON "Payment"("cashfreeOrderId"
 CREATE UNIQUE INDEX "Payment_paymentSessionId_key" ON "Payment"("paymentSessionId");
 
 -- CreateIndex
-CREATE INDEX "_ClubToUser_B_index" ON "_ClubToUser"("B");
+CREATE INDEX "_allClubs_B_index" ON "_allClubs"("B");
+
+-- CreateIndex
+CREATE INDEX "_UserConnections_B_index" ON "_UserConnections"("B");
 
 -- AddForeignKey
 ALTER TABLE "Franchise" ADD CONSTRAINT "Franchise_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -514,7 +680,10 @@ ALTER TABLE "ChapterLeader" ADD CONSTRAINT "ChapterLeader_chapterLeaderId_fkey" 
 ALTER TABLE "ChapterLeader" ADD CONSTRAINT "ChapterLeader_chapterId_fkey" FOREIGN KEY ("chapterId") REFERENCES "Chapter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Club" ADD CONSTRAINT "Club_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "ChapterLeader"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Club" ADD CONSTRAINT "Club_CLcreatorId_fkey" FOREIGN KEY ("CLcreatorId") REFERENCES "ChapterLeader"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Club" ADD CONSTRAINT "Club_FAcreatorId_fkey" FOREIGN KEY ("FAcreatorId") REFERENCES "FranchiseAdmin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Club" ADD CONSTRAINT "Club_chapterId_fkey" FOREIGN KEY ("chapterId") REFERENCES "Chapter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -536,6 +705,30 @@ ALTER TABLE "Complaint" ADD CONSTRAINT "Complaint_adminRespondentId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "Complaint" ADD CONSTRAINT "Complaint_franchiseRespondentId_fkey" FOREIGN KEY ("franchiseRespondentId") REFERENCES "Franchise"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_homeClubId_fkey" FOREIGN KEY ("homeClubId") REFERENCES "Club"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PersonalDetails" ADD CONSTRAINT "PersonalDetails_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ContactDetails" ADD CONSTRAINT "ContactDetails_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MyBio" ADD CONSTRAINT "MyBio_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TopsProfile" ADD CONSTRAINT "TopsProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GainsProfile" ADD CONSTRAINT "GainsProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WeeklyPresentations" ADD CONSTRAINT "WeeklyPresentations_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "BusinessDetails" ADD CONSTRAINT "BusinessDetails_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -583,7 +776,13 @@ ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_chapterId_fkey" FOREIGN 
 ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ClubToUser" ADD CONSTRAINT "_ClubToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_allClubs" ADD CONSTRAINT "_allClubs_A_fkey" FOREIGN KEY ("A") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ClubToUser" ADD CONSTRAINT "_ClubToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_allClubs" ADD CONSTRAINT "_allClubs_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserConnections" ADD CONSTRAINT "_UserConnections_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserConnections" ADD CONSTRAINT "_UserConnections_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
