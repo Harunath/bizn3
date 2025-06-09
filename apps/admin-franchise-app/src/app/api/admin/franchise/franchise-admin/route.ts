@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@repo/db/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../../lib/auth";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
 	try {
@@ -55,13 +56,13 @@ export async function POST(req: NextRequest) {
 				{ status: 400 }
 			);
 		}
-
+		const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 		const newAdmin = await prisma.franchiseAdmin.create({
 			data: {
 				email,
 				firstName,
 				lastName,
-				password,
+				password: hashedPassword,
 				phone,
 				nomineeName,
 				nomineeRelation,

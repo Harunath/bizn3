@@ -32,7 +32,7 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 
 					<div className="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm">
 						<p className="text-xl text-gray-700 font-semibold">
-							Franchise Type: {session?.user.membershipType}
+							Membership Type: {session?.user.membershipType}
 						</p>
 					</div>
 				</div>
