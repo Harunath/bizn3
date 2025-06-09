@@ -25,11 +25,11 @@ export default function TopsProfile({ userId }: { userId: string }) {
 				if (!res.ok) throw new Error("Failed to fetch profile");
 				const data = await res.json();
 				setFormData({
-					idealReferral: data.idealReferral || [],
-					topProduct: data.topProduct || [],
-					topProblemSolved: data.topProblemSolved || [],
-					story: data.story || [],
-					idealReferralPartner: data.idealReferralPartner || [],
+					idealReferral: data.data.idealReferral || [],
+					topProduct: data.data.topProduct || [],
+					topProblemSolved: data.data.topProblemSolved || [],
+					story: data.data.story || [],
+					idealReferralPartner: data.data.idealReferralPartner || [],
 				});
 			} catch (error) {
 				console.error("Error fetching profile:", error);

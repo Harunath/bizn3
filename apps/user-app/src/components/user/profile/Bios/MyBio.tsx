@@ -5,14 +5,17 @@ import { useEffect, useState } from "react";
 export default function MyBio({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
 		yearsInBusiness: "",
-		previousJobs: "",
-		hobbies: "",
-		interests: "",
-		city: "",
 		yearsInCity: "",
+		previousJobs: [] as string[],
 		burningDesire: "",
-		unknownFact: "",
+		hobbiesIntrests: [] as string[],
+		NoOneKnowsAboutMe: "",
+		cityOfResidence: "",
 		keyToSuccess: "",
+		newValues: {
+			previousJobs: "",
+			hobbiesIntrests: "",
+		},
 	});
 
 	const [loading, setLoading] = useState(true);
@@ -27,8 +30,24 @@ export default function MyBio({ userId }: { userId: string }) {
 					},
 				});
 				if (!res.ok) throw new Error("Failed to fetch bio");
-				const data = await res.json();
-				setFormData(data);
+
+				const response = await res.json();
+				const data = response.data; // ✅ extract actual data
+
+				setFormData({
+					yearsInBusiness: data.yearsInBusiness?.toString() || "",
+					yearsInCity: data.yearsInCity?.toString() || "",
+					previousJobs: data.previousJobs || [],
+					burningDesire: data.burningDesire || "",
+					hobbiesIntrests: data.hobbiesIntrests || [],
+					NoOneKnowsAboutMe: data.NoOneKnowsAboutMe || "",
+					cityOfResidence: data.cityOfResidence || "",
+					keyToSuccess: data.keyToSuccess || "",
+					newValues: {
+						previousJobs: "",
+						hobbiesIntrests: "",
+					},
+				});
 			} catch (error) {
 				console.error("Error fetching bio:", error);
 			} finally {
@@ -38,6 +57,43 @@ export default function MyBio({ userId }: { userId: string }) {
 
 		fetchBio();
 	}, [userId]);
+
+	const handleTempChange = (key: string, value: string) => {
+		setFormData((prev) => ({
+			...prev,
+			newValues: {
+				...prev.newValues,
+				[key]: value,
+			},
+		}));
+	};
+
+	const handleAddItem = (key: string) => {
+		console.log("Adding item to", key);
+		const value =
+			formData.newValues[key as "previousJobs" | "hobbiesIntrests"].trim();
+		if (!value) return;
+
+		if (!formData[key as "previousJobs" | "hobbiesIntrests"].includes(value)) {
+			setFormData((prev) => ({
+				...prev,
+				[key]: [...(prev[key as keyof typeof formData] as string[]), value],
+				newValues: {
+					...prev.newValues,
+					[key]: "",
+				},
+			}));
+		}
+	};
+
+	const handleRemoveItem = (key: string, value: string) => {
+		setFormData((prev) => ({
+			...prev,
+			[key]: (prev[key as keyof typeof formData] as string[]).filter(
+				(item) => item !== value
+			),
+		}));
+	};
 
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -85,47 +141,25 @@ export default function MyBio({ userId }: { userId: string }) {
 					/>
 				</div>
 
-				{/* Previous Types of Jobs */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Previous Types of Jobs
-					</label>
-					<textarea
-						name="previousJobs"
-						value={formData.previousJobs}
-						onChange={handleChange}
-						rows={3}
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-					/>
-				</div>
+				<ArrayInputField
+					label="Previous Jobs"
+					fieldKey="previousJobs"
+					values={formData.previousJobs}
+					tempValue={formData.newValues.previousJobs}
+					onTempChange={handleTempChange}
+					onAdd={handleAddItem}
+					onRemove={handleRemoveItem}
+				/>
 
-				{/* Hobbies & Interests */}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							Hobbies
-						</label>
-						<textarea
-							name="hobbies"
-							value={formData.hobbies}
-							onChange={handleChange}
-							rows={3}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							Interests
-						</label>
-						<textarea
-							name="interests"
-							value={formData.interests}
-							onChange={handleChange}
-							rows={3}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-						/>
-					</div>
-				</div>
+				<ArrayInputField
+					label="Hobbies & Interests"
+					fieldKey="hobbiesIntrests"
+					values={formData.hobbiesIntrests}
+					tempValue={formData.newValues.hobbiesIntrests}
+					onTempChange={handleTempChange}
+					onAdd={handleAddItem}
+					onRemove={handleRemoveItem}
+				/>
 
 				{/* City and Years in City */}
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -135,8 +169,8 @@ export default function MyBio({ userId }: { userId: string }) {
 						</label>
 						<input
 							type="text"
-							name="city"
-							value={formData.city}
+							name="cityOfResidence"
+							value={formData.cityOfResidence}
 							onChange={handleChange}
 							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
@@ -175,8 +209,8 @@ export default function MyBio({ userId }: { userId: string }) {
 						Something No One Here Knows About Me
 					</label>
 					<textarea
-						name="unknownFact"
-						value={formData.unknownFact}
+						name="NoOneKnowsAboutMe"
+						value={formData.NoOneKnowsAboutMe}
 						onChange={handleChange}
 						rows={4}
 						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
@@ -209,3 +243,69 @@ export default function MyBio({ userId }: { userId: string }) {
 		</div>
 	);
 }
+
+type ArrayInputFieldProps = {
+	label: string;
+	fieldKey: string;
+	values: string[];
+	tempValue: string;
+	onTempChange: (key: string, value: string) => void;
+	onAdd: (key: string) => void;
+	onRemove: (key: string, value: string) => void;
+	placeholder?: string;
+};
+
+const ArrayInputField: React.FC<ArrayInputFieldProps> = ({
+	label,
+	fieldKey,
+	values,
+	tempValue,
+	onTempChange,
+	onAdd,
+	onRemove,
+	placeholder = "Type and press Enter",
+}) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			onAdd(fieldKey);
+		}
+	};
+
+	return (
+		<div className="mb-4">
+			<label className="block font-semibold text-black mb-1">{label}</label>
+			<div className="flex items-center gap-2 mb-2">
+				<input
+					type="text"
+					value={tempValue}
+					onChange={(e) => onTempChange(fieldKey, e.target.value)}
+					onKeyDown={handleKeyDown}
+					placeholder={placeholder}
+					className="flex-grow border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+				/>
+				<button
+					type="button"
+					onClick={() => onAdd(fieldKey)}
+					className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+					Add
+				</button>
+			</div>
+			<div className="flex flex-wrap gap-2">
+				{values.map((val, idx) => (
+					<span
+						key={idx}
+						className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+						{val}
+						<button
+							type="button"
+							onClick={() => onRemove(fieldKey, val)}
+							className="text-red-600 hover:text-red-800">
+							&times;
+						</button>
+					</span>
+				))}
+			</div>
+		</div>
+	);
+};
