@@ -533,7 +533,7 @@ model WeeklyPresentations {
   descriptions String
 
   user        User     @relation(fields: [userId], references: [id])
-  userId      String   @unique
+  userId      String
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt

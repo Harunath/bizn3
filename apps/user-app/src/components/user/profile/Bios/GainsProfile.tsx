@@ -25,11 +25,11 @@ export default function GainsProfile({ userId }: { userId: string }) {
 				if (!res.ok) throw new Error("Failed to fetch profile");
 				const data = await res.json();
 				setFormData({
-					goals: data.goals || [],
-					accomplishments: data.accomplishments || [],
-					interests: data.interests || data.intrests || [],
-					networks: data.networks || [],
-					skills: data.skills || [],
+					goals: data.data.goals || [],
+					accomplishments: data.data.accomplishments || [],
+					interests: data.data.interests || data.intrests || [],
+					networks: data.data.networks || [],
+					skills: data.data.skills || [],
 				});
 			} catch (error) {
 				console.error("Error fetching profile:", error);
