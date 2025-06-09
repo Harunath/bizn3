@@ -2,23 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@repo/db/client";
 import { z } from "zod";
 
-const bioUpdateSchema = z.object({
-	yearsInBusiness: z.string().optional(),
-	previousJobs: z.array(z.string()).optional(),
-	hobbies: z.string().optional(),
-	interests: z.string().optional(),
-	city: z.string().optional(),
-	yearsInCity: z.string().optional(),
-	burningDesire: z.string().optional(),
-	unknownFact: z.string().optional(),
-	keyToSuccess: z.string().optional(),
-});
-
+// const bioUpdateSchema = z.object({
+// 	yearsInBusiness: z.string().optional(),
+// 	previousJobs: z.array(z.string()).optional(),
+// 	hobbies: z.string().optional(),
+// 	interests: z.string().optional(),
+// 	city: z.string().optional(),
+// 	yearsInCity: z.string().optional(),
+// 	burningDesire: z.string().optional(),
+// 	unknownFact: z.string().optional(),
+// 	keyToSuccess: z.string().optional(),
+// });
 
 const bioSchema = z.object({
 	yearsInBusiness: z.string(),
 	yearsInCity: z.string(),
-	previousJobs: z.array(z.string()),	
+	previousJobs: z.array(z.string()),
 	burningDesire: z.string(),
 	hobbiesIntrests: z.array(z.string()),
 	NoOneKnowsAboutMe: z.string().optional(),
@@ -77,7 +76,7 @@ export const POST = async (
 		}
 
 		const bio = await prisma.myBio.create({
-			data: { 
+			data: {
 				userId,
 				...parsed.data,
 				yearsInBusiness: Number(parsed.data.yearsInBusiness),
