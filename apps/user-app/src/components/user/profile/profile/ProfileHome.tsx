@@ -35,22 +35,36 @@ function ProfileHome() {
 	const [user, setUser] = useState<UserType>();
 	const userId = session.data?.user.id;
 	const [activeTab, setActiveTab] = useState("profile");
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		if (session.data?.user) fetchUser();
 	}, [session.status]);
+
 	const fetchUser = async () => {
+		setLoading(true);
 		const response = await fetch(`/api/user/${userId}/my-profile`);
 		const data = await response.json();
 		if (data.message != "success") {
 			toast.error("Error fetching the User details");
+			setLoading(false);
 			throw new Error(data.message);
 		} else {
 			setUser(data.data);
+			setLoading(false);
 		}
 	};
+
 	if (!userId) {
 		return <>User is not logged in</>;
+	}
+
+	if (session.status === "loading" || loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
 	}
 
 	return (

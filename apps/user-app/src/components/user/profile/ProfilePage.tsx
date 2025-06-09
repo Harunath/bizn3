@@ -6,7 +6,7 @@ import { RiVerifiedBadgeLine } from "react-icons/ri";
 import { GoUnverified } from "react-icons/go";
 import Image from "next/image";
 import Link from "next/link";
-import { FaEdit } from "react-icons/fa";
+import { FaChevronRight, FaEdit } from "react-icons/fa";
 
 interface ProfileProps extends Omit<User, "password"> {
 	businessDetails: BusinessDetails;
@@ -37,7 +37,6 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 					</div>
 				</div>
 			</div>
-
 			{user && (
 				<div className="border border-gray-200 rounded-xl p-4 text-lg font-semibold text-gray-800  relative">
 					<Link
@@ -169,6 +168,41 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 								</>
 							))}
 						</div>
+					</div>
+				</div>
+			)}
+
+			{user && (
+				<div className="border border-gray-200 rounded-xl p-4 text-lg font-semibold text-gray-800 relative">
+					<Link
+						href={"/free/profile/bios"}
+						className="absolute right-4 top-4 opacity-70 hover:opacity-100 rounded-md text-red-600 text-sm flex items-center gap-1 transition duration-200">
+						<FaEdit className="text-base" />
+						<span className="font-semibold">Edit</span>
+					</Link>
+
+					<h2 className="text-3xl font-bold text-red-600 mb-6 text-center">
+						My Bio
+					</h2>
+
+					<div className="grid divide-y border rounded-lg overflow-hidden">
+						{[
+							{ label: "GAINS Profile", href: "/free/profile/bios" },
+							{ label: "My Bio", href: "/free/profile/bios" },
+							{ label: "Tops Profile", href: "/free/profile/bios" },
+							{
+								label: "Weekly Presentations",
+								href: "/free/profile/bios",
+							},
+						].map((item) => (
+							<Link
+								key={item.label}
+								href={item.href}
+								className="flex justify-between items-center px-4 py-3 hover:bg-gray-100 transition duration-200">
+								<span className="text-gray-800">{item.label}</span>
+								<FaChevronRight className="text-gray-400" />
+							</Link>
+						))}
 					</div>
 				</div>
 			)}
