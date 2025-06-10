@@ -26,8 +26,8 @@ interface UserType {
 const tabs = [
 	{ id: "profile", label: "User Profile" },
 	{ id: "personal", label: "Personal Details" },
-	{ id: "contact", label: "Contact Details" },
-	{ id: "address", label: "Address" },
+	{ id: "contact", label: "Professional Address" },
+	{ id: "address", label: "Personal Address" },
 ];
 
 function ProfileHome() {

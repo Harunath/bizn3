@@ -126,7 +126,7 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 			{user && user.businessDetails && (
 				<div className="border border-gray-200 rounded-xl p-4 text-lg font-semibold text-gray-800">
 					<h2 className="text-3xl font-bold text-red-600 mb-6 text-center">
-						Business Details
+						Business Registration
 					</h2>
 					<div className="space-y-2">
 						<div className="flex items-center gap-x-2 flex-wrap">
@@ -143,6 +143,7 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 							</div>
 							<p className="flex-1  whitespace-nowrap">
 								{user.businessDetails.category}
+								<p>After upgrade we will also get subcategories</p>
 							</p>
 						</div>
 
