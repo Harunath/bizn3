@@ -174,7 +174,6 @@ export default function UserProfile({
 								/>
 								<motion.button
 									transition={{ duration: 0.1 }}
-									layoutId="updatePassword"
 									type="button"
 									onClick={() => setOpen(true)}
 									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer">
@@ -185,7 +184,6 @@ export default function UserProfile({
 						{open && (
 							<motion.div
 								className=" fixed z-50 inset-0 backdrop-blur-md flex items-center justify-center"
-								layoutId="updatePassword"
 								transition={{ duration: 0.1 }}>
 								<div className="flex flex-col gap-y-4 bg-gray-100 p-8 rounded-2xl relative">
 									<button
