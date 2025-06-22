@@ -107,7 +107,6 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 			apiKey,
 			cloudName,
 		});
-		// Limit to 5 images total
 		setImages([...urls]);
 	};
 	// const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,6 +195,7 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 						multiple
 						className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 						onChange={handleImageChange}
+						disabled={images.length >= 5}
 					/>
 					{images && (
 						<div className="w-[400px] flex gap-x-4 mt-2 overflow-x-auto flex-nowrap scrollbar-hide">

@@ -1,12 +1,13 @@
 "use client";
 import React from "react";
 import { useSession } from "next-auth/react";
-import { User, BusinessDetails } from "@repo/db/client";
+import { User, BusinessDetails, UserMembershipType } from "@repo/db/client";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
 import { GoUnverified } from "react-icons/go";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronRight, FaEdit } from "react-icons/fa";
+import Upgrade from "../../common/Upgrade";
 
 interface ProfileProps extends Omit<User, "password"> {
 	businessDetails: BusinessDetails;
@@ -30,10 +31,13 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 						</p>
 					</div>
 
-					<div className="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+					<div className="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm flex flex-col sm:flex-row items-center justify-between">
 						<p className="text-xl text-gray-700 font-semibold">
 							Membership Type: {session?.user.membershipType}
 						</p>
+						{session?.user.membershipType != UserMembershipType.VIP && (
+							<Upgrade />
+						)}
 					</div>
 				</div>
 			</div>
@@ -106,7 +110,7 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 								alt="profile image"
 								width={600}
 								height={400}
-								className="hidden lg:block w-full h-auto"
+								className="hidden lg:block w-full h-auto max-h-[400px]"
 							/>
 							<Image
 								src={
@@ -139,10 +143,10 @@ const ProfilePage = ({ user }: { user?: ProfileProps }) => {
 						</div>
 						<div className="flex items-center gap-x-2 flex-wrap">
 							<div className="w-1/2 flex justify-between items-center gap-x-2">
-								<p>Category</p> <span>:</span>
+								<p>General Category</p> <span>:</span>
 							</div>
 							<p className="flex-1  whitespace-nowrap">
-								{user.businessDetails.category}
+								{user.businessDetails.generalCategory || null}
 							</p>
 						</div>
 

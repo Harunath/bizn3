@@ -1,36 +1,134 @@
+// import { getServerSession } from "next-auth";
+// import { NextRequest, NextResponse } from "next/server";
+
+// import prisma from "@repo/db/client";
+// import { authOptions } from "../../../../lib/auth";
+
+// export const GET = async () => {
+// 	try {
+// 		const session = await getServerSession(authOptions);
+// 		console.log(session, " user session");
+// 		if (!session || !session.user.id) {
+// 			return NextResponse.json({ message: "unauthorized" }, { status: 401 });
+// 		}
+// 		const user = await prisma.user.findUnique({
+// 			where: { id: session.user.id },
+// 			select: {
+// 				id: true,
+// 				businessDetails: true,
+// 			},
+// 		});
+
+// 		if (!user || !user.businessDetails) {
+// 			return NextResponse.json(
+// 				{ message: "user or business do not exist" },
+// 				{ status: 400 }
+// 			);
+// 		}
+// 		return NextResponse.json(
+// 			{ message: "success", data: user.businessDetails },
+// 			{ status: 200 }
+// 		);
+// 	} catch (e) {
+// 		console.log(e);
+// 		return NextResponse.json(
+// 			{ message: "Internal service error" },
+// 			{ status: 500 }
+// 		);
+// 	}
+// };
+
+// export const POST = async (req: NextRequest) => {
+// 	try {
+// 		const session = await getServerSession(authOptions);
+// 		if (!session || !session.user.id) {
+// 			return NextResponse.json({ message: "unauthorized" }, { status: 401 });
+// 		}
+// 		const body = await req.json();
+// 		const { name, images, category } = body;
+// 		if (!name || !images) {
+// 			return NextResponse.json(
+// 				{ message: "name, images are required" },
+// 				{ status: 400 }
+// 			);
+// 		}
+// 		const user = await prisma.user.findUnique({
+// 			where: { id: session.user.id },
+// 			select: {
+// 				id: true,
+// 				businessDetails: true,
+// 			},
+// 		});
+
+// 		if (!user) {
+// 			return NextResponse.json(
+// 				{ message: "user do not exist" },
+// 				{ status: 400 }
+// 			);
+// 		}
+// 		if (user.businessDetails?.id) {
+// 			return NextResponse.json(
+// 				{ message: "user business already exists" },
+// 				{ status: 400 }
+// 			);
+// 		}
+
+// 		const businessDetails = await prisma.businessDetails.create({
+// 			data: {
+// 				businessName: name as string,
+// 				images: images
+// 					? images
+// 					: [
+// 							"https://res.cloudinary.com/degrggosz/image/upload/v1746781128/Web__What-is-Bussines-Analytics_je92qe.webp",
+// 						],
+// 				category: category || "Business",
+// 				user: {
+// 					connect: { id: session.user.id },
+// 				},
+// 			},
+// 		});
+// 		return NextResponse.json(
+// 			{ message: "success", data: businessDetails },
+// 			{ status: 200 }
+// 		);
+// 	} catch (e) {
+// 		console.log(e);
+// 		return NextResponse.json(
+// 			{ message: "Internal service error" },
+// 			{ status: 500 }
+// 		);
+// 	}
+// };
+
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
 import prisma from "@repo/db/client";
 import { authOptions } from "../../../../lib/auth";
 
 export const GET = async () => {
 	try {
 		const session = await getServerSession(authOptions);
-		console.log(session, " user session");
 		if (!session || !session.user.id) {
 			return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 		}
-		const user = await prisma.user.findUnique({
-			where: { id: session.user.id },
-			select: {
-				id: true,
-				businessDetails: true,
-			},
+
+		const business = await prisma.businessDetails.findUnique({
+			where: { userId: session.user.id },
 		});
 
-		if (!user || !user.businessDetails) {
+		if (!business) {
 			return NextResponse.json(
-				{ message: "user or business do not exist" },
+				{ message: "business do not exist" },
 				{ status: 400 }
 			);
 		}
+
 		return NextResponse.json(
-			{ message: "success", data: user.businessDetails },
+			{ message: "success", data: business },
 			{ status: 200 }
 		);
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		return NextResponse.json(
 			{ message: "Internal service error" },
 			{ status: 500 }
@@ -44,28 +142,44 @@ export const POST = async (req: NextRequest) => {
 		if (!session || !session.user.id) {
 			return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 		}
+
 		const body = await req.json();
-		const { name, images, category } = body;
+
+		const {
+			name,
+			images,
+			panNumber,
+			panNumberVerified,
+			tanNumber,
+			gstNumber,
+			gstNumberVerified,
+			gstRegisteredState,
+			verified,
+			keywords,
+			BusinessDescription,
+			companyLogoUrl,
+			category,
+		} = body;
+
 		if (!name || !images) {
 			return NextResponse.json(
 				{ message: "name, images are required" },
 				{ status: 400 }
 			);
 		}
+
 		const user = await prisma.user.findUnique({
 			where: { id: session.user.id },
-			select: {
-				id: true,
-				businessDetails: true,
-			},
+			select: { id: true, businessDetails: true },
 		});
 
 		if (!user) {
 			return NextResponse.json(
-				{ message: "user do not exist" },
+				{ message: "user does not exist" },
 				{ status: 400 }
 			);
 		}
+
 		if (user.businessDetails?.id) {
 			return NextResponse.json(
 				{ message: "user business already exists" },
@@ -75,24 +189,30 @@ export const POST = async (req: NextRequest) => {
 
 		const businessDetails = await prisma.businessDetails.create({
 			data: {
-				businessName: name as string,
-				images: images
-					? images
-					: [
-							"https://res.cloudinary.com/degrggosz/image/upload/v1746781128/Web__What-is-Bussines-Analytics_je92qe.webp",
-						],
-				category: category || "Business",
-				user: {
-					connect: { id: session.user.id },
-				},
+				businessName: name,
+				companyName: name || null,
+				images,
+				generalCategory: category || null,
+				panNumber: panNumber || null,
+				panNumberVerified: panNumberVerified ?? false,
+				tanNumber: tanNumber || null,
+				gstNumber: gstNumber || null,
+				gstNumberVerified: gstNumberVerified ?? false,
+				gstRegisteredState: gstRegisteredState || null,
+				verified: verified ?? false,
+				keywords: keywords || null,
+				BusinessDescription: BusinessDescription || null,
+				companyLogoUrl: companyLogoUrl || null,
+				user: { connect: { id: session.user.id } },
 			},
 		});
+
 		return NextResponse.json(
 			{ message: "success", data: businessDetails },
 			{ status: 200 }
 		);
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		return NextResponse.json(
 			{ message: "Internal service error" },
 			{ status: 500 }

@@ -1,5 +1,6 @@
 import React from "react";
-import LoadingAnimation from "../../components/common/LoadingAnimation";
+import LoadingAnimation from "../../../../components/common/LoadingAnimation";
+
 
 const Loading = () => {
 	return (
