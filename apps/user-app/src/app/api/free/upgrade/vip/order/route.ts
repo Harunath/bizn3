@@ -26,18 +26,25 @@ export const POST = async (req: NextRequest) => {
 			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 		}
 
+		const body = await req.json();
+		const { categoryId } = body;
+		const amount = 12000;
+
+		if (!categoryId) {
+			return NextResponse.json(
+				{ message: "Missing required fields" },
+				{ status: 400 }
+			);
+		}
+
 		const userDetails = await prisma.user.findUnique({
 			where: { id: session.user.id },
-			select: {
-				membershipType: true,
+			include: {
 				homeClub: {
-					select: {
-						id: true,
+					include: {
 						chapter: {
-							select: {
-								id: true,
+							include: {
 								regionalFranchise: true,
-								regionalFranchiseId: true,
 							},
 						},
 					},
@@ -45,30 +52,7 @@ export const POST = async (req: NextRequest) => {
 			},
 		});
 
-		const chapter = userDetails?.homeClub?.chapter;
-		const franchiseId = chapter?.regionalFranchise.id;
-		const body = await req.json();
-		const { clubs } = body;
-		const amount = 5000;
-
-		if (!clubs || !franchiseId) {
-			return NextResponse.json(
-				{ message: "Missing required fields" },
-				{ status: 400 }
-			);
-		}
-		const user = await prisma.user.findUnique({
-			where: { id: session.user.id },
-			select: {
-				id: true,
-				email: true,
-				phone: true,
-				firstname: true,
-				lastname: true,
-			},
-		});
-
-		if (!user) {
+		if (!userDetails) {
 			return NextResponse.json({ message: "User not found" }, { status: 404 });
 		}
 
@@ -77,14 +61,14 @@ export const POST = async (req: NextRequest) => {
 			order_currency: "INR",
 			return_url:
 				process.env.NODE_ENV == "production"
-					? `${process.env.NEXTAUTH_URL}/free/upgrade/gold/callback`
-					: "http://localhost:3000/free/upgrade/gold/callback", // Set in .env
-			order_note: "Upgrade to Gold membership",
+					? `${process.env.NEXTAUTH_URL}/free/upgrade/vip/callback`
+					: "http://localhost:3000/free/upgrade/vip/callback", // Set in .env
+			order_note: "Upgrade membership to VIP",
 			customer_details: {
-				customer_id: user.id,
-				customer_email: user.email ?? "",
-				customer_phone: user.phone ?? "",
-				customer_name: user.firstname ?? "" + user.lastname ?? "",
+				customer_id: userDetails.id,
+				customer_email: userDetails.email ?? "",
+				customer_phone: userDetails.phone ?? "",
+				customer_name: userDetails.firstname ?? "" + userDetails.lastname ?? "",
 			},
 		};
 
@@ -98,16 +82,16 @@ export const POST = async (req: NextRequest) => {
 
 		const order = await prisma.order.create({
 			data: {
-				userId: user.id,
+				userId: userDetails.id,
 				cashfreeOrderId: res.order_id,
 				paymentSessionId: res.payment_session_id,
 				totalAmount: amount,
 				currency: "INR",
 				notes: "Upgrade to premium membership",
 				itemDetailsSnapshot: {
-					userId: user.id,
-					franchiseId,
-					clubs,
+					userId: userDetails.id,
+					franchiseId: userDetails.homeClub?.chapter.regionalFranchiseId,
+					categoryId,
 				},
 			},
 		});

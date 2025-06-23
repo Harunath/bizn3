@@ -58,7 +58,7 @@ const GoldUpgrade = () => {
 			});
 			const data = await res.json();
 			if (res.ok) {
-				toast.success("Upgrade requested successfully");
+				toast.info("Redirecting to payment page");
 				setPayment_session_id(data.payment_session_id);
 			} else {
 				toast.error(data.message || "Upgrade failed");
