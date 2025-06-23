@@ -122,11 +122,16 @@ model FranchiseAdmin {
 
 model UpgradeRequest {
   id            String   @id @default(cuid())
+
+  clubIds         String[]
+  chapterId       String?
+  categoryId      String?
+
   userId        String  @unique
   user          User     @relation(fields: [userId], references: [id])
   requestedTier UserMembershipType
   status        RequestStatus @default(PENDING)
-  franchiseId      String   @unique
+  franchiseId   String   @unique
   paymentId     String? @unique
   paymentDetails  Payment? @relation(fields: [paymentId],references: [id])
   reviewedBy    Franchise  @relation(fields: [franchiseId], references: [id])

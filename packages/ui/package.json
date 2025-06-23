@@ -21,6 +21,7 @@
 		"typescript": "5.8.2"
 	},
 	"dependencies": {
+		"@cashfreepayments/cashfree-js": "^1.0.5",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0"
 	}
