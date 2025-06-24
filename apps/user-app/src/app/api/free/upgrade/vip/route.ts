@@ -163,6 +163,7 @@ export const POST = async (req: NextRequest) => {
 				franchiseId: chapter.regionalFranchiseId,
 				userId: session.user.id,
 				categoryId: itemDetailsSnapshot.categoryId,
+				chapterId: chapter.id,
 			},
 		});
 
