@@ -5,7 +5,7 @@ import { authOptions } from "../../../../../../lib/auth";
 
 export const POST = async (
 	req: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) => {
 	try {
 		const session = await getServerSession(authOptions);
@@ -14,7 +14,8 @@ export const POST = async (
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const id = params.id;
+		const param = await params;
+		const id = param.id;
 		const body = await req.json();
 		const { action } = body;
 
