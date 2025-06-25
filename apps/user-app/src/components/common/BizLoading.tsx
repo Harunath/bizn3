@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserMembershipType } from "@repo/db/client";
+import LoadingAnimation from "./LoadingAnimation";
 
 const BizLoading = () => {
 	const router = useRouter();
@@ -24,23 +25,29 @@ const BizLoading = () => {
 					router.push("/register");
 					return;
 				}
+				console.log(session);
 				switch (session.user.membershipType) {
 					case UserMembershipType.VIP:
+						console.log(session.user.membershipType);
 						setRoute("/vip/dashboard");
 						break;
 					case UserMembershipType.GOLD:
+						console.log(session.user.membershipType);
 						setRoute("/gold/dashboard");
 						break;
 					case UserMembershipType.FREE:
+						console.log(session.user.membershipType);
 						setRoute("/free/dashboard");
 						break;
 					default:
+						console.log(session.user.membershipType);
 						router.push("/login");
 				}
+				console.log(session.user.membershipType);
 			}
 		}
 	}, [status, session, router]);
-
+	if (!route) return <LoadingAnimation />;
 	return (
 		<div className="h-screen w-screen">
 			<div className="relative h-full w-full flex justify-center items-center bg-red-600 text-white">
