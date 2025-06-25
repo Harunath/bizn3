@@ -48,7 +48,7 @@ model Franchise {
   isActive           Boolean          @default(true)
   isActiveDescription String?         @default("Franchise is active")
   franchiseType      FranchiseType
-  upgradeRequest     UpgradeRequest?
+  upgradeRequest     UpgradeRequest[]
 
   // Relationships
   adminId            String?
@@ -127,11 +127,11 @@ model UpgradeRequest {
   chapterId       String?
   categoryId      String?
 
-  userId        String  @unique
+  userId        String
   user          User     @relation(fields: [userId], references: [id])
   requestedTier UserMembershipType
   status        RequestStatus @default(PENDING)
-  franchiseId   String   @unique
+  franchiseId   String
   paymentId     String? @unique
   paymentDetails  Payment? @relation(fields: [paymentId],references: [id])
   reviewedBy    Franchise  @relation(fields: [franchiseId], references: [id])
@@ -420,7 +420,7 @@ model User {
   topsProfile       TopsProfile?
   gainsProfile      GainsProfile?
   weeklyPresentations  WeeklyPresentations[]
-  upgradeRequest    UpgradeRequest?
+  upgradeRequest    UpgradeRequest[]
   categoryAssignment          ChapterCategoryAssignment?
 
   firstname      String
