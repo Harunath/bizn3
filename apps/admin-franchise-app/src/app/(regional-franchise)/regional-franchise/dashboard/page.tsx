@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { BiArrowFromLeft } from "react-icons/bi";
+import UpgradeRequests from "../../../../components/regional-franchise/UpgradeRequests/GetUpgradeRequests";
 
 const page = () => {
 	return (
@@ -21,6 +22,11 @@ const page = () => {
 				chapter leaders. Use the link above to navigate to different sections of
 				the admin panel.
 			</p>
+			<div>
+				<div>
+					<UpgradeRequests />
+				</div>
+			</div>
 		</div>
 	);
 };
