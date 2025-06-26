@@ -17,14 +17,19 @@ import {
 	FiList,
 	FiAlignLeft,
 	FiTag,
-} from "react-icons/fi";
-import {
 	FiPhone,
 	FiMail,
 	FiUser,
 	FiGlobe as FiGlobeOutline,
 } from "react-icons/fi";
 import { HiOutlineBookmark } from "react-icons/hi";
+
+// Cloudinary badge URLs
+const BADGE_URLS: Record<UserMembershipType, string> = {
+	FREE: "https://res.cloudinary.com/degrggosz/image/upload/v1750931312/5_iqrq2u.png",
+	GOLD: "https://res.cloudinary.com/degrggosz/image/upload/v1750931298/2_ghut8s.png",
+	VIP: "https://res.cloudinary.com/degrggosz/image/upload/v1750931311/3_xolgia.png",
+};
 
 interface ProfileProps extends Omit<User, "password"> {
 	businessDetails: BusinessDetails;
@@ -34,7 +39,6 @@ type ContactDetails = {
 	createdAt: Date;
 	updatedAt: Date;
 	userId: string;
-
 	mobile: string | null;
 	website: string | null;
 	links: string[];
@@ -62,17 +66,15 @@ const SetMembershipUrl = (membershipType: UserMembershipType) => {
 
 const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 	const [showLinksModal, setShowLinksModal] = useState(false);
-
 	const { data: session } = useSession();
+	const membershipType =
+		session?.user.membershipType ?? UserMembershipType.FREE;
+
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-12 px-4 sm:px-6 lg:px-8">
-			{/* <div className="border border-gray-200 rounded-xl p-4"> */}
+			{/* Profile Image + Membership Badge */}
 			<div className="border border-gray-200 p-4 bg-slate-100 shadow-2xl">
-				{/* <h2 className="text-3xl font-bold text-red-600 mb-6 text-center">
-					Account
-				</h2> */}
-
-				<div className="flex justify-center items-center mb-4">
+				<div className="relative flex justify-center items-center mb-4">
 					<Image
 						src={
 							user?.profileImage ||
@@ -83,7 +85,6 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 						height={144}
 						className="hidden lg:block w-36 h-36 rounded-full object-cover border-4 border-gray-100 shadow"
 					/>
-
 					<Image
 						src={
 							user?.profileImage ||
@@ -94,41 +95,54 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 						height={128}
 						className="block lg:hidden w-32 h-32 rounded-full object-cover border-4 border-gray-100 shadow"
 					/>
+
+					{/* Badge Overlay */}
+					{BADGE_URLS[membershipType] && (
+						<div className="absolute -bottom-2 -right-2">
+							<Image
+								src={BADGE_URLS[membershipType]}
+								alt={`${membershipType} badge`}
+								width={40}
+								height={40}
+								className="rounded-full border-2 border-white shadow-md"
+							/>
+						</div>
+					)}
 				</div>
+
 				<p className="text-lg text-center font-medium text-black border-b pb-2">
 					{session?.user.firstname} {session?.user.lastname}
 				</p>
+
 				<div className="mt-6 bg-slate-150 px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between flex-wrap gap-2">
 					<div className="flex items-baseline gap-2">
 						<p className="text-sm text-gray-600 font-medium">Franchise Type:</p>
 						<p className="text-base font-semibold text-gray-900">
-							{session?.user.membershipType}
+							{membershipType}
 						</p>
 					</div>
 
-					{session?.user.membershipType !== UserMembershipType.VIP && (
-						<Upgrade />
-					)}
-					<div className="mt-6 bg-slate-100 px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between flex-wrap gap-2">
-						<div className="flex items-baseline gap-2">
-							<p className="text-sm text-gray-600 font-medium">Connections:</p>
-							<p className="text-base font-semibold text-gray-900">
-								Coming Soon
-							</p>
-						</div>
+					{membershipType !== UserMembershipType.VIP && <Upgrade />}
+				</div>
 
-						<span className="text-xs font-medium text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
-							Upcoming Feature
-						</span>
+				<div className="mt-6 bg-slate-100 px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between flex-wrap gap-2">
+					<div className="flex items-baseline gap-2">
+						<p className="text-sm text-gray-600 font-medium">Connections:</p>
+						<p className="text-base font-semibold text-gray-900">Coming Soon</p>
 					</div>
+					<span className="text-xs font-medium text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
+						Upcoming Feature
+					</span>
 				</div>
 			</div>
+
+			{/* Personal Details */}
 			<div className="flex flex-col gap-4">
 				{user && (
 					<div className="relative border border-gray-200 shadow-2xl p-6 text-base font-medium text-gray-800 bg-slate-100">
 						<Link
-							href={`/${SetMembershipUrl(session?.user.membershipType ?? UserMembershipType.FREE)}/profile/personal-details`}
-							className="absolute right-4 top-4 text-red-600 text-sm font-medium  flex items-center gap-x-1">
+							href={`/${SetMembershipUrl(membershipType)}/profile/personal-details`}
+							className="absolute right-4 top-4 text-red-600 text-sm font-medium flex items-center gap-x-1">
 							<FiEdit className="text-base" />
 							<span className="font-semibold">Edit</span>
 						</Link>
@@ -154,9 +168,7 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 							<InfoRow
 								icon={<FiGlobeOutline />}
 								value={contactDetailsRes?.website || "No website provided"}
-							
 							/>
-
 							<div className="flex items-center gap-x-3 flex-wrap">
 								<HiOutlineBookmark className="text-xl text-gray-700" />
 								{!contactDetailsRes?.links?.length ? (
@@ -212,10 +224,12 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 						</div>
 					</div>
 				)}
+
+				{/* Bio Section */}
 				{user && (
 					<div className="relative border border-gray-200 shadow-2xl p-6 text-base font-medium text-gray-800 bg-slate-100">
 						<Link
-							href={`/${SetMembershipUrl(session?.user.membershipType ?? UserMembershipType.FREE)}/profile/bios`}
+							href={`/${SetMembershipUrl(membershipType)}/profile/bios`}
 							className="absolute right-4 top-4 opacity-70 hover:opacity-100 text-red-600 text-sm flex items-center gap-1">
 							<FiEdit className="text-base" />
 							<span className="font-semibold">Edit</span>
@@ -240,22 +254,19 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 					</div>
 				)}
 			</div>
+
+			{/* Business Details Section */}
 			{user?.businessDetails && (
 				<div className="relative border border-gray-200 shadow-2xl p-6 text-base font-medium text-gray-800 bg-slate-100">
-					{/* Edit Button */}
 					<Link
-						href={`/${SetMembershipUrl(session?.user.membershipType ?? UserMembershipType.FREE)}/profile/business-details`}
+						href={`/${SetMembershipUrl(membershipType)}/profile/business-details`}
 						className="absolute right-4 top-4 text-red-600 text-sm font-medium flex items-center gap-x-1">
 						<FiEdit className="text-base" />
 						<span className="font-semibold">Edit</span>
 					</Link>
-
-					{/* Heading */}
-					<h2 className="text-lg font-bold text-red-600 mb-4 ">
+					<h2 className="text-lg font-bold text-red-600 mb-4">
 						Business Details
 					</h2>
-
-					{/* Business Info Fields using InfoRow */}
 					<div className="space-y-4">
 						<InfoRow
 							icon={<FiBriefcase />}
@@ -283,7 +294,6 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 						/>
 					</div>
 
-					{/* Business Images */}
 					{user.businessDetails.images?.length > 0 && (
 						<div className="mt-6">
 							<div className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3">
@@ -323,7 +333,7 @@ const InfoRow = ({
 	verified?: boolean;
 }) => (
 	<div className="flex items-start gap-x-3">
-		<div className=" mt-1">{icon}</div>
+		<div className="mt-1">{icon}</div>
 		<div className="flex flex-wrap items-center gap-x-2 text-gray-800">
 			<span className="break-words">{value}</span>
 			{verified !== undefined &&
