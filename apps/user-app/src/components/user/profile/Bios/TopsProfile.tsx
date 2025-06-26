@@ -12,32 +12,33 @@ export default function TopsProfile({ userId }: { userId: string }) {
 	});
 
 	const [loading, setLoading] = useState(true);
+	const [isEditMode, setIsEditMode] = useState(false); // NEW
+	const [submitting, setSubmitting] = useState(false); // NEW
 
 	useEffect(() => {
 		const fetchProfile = async () => {
 			try {
 				const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
 					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
+					headers: { "Content-Type": "application/json" },
 				});
-				if (!res.ok) throw new Error("Failed to fetch profile");
-				const data = await res.json();
-				setFormData({
-					idealReferral: data.data.idealReferral || [],
-					topProduct: data.data.topProduct || [],
-					topProblemSolved: data.data.topProblemSolved || [],
-					story: data.data.story || [],
-					idealReferralPartner: data.data.idealReferralPartner || [],
-				});
+				if (res.status === 200) {
+					const data = await res.json();
+					setFormData({
+						idealReferral: data.data.idealReferral || [],
+						topProduct: data.data.topProduct || [],
+						topProblemSolved: data.data.topProblemSolved || [],
+						story: data.data.story || [],
+						idealReferralPartner: data.data.idealReferralPartner || [],
+					});
+					setIsEditMode(true); // ✅ Switch to update mode if profile exists
+				}
 			} catch (error) {
 				console.error("Error fetching profile:", error);
 			} finally {
 				setLoading(false);
 			}
 		};
-
 		fetchProfile();
 	}, [userId]);
 
@@ -54,19 +55,23 @@ export default function TopsProfile({ userId }: { userId: string }) {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setSubmitting(true);
+
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				method: isEditMode ? "PUT" : "POST",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),
 			});
 			if (!res.ok) throw new Error("Failed to save profile");
-			alert("Profile saved successfully!");
+
+			alert(`Profile ${isEditMode ? "updated" : "saved"} successfully!`);
+			if (!isEditMode) setIsEditMode(true);
 		} catch (error) {
 			console.error(error);
 			alert("An error occurred while saving profile.");
+		} finally {
+			setSubmitting(false);
 		}
 	};
 
@@ -78,89 +83,94 @@ export default function TopsProfile({ userId }: { userId: string }) {
 				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6"
 				onSubmit={handleSubmit}>
 				{/* Ideal Referral */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Ideal Referral
-					</label>
-					<textarea
-						name="idealReferral"
-						value={formatArray(formData.idealReferral)}
-						onChange={handleChange}
-						rows={4}
-						placeholder="Describe your ideal referral (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+				<TextAreaField
+					label="Ideal Referral"
+					name="idealReferral"
+					value={formatArray(formData.idealReferral)}
+					onChange={handleChange}
+					placeholder="Describe your ideal referral (one per line)..."
+				/>
 
 				{/* Top Product */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Top Product
-					</label>
-					<textarea
-						name="topProduct"
-						value={formatArray(formData.topProduct)}
-						onChange={handleChange}
-						rows={3}
-						placeholder="List your top products or services (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+				<TextAreaField
+					label="Top Product"
+					name="topProduct"
+					value={formatArray(formData.topProduct)}
+					onChange={handleChange}
+					placeholder="List your top products or services (one per line)..."
+				/>
 
 				{/* Top Problem Solved */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Top Problem Solved
-					</label>
-					<textarea
-						name="topProblemSolved"
-						value={formatArray(formData.topProblemSolved)}
-						onChange={handleChange}
-						rows={4}
-						placeholder="Explain the key problems you've solved (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+				<TextAreaField
+					label="Top Problem Solved"
+					name="topProblemSolved"
+					value={formatArray(formData.topProblemSolved)}
+					onChange={handleChange}
+					placeholder="Explain the key problems you've solved (one per line)..."
+				/>
 
 				{/* BNI Story */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						My Favourite BNI Story
-					</label>
-					<textarea
-						name="story"
-						value={formatArray(formData.story)}
-						onChange={handleChange}
-						rows={4}
-						placeholder="Share your favorite BNI experiences (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+				<TextAreaField
+					label="My Favourite BNI Story"
+					name="story"
+					value={formatArray(formData.story)}
+					onChange={handleChange}
+					placeholder="Share your favorite BNI experiences (one per line)..."
+				/>
 
 				{/* Ideal Referral Partner */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						My Ideal Referral Partner
-					</label>
-					<textarea
-						name="idealReferralPartner"
-						value={formatArray(formData.idealReferralPartner)}
-						onChange={handleChange}
-						rows={3}
-						placeholder="List ideal partners you'd like to work with (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+				<TextAreaField
+					label="My Ideal Referral Partner"
+					name="idealReferralPartner"
+					value={formatArray(formData.idealReferralPartner)}
+					onChange={handleChange}
+					placeholder="List ideal partners you'd like to work with (one per line)..."
+				/>
 
-				{/* Actions */}
-				<div className="flex justify-end gap-4 pt-6">
+				{/* Submit Button */}
+				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
-						className="bg-black text-white px-6 py-2 rounded hover:opacity-90 font-semibold">
-						Save
+						disabled={submitting}
+						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+						{submitting
+							? isEditMode
+								? "Updating..."
+								: "Saving..."
+							: isEditMode
+								? "Update"
+								: "Save"}
 					</button>
 				</div>
 			</form>
 		</div>
 	);
 }
+
+type TextAreaFieldProps = {
+	label: string;
+	name: string;
+	value: string;
+	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+	placeholder?: string;
+};
+
+const TextAreaField: React.FC<TextAreaFieldProps> = ({
+	label,
+	name,
+	value,
+	onChange,
+	placeholder = "",
+}) => (
+	<div>
+		<label className="block font-semibold text-black mb-1">{label}</label>
+		<textarea
+			name={name}
+			value={value}
+			onChange={onChange}
+			rows={4}
+			placeholder={placeholder}
+			className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+		/>
+	</div>
+);

@@ -44,11 +44,12 @@ export default function PersonalDetailsComp({
 		setError(null);
 		setSuccess(null);
 
+		// 🛠️ Filter invalid enum values before sending
 		const payload = {
-			title: title.trim(),
+			title: title ? title : undefined,
 			firstname: firstName.trim(),
 			lastname: lastName.trim(),
-			gender,
+			gender: gender ? gender : undefined,
 			suffix: (suffix ?? "").trim(),
 			displayname: displayName.trim(),
 		};
@@ -74,7 +75,7 @@ export default function PersonalDetailsComp({
 					? "Personal details updated successfully!"
 					: "Personal details created successfully!"
 			);
-			setRecordExists(true); // mark record as created
+			setRecordExists(true);
 		} catch (err) {
 			if (err instanceof Error) {
 				setError(err.message);
@@ -104,19 +105,19 @@ export default function PersonalDetailsComp({
 							</label>
 							<select
 								id="title"
-								value={title || ""}
+								value={title}
 								onChange={(e) => setTitle(e.target.value as TitleTypes)}
 								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
 								disabled={loading}>
-								<option>Select</option>
-								<option>{TitleTypes.None}</option>
-								<option>{TitleTypes.Mr}</option>
-								<option>{TitleTypes.Mrs}</option>
-								<option>{TitleTypes.Ms}</option>
-								<option>{TitleTypes.Miss}</option>
-								<option>{TitleTypes.Dr}</option>
-								<option>{TitleTypes.Prof}</option>
+								<option value="">Select</option>
+								<option value="None">None</option>
+								<option value="Mr">Mr</option>
+								<option value="Mrs">Mrs</option>
+								<option value="Ms">Ms</option>
+								<option value="Miss">Miss</option>
+								<option value="Dr">Dr</option>
+								<option value="Prof">Prof</option>
 							</select>
 						</div>
 
@@ -127,7 +128,7 @@ export default function PersonalDetailsComp({
 							<input
 								id="firstName"
 								type="text"
-								value={firstName || ""}
+								value={firstName}
 								onChange={(e) => setFirstName(e.target.value)}
 								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
@@ -190,7 +191,7 @@ export default function PersonalDetailsComp({
 							<input
 								id="suffix"
 								type="text"
-								value={suffix || ""}
+								value={suffix}
 								onChange={(e) => setSuffix(e.target.value)}
 								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
 								disabled={loading}

@@ -44,7 +44,7 @@ const Upgrade = () => {
 	return (
 		<button
 			onClick={() => router.push(routerUrl)}
-			className="p-2 rounded bg-red-400">
+			className="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition-colors text-sm font-medium">
 			Upgrade
 		</button>
 	);
