@@ -2,18 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@repo/db/client";
 import { z } from "zod";
 
-// const bioUpdateSchema = z.object({
-// 	yearsInBusiness: z.string().optional(),
-// 	previousJobs: z.array(z.string()).optional(),
-// 	hobbies: z.string().optional(),
-// 	interests: z.string().optional(),
-// 	city: z.string().optional(),
-// 	yearsInCity: z.string().optional(),
-// 	burningDesire: z.string().optional(),
-// 	unknownFact: z.string().optional(),
-// 	keyToSuccess: z.string().optional(),
-// });
-
 const bioSchema = z.object({
 	yearsInBusiness: z.string(),
 	yearsInCity: z.string(),
@@ -90,6 +78,55 @@ export const POST = async (
 		);
 	} catch (error) {
 		console.error("Error creating bio:", error);
+		return NextResponse.json(
+			{ message: "Internal Server Error" },
+			{ status: 500 }
+		);
+	}
+};
+
+export const PUT = async (
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> }
+) => {
+	try {
+		const { id: userId } = await params;
+		const body = await req.json();
+
+		const parsed = bioSchema.safeParse(body);
+		if (!parsed.success) {
+			return NextResponse.json(
+				{
+					message: "Validation error",
+					errors: parsed.error.flatten().fieldErrors,
+				},
+				{ status: 400 }
+			);
+		}
+
+		const existing = await prisma.myBio.findUnique({
+			where: { userId },
+		});
+
+		if (!existing) {
+			return NextResponse.json({ message: "Bio not found" }, { status: 404 });
+		}
+
+		const updated = await prisma.myBio.update({
+			where: { userId },
+			data: {
+				...parsed.data,
+				yearsInBusiness: Number(parsed.data.yearsInBusiness),
+				yearsInCity: Number(parsed.data.yearsInCity),
+			},
+		});
+
+		return NextResponse.json(
+			{ message: "Bio updated successfully", data: updated },
+			{ status: 200 }
+		);
+	} catch (error) {
+		console.error("Error updating bio:", error);
 		return NextResponse.json(
 			{ message: "Internal Server Error" },
 			{ status: 500 }
