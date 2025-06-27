@@ -53,7 +53,7 @@ export default function BusinessDetails() {
 				if (data?.data) {
 					setFormData({
 						...data.data,
-						keywords: data.data.keywords || [],
+						keywords: data.data.keywords ? data.data.keywords.split(",") : [],
 						newKeyword: "",
 					});
 					setExist(true);
@@ -106,30 +106,28 @@ export default function BusinessDetails() {
 		setMessage("");
 
 		try {
+			const payload = {
+				...formData,
+				keywords: formData.keywords.join(","),
+				newKeyword: undefined,
+			};
+
 			const res = await fetch(`/api/user/${userId}/business`, {
 				method: exist ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ ...formData, newKeyword: undefined }),
+				body: JSON.stringify(payload),
 			});
 
-			const text = await res.text();
-			let json;
-			try {
-				json = text ? JSON.parse(text) : null;
-			} catch {
-				throw new Error("Invalid JSON response from server");
-			}
+			const json = await res.json();
+			if (!res.ok) throw new Error(json.message);
 
-			if (!res.ok) {
-				throw new Error(json?.error || "Failed to save business details");
-			}
-
-			if (json?.data) {
-				setFormData({ ...json.data, newKeyword: "" });
-			}
-
-			setMessage("Business details saved successfully.");
+			setFormData({
+				...json.data,
+				keywords: json.data.keywords?.split(",") || [],
+				newKeyword: "",
+			});
 			setExist(true);
+			setMessage("Business details saved successfully.");
 		} catch (error) {
 			setMessage(
 				error instanceof Error ? error.message : "Something went wrong"
@@ -157,13 +155,17 @@ export default function BusinessDetails() {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{Object.entries(formData).map(([key, value]) => {
 						if (
-							key === "images" ||
-							key === "companyLogoUrl" ||
-							key === "keywords" ||
-							key === "newKeyword" ||
-							typeof value === "boolean" ||
-							key === "id" ||
-							key === "userId"
+							[
+								"images",
+								"companyLogoUrl",
+								"keywords",
+								"newKeyword",
+								"panNumberVerified",
+								"gstNumberVerified",
+								"verified",
+								"id",
+								"userId",
+							].includes(key)
 						)
 							return null;
 
@@ -175,7 +177,17 @@ export default function BusinessDetails() {
 								<input
 									type="text"
 									name={key}
-									value={value || ""}
+									value={
+										typeof value === "string"
+											? value
+											: Array.isArray(value)
+											? value.join(", ")
+											: typeof value === "boolean"
+											? value
+												? "Yes"
+												: "No"
+											: value ?? ""
+									}
 									onChange={handleChange}
 									className="block w-full rounded border border-gray-400 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 hover:border-red-600 transition"
 									placeholder={`Enter ${key}`}
@@ -265,7 +277,6 @@ export default function BusinessDetails() {
 					</div>
 				)}
 
-				{/* Submit Button */}
 				<div className="flex justify-end pt-4">
 					<button
 						type="submit"
@@ -275,7 +286,6 @@ export default function BusinessDetails() {
 					</button>
 				</div>
 
-				{/* Status Message */}
 				{message && (
 					<p
 						className={`mt-2 text-sm font-medium ${

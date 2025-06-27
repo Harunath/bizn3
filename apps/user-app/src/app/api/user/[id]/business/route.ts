@@ -43,7 +43,7 @@ export const POST = async (req: NextRequest) => {
 
 		const body = await req.json();
 		const {
-			name,
+			businessName,
 			images,
 			panNumber,
 			panNumberVerified,
@@ -52,15 +52,17 @@ export const POST = async (req: NextRequest) => {
 			gstNumberVerified,
 			gstRegisteredState,
 			verified,
-			keywords,
-			BusinessDescription,
+			companyName,
 			companyLogoUrl,
+			BusinessDescription,
+			keywords,
 			generalCategory,
+			categoryId,
 		} = body;
 
-		if (!name || !images) {
+		if (!businessName || !Array.isArray(images)) {
 			return NextResponse.json(
-				{ message: "name, images are required" },
+				{ message: "businessName and images[] are required" },
 				{ status: 400 }
 			);
 		}
@@ -70,36 +72,30 @@ export const POST = async (req: NextRequest) => {
 			select: { businessDetails: true },
 		});
 
-		if (!user) {
+		if (!user || user.businessDetails?.id) {
 			return NextResponse.json(
-				{ message: "user does not exist" },
-				{ status: 400 }
-			);
-		}
-
-		if (user.businessDetails?.id) {
-			return NextResponse.json(
-				{ message: "user business already exists" },
+				{ message: "user business already exists or not found" },
 				{ status: 400 }
 			);
 		}
 
 		const businessDetails = await prisma.businessDetails.create({
 			data: {
-				businessName: name,
-				companyName: name || null,
+				businessName,
 				images,
-				generalCategory: generalCategory || null,
 				panNumber: panNumber || null,
-				panNumberVerified: panNumberVerified ?? false,
+				panNumberVerified: !!panNumberVerified,
 				tanNumber: tanNumber || null,
 				gstNumber: gstNumber || null,
-				gstNumberVerified: gstNumberVerified ?? false,
+				gstNumberVerified: !!gstNumberVerified,
 				gstRegisteredState: gstRegisteredState || null,
-				verified: verified ?? false,
-				keywords: keywords || null,
-				BusinessDescription: BusinessDescription || null,
+				verified: !!verified,
+				companyName: companyName || null,
 				companyLogoUrl: companyLogoUrl || null,
+				BusinessDescription: BusinessDescription || null,
+				keywords: keywords || null,
+				generalCategory: generalCategory || null,
+				categoryId: categoryId || null,
 				user: { connect: { id: session.user.id } },
 			},
 		});
@@ -126,7 +122,7 @@ export const PUT = async (req: NextRequest) => {
 
 		const body = await req.json();
 		const {
-			name,
+			businessName,
 			images,
 			panNumber,
 			panNumberVerified,
@@ -135,13 +131,13 @@ export const PUT = async (req: NextRequest) => {
 			gstNumberVerified,
 			gstRegisteredState,
 			verified,
-			keywords,
-			BusinessDescription,
+			companyName,
 			companyLogoUrl,
+			BusinessDescription,
+			keywords,
 			generalCategory,
+			categoryId,
 		} = body;
-
-		console.log("generalCategory", generalCategory);
 
 		const business = await prisma.businessDetails.findUnique({
 			where: { userId: session.user.id },
@@ -157,21 +153,28 @@ export const PUT = async (req: NextRequest) => {
 		const updated = await prisma.businessDetails.update({
 			where: { id: business.id },
 			data: {
-				businessName: name ?? business.businessName,
-				companyName: name ?? business.companyName,
-				images: images ?? business.images,
-				generalCategory: generalCategory ?? business.generalCategory,
+				businessName: businessName ?? business.businessName,
+				images: Array.isArray(images) ? images : business.images,
 				panNumber: panNumber ?? business.panNumber,
-				panNumberVerified: panNumberVerified ?? business.panNumberVerified,
+				panNumberVerified:
+					typeof panNumberVerified === "boolean"
+						? panNumberVerified
+						: business.panNumberVerified,
 				tanNumber: tanNumber ?? business.tanNumber,
 				gstNumber: gstNumber ?? business.gstNumber,
-				gstNumberVerified: gstNumberVerified ?? business.gstNumberVerified,
+				gstNumberVerified:
+					typeof gstNumberVerified === "boolean"
+						? gstNumberVerified
+						: business.gstNumberVerified,
 				gstRegisteredState: gstRegisteredState ?? business.gstRegisteredState,
-				verified: verified ?? business.verified,
-				keywords: keywords ?? business.keywords,
+				verified: typeof verified === "boolean" ? verified : business.verified,
+				companyName: companyName ?? business.companyName,
+				companyLogoUrl: companyLogoUrl ?? business.companyLogoUrl,
 				BusinessDescription:
 					BusinessDescription ?? business.BusinessDescription,
-				companyLogoUrl: companyLogoUrl ?? business.companyLogoUrl,
+				keywords: keywords ?? business.keywords,
+				generalCategory: generalCategory ?? business.generalCategory,
+				categoryId: categoryId ?? business.categoryId,
 			},
 		});
 
