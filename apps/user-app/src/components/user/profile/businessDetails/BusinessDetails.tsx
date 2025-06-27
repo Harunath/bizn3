@@ -16,7 +16,8 @@ export default function BusinessDetails() {
 		gstNumberVerified: false,
 		gstRegisteredState: "",
 		verified: false,
-		keywords: "",
+		keywords: [] as string[],
+		newKeyword: "",
 		BusinessDescription: "",
 		companyLogoUrl: "",
 		generalCategory: "",
@@ -24,20 +25,18 @@ export default function BusinessDetails() {
 	});
 
 	const [exist, setExist] = useState(false);
-	const [initialLoading, setInitialLoading] = useState(true); // only for fetching
-	const [isSubmitting, setIsSubmitting] = useState(false); // for save/update button
+	const [initialLoading, setInitialLoading] = useState(true);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [message, setMessage] = useState("");
 	const session = useSession();
 	const [userId, setUserId] = useState<string | null>(null);
 
-	// Get userId from session
 	useEffect(() => {
 		if (session.status === "authenticated" && session.data.user?.id) {
 			setUserId(session.data.user.id);
 		}
 	}, [session]);
 
-	// Fetch existing business data
 	useEffect(() => {
 		if (!userId) return;
 
@@ -52,7 +51,11 @@ export default function BusinessDetails() {
 
 				const data = await res.json();
 				if (data?.data) {
-					setFormData(data.data);
+					setFormData({
+						...data.data,
+						keywords: data.data.keywords || [],
+						newKeyword: "",
+					});
 					setExist(true);
 				}
 			} catch (error) {
@@ -68,13 +71,33 @@ export default function BusinessDetails() {
 		fetchBusinessDetails();
 	}, [userId]);
 
-	// Handle input change
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	// Handle submit
+	const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setFormData((prev) => ({ ...prev, newKeyword: e.target.value }));
+	};
+
+	const handleAddKeyword = () => {
+		const keyword = formData.newKeyword.trim();
+		if (keyword && !formData.keywords.includes(keyword)) {
+			setFormData((prev) => ({
+				...prev,
+				keywords: [...prev.keywords, keyword],
+				newKeyword: "",
+			}));
+		}
+	};
+
+	const handleRemoveKeyword = (keywordToRemove: string) => {
+		setFormData((prev) => ({
+			...prev,
+			keywords: prev.keywords.filter((kw) => kw !== keywordToRemove),
+		}));
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!userId) return;
@@ -86,7 +109,7 @@ export default function BusinessDetails() {
 			const res = await fetch(`/api/user/${userId}/business`, {
 				method: exist ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(formData),
+				body: JSON.stringify({ ...formData, newKeyword: undefined }),
 			});
 
 			const text = await res.text();
@@ -102,7 +125,7 @@ export default function BusinessDetails() {
 			}
 
 			if (json?.data) {
-				setFormData(json.data);
+				setFormData({ ...json.data, newKeyword: "" });
 			}
 
 			setMessage("Business details saved successfully.");
@@ -116,7 +139,6 @@ export default function BusinessDetails() {
 		}
 	};
 
-	// Show loader while data loads initially
 	if (initialLoading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
@@ -132,12 +154,13 @@ export default function BusinessDetails() {
 				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow-xl space-y-8">
 				<h2 className="text-2xl font-bold text-black mb-4">Business Details</h2>
 
-				{/* Text Fields */}
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{Object.entries(formData).map(([key, value]) => {
 						if (
 							key === "images" ||
 							key === "companyLogoUrl" ||
+							key === "keywords" ||
+							key === "newKeyword" ||
 							typeof value === "boolean" ||
 							key === "id" ||
 							key === "userId"
@@ -160,6 +183,49 @@ export default function BusinessDetails() {
 							</div>
 						);
 					})}
+				</div>
+
+				{/* Keyword Tags Input */}
+				<div>
+					<label className="block font-semibold text-black mb-1">
+						Keywords
+					</label>
+					<div className="flex items-center gap-2 mb-2">
+						<input
+							type="text"
+							placeholder="Type and press Enter"
+							value={formData.newKeyword}
+							onChange={handleKeywordChange}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") {
+									e.preventDefault();
+									handleAddKeyword();
+								}
+							}}
+							className="flex-grow border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+						/>
+						<button
+							type="button"
+							onClick={handleAddKeyword}
+							className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+							Add
+						</button>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						{formData.keywords.map((kw, idx) => (
+							<span
+								key={idx}
+								className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+								{kw}
+								<button
+									type="button"
+									onClick={() => handleRemoveKeyword(kw)}
+									className="text-red-600 hover:text-red-800">
+									&times;
+								</button>
+							</span>
+						))}
+					</div>
 				</div>
 
 				{/* Company Logo */}
