@@ -94,7 +94,7 @@ const PaymentProcessingGold = () => {
 
 			{status === "SUCCESS" && (
 				<p className="text-green-600 font-medium mt-4">
-					You’ll be redirected shortly.
+					You&apos;ll be redirected shortly.
 				</p>
 			)}
 

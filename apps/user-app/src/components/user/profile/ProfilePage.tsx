@@ -98,13 +98,13 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 
 					{/* Badge Overlay */}
 					{BADGE_URLS[membershipType] && (
-						<div className="absolute -bottom-2 -right-2">
+						<div className="absolute -top-0.5 -right-0.5">
 							<Image
 								src={BADGE_URLS[membershipType]}
 								alt={`${membershipType} badge`}
-								width={40}
-								height={40}
-								className="rounded-full border-2 border-white shadow-md"
+								width={80}
+								height={80}
+								className="w-20 h-20 "
 							/>
 						</div>
 					)}
