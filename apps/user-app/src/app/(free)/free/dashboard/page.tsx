@@ -21,6 +21,13 @@ const page = () => {
 			<p className="mt-10 text-sm text-gray-400">
 				More features coming soon 🚀
 			</p>
+			<div className="mt-4">
+				<h2 className="text-center text-4xl">Referrals</h2>
+				<div className="flex gap-4 items-center">
+					<Link href="/free/referral">Referral</Link>
+					<Link href="/free/referral/create">Create Referral</Link>
+				</div>
+			</div>
 		</div>
 	);
 };
