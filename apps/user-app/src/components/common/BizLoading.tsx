@@ -38,7 +38,6 @@ const BizLoading = () => {
 					default:
 						router.push("/login");
 				}
-				console.log(session.user.membershipType);
 			}
 		}
 	}, [status, session, router]);
