@@ -384,14 +384,10 @@ enum FranchiseType {
 //user app models
 enum UserMembershipType {
   FREE
-  VIP
   GOLD
+  VIP
 }
 
-enum ReferralType {
-  SELF
-  THIRD_PARTY
-}
 
 enum EventType {
   VIRTUAL
@@ -453,6 +449,9 @@ model User {
   // Referral System
   referralsCreated   Referral[] @relation("ReferralCreator")
   referralsReceived  Referral[] @relation("ReferralReceiver")
+
+  ThankYouNoteSender   ThankYouNote[] @relation("ThankYouNoteSender")
+  ThankYouNoteReceiver   ThankYouNote[] @relation("ThankYouNoteReceiver")
   
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -672,11 +671,16 @@ enum PriorityType {
   LEVEL_5
 }
 
+enum ReferralType {
+  SELF
+  THIRD_PARTY
+}
+
 // Referral Model
 model Referral {
   id             String      @id @default(cuid())
   type           ReferralType
-  
+
   creator        User        @relation("ReferralCreator", fields: [creatorId], references: [id])
   creatorId      String
   
@@ -685,10 +689,38 @@ model Referral {
   
   priority       PriorityType @default(LEVEL_1)
   businessDetails String?
+  phone          String?
+  Email          String?
   thirdPartyDetails Json?
-  status         ReferralStatus @default(WAITING)
+  comments       String?
   updates        String[]
-  
+
+  status         ReferralStatus @default(WAITING)
+
+  thankYouNote   ThankYouNote? @relation("ReferralThankYouNote")
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+enum ThankYouNoteBusinessType {
+  NEW
+  REPEAT
+}
+
+model ThankYouNote {
+  id             String      @id @default(cuid())
+
+  referralId     String     @unique
+  referal        Referral   @relation("ReferralThankYouNote", fields: [referralId], references:[id])
+  senderId       String
+  sender         User        @relation("ThankYouNoteSender", fields: [senderId], references:[id])
+  receiverId     String
+  receiver       User        @relation("ThankYouNoteReceiver", fields: [receiverId], references:[id])
+  amount        String
+  businessType  ThankYouNoteBusinessType @default(NEW)
+  comment       String
+
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
