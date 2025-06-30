@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function GainsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
@@ -34,6 +35,7 @@ export default function GainsProfile({ userId }: { userId: string }) {
 				}
 			} catch (err) {
 				console.error("Fetch error:", err);
+				toast.error("Failed to load Gains Profile");
 			} finally {
 				setLoading(false);
 			}
@@ -51,10 +53,10 @@ export default function GainsProfile({ userId }: { userId: string }) {
 		setFormData((prev) => ({ ...prev, [name]: lines }));
 	};
 
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setSubmitting(true);
+
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/gains-profile`, {
 				method: isEditMode ? "PUT" : "POST",
@@ -64,14 +66,21 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					accomplishments: formData.accomplishments,
 					networks: formData.networks,
 					skills: formData.skills,
-					intrests: formData.interests, // Send as 'intrests' due to schema typo
+					intrests: formData.interests, // still sending as `intrests` due to schema
 				}),
 			});
+
 			if (!res.ok) throw new Error("Failed to submit");
-			alert("Profile saved successfully!");
+
+			toast.success(
+				isEditMode
+					? "Gains Profile updated successfully!"
+					: "Gains Profile saved successfully!"
+			);
+			if (!isEditMode) setIsEditMode(true);
 		} catch (error) {
 			console.error("Save error:", error);
-			alert("An error occurred while saving profile.");
+			toast.error("An error occurred while saving Gains Profile.");
 		} finally {
 			setSubmitting(false);
 		}
@@ -110,19 +119,37 @@ export default function GainsProfile({ userId }: { userId: string }) {
 				onSubmit={handleSubmit}
 				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6">
 				{/* Goals */}
-				<TextareaField name="goals" label="Goals" value={formData.goals} onChange={handleChange} required />
+				<TextareaField
+					name="goals"
+					label="Goals"
+					value={formData.goals}
+					onChange={handleChange}
+					required
+				/>
 
 				{/* Accomplishments */}
-				<TextareaField name="accomplishments" label="Accomplishments" value={formData.accomplishments} onChange={handleChange} />
+				<TextareaField
+					name="accomplishments"
+					label="Accomplishments"
+					value={formData.accomplishments}
+					onChange={handleChange}
+				/>
 
-				{/* Interests - Converted to tag-style input */}
+				{/* Interests */}
 				<div>
-					<label className="block font-semibold text-black mb-1">Interests</label>
+					<label className="block font-semibold text-black mb-1">
+						Interests
+					</label>
 					<div className="flex items-center gap-2 mb-2">
 						<input
 							type="text"
 							value={formData.newInterest}
-							onChange={(e) => setFormData((prev) => ({ ...prev, newInterest: e.target.value }))}
+							onChange={(e) =>
+								setFormData((prev) => ({
+									...prev,
+									newInterest: e.target.value,
+								}))
+							}
 							onKeyDown={handleKeyDown}
 							placeholder="Type and press Enter"
 							className="flex-grow border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -136,7 +163,9 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					</div>
 					<div className="flex flex-wrap gap-2">
 						{formData.interests.map((item, idx) => (
-							<span key={idx} className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+							<span
+								key={idx}
+								className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
 								{item}
 								<button
 									type="button"
@@ -150,18 +179,34 @@ export default function GainsProfile({ userId }: { userId: string }) {
 				</div>
 
 				{/* Networks */}
-				<TextareaField name="networks" label="Networks" value={formData.networks} onChange={handleChange} />
+				<TextareaField
+					name="networks"
+					label="Networks"
+					value={formData.networks}
+					onChange={handleChange}
+				/>
 
 				{/* Skills */}
-				<TextareaField name="skills" label="Skills" value={formData.skills} onChange={handleChange} />
+				<TextareaField
+					name="skills"
+					label="Skills"
+					value={formData.skills}
+					onChange={handleChange}
+				/>
 
 				{/* Submit */}
-				<div className="flex justify-end gap-4 pt-6">
+				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
 						disabled={submitting}
-						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold">
-						{isEditMode ? "Update" : "Save"}
+						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+						{submitting
+							? isEditMode
+								? "Updating..."
+								: "Saving..."
+							: isEditMode
+								? "Update"
+								: "Save"}
 					</button>
 				</div>
 			</form>

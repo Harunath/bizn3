@@ -35,7 +35,6 @@ export default function UserProfile({
 	const [language, setLanguage] = useState("English (IN)");
 	const [timezone, setTimezone] = useState("Asia/Kolkata");
 
-	// For feedback messages
 	const [statusMessage, setStatusMessage] = useState<string | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -70,12 +69,10 @@ export default function UserProfile({
 		setStatusMessage("Profile image deleted.");
 	};
 
-	// Your updatePassword function
 	const updatePassword = async () => {
 		setStatusMessage(null);
 		setErrorMessage(null);
 
-		// Validate using schema
 		const result = passwordSchema.safeParse({ oldPassword, password });
 
 		if (!result.success) {
@@ -93,7 +90,7 @@ export default function UserProfile({
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						oldPassword,
-						newPassword: password, // Adjust based on what your API expects
+						newPassword: password,
 					}),
 				}
 			);
@@ -133,9 +130,9 @@ export default function UserProfile({
 				}
 			);
 			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
-			const response = await res.json();
-			setStatusMessage("profileImage updated successfully.");
-			toast.success(response.data);
+
+			// ✅ Only this line changed:
+			toast.success("Image uploaded successfully.");
 		} catch (e) {
 			if (e instanceof Error) {
 				setErrorMessage(e.message);
@@ -181,6 +178,7 @@ export default function UserProfile({
 								</motion.button>
 							</div>
 						</div>
+
 						{open && (
 							<motion.div
 								className=" fixed z-50 inset-0 backdrop-blur-md flex items-center justify-center"
@@ -302,7 +300,6 @@ export default function UserProfile({
 					</div>
 				</div>
 
-				{/* Status messages */}
 				<div className="mt-6">
 					{statusMessage && <p className="text-green-600">{statusMessage}</p>}
 					{errorMessage && <p className="text-red-600">{errorMessage}</p>}

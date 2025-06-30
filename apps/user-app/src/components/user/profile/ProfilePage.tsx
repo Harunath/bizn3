@@ -257,7 +257,7 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 
 			{/* Business Details Section */}
 			{user?.businessDetails && (
-				<div className="relative border border-gray-200 shadow-2xl p-6 text-base font-medium text-gray-800 bg-slate-100">
+				<div className="relative border border-gray-200 shadow-2xl p-6 text-base font-medium text-gray-800 bg-slate-100 h-[610px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400">
 					<Link
 						href={`/${SetMembershipUrl(membershipType)}/profile/business-details`}
 						className="absolute right-4 top-4 text-red-600 text-sm font-medium flex items-center gap-x-1">
@@ -299,17 +299,19 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 							<div className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3">
 								<span>Business Images</span>
 							</div>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div className="flex space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 pb-2">
 								{user.businessDetails.images.map(
 									(image: string, index: number) => (
-										<Image
+										<div
 											key={index}
-											src={image}
-											alt={`Business image ${index + 1}`}
-											width={600}
-											height={400}
-											className="rounded border object-cover w-full"
-										/>
+											className="flex-shrink-0 w-60 h-60 relative rounded border">
+											<Image
+												src={image}
+												alt={`Business image ${index + 1}`}
+												fill
+												className="object-cover rounded"
+											/>
+										</div>
 									)
 								)}
 							</div>

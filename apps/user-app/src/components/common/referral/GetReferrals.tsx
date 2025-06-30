@@ -58,38 +58,55 @@ export default function GetReferrals() {
 	if (loading || status === "loading") return <LoadingAnimation />;
 
 	return (
-		<div className="overflow-x-auto bg-white rounded shadow p-4">
-			<h2 className="text-xl font-bold mb-4">Referrals</h2>
-			<table className="min-w-full border border-gray-200 text-sm">
-				<thead className="bg-gray-100 text-gray-700">
+		<div className="overflow-x-auto w-full max-w-5xl mx-auto p-6 ">
+			<h2 className="text-2xl font-bold text-gray-800 mb-6">Your Referrals</h2>
+
+			<table className="min-w-full text-sm border border-gray-200">
+				<thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
 					<tr>
-						<th className="px-4 py-2 text-left">From</th>
-						<th className="px-4 py-2 text-left">Type</th>
-						<th className="px-4 py-2 text-left">Phone</th>
-						<th className="px-4 py-2 text-left">Status</th>
+						<th className="px-4 py-3 text-left border-b">From</th>
+						<th className="px-4 py-3 text-left border-b">Type</th>
+						<th className="px-4 py-3 text-left border-b">Phone</th>
+						<th className="px-4 py-3 text-left border-b">Status</th>
 					</tr>
 				</thead>
 				<tbody>
 					{referrals.length > 0 ? (
 						referrals.map((referral) => (
-							<tr key={referral.id} className="border-t">
-								<td className="px-4 py-2">
-									{referral?.creator?.firstname || ""}{" "}
-									{referral.creator?.lastname || ""}
+							<tr
+								key={referral.id}
+								className="hover:bg-gray-50 transition duration-150">
+								<td className="px-4 py-3 border-b">
+									<span className="font-medium text-gray-800">
+										{referral?.creator?.firstname || ""}{" "}
+										{referral?.creator?.lastname || ""}
+									</span>
 								</td>
-								<td className="px-4 py-2 capitalize">
+								<td className="px-4 py-3 border-b capitalize text-gray-600">
 									{referral.type.toLowerCase()}
 								</td>
-								<td className="px-4 py-2">
-									{referral.phone ? referral.phone : "Not provided"}
+								<td className="px-4 py-3 border-b text-gray-600">
+									{referral.phone || "Not provided"}
 								</td>
-								<td className="px-4 py-2">{referral.status}</td>
+								<td className="px-4 py-3 border-b">
+									<span
+										className={`px-3 py-1 inline-block rounded-full text-xs font-semibold ${
+											referral.status === "ACCEPTED"
+												? "bg-green-100 text-green-700"
+												: referral.status === "IN_PROGRESS" ||
+													  referral.status === "WAITING"
+													? "bg-yellow-100 text-yellow-700"
+													: "bg-red-100 text-red-700"
+										}`}>
+										{referral.status}
+									</span>
+								</td>
 							</tr>
 						))
 					) : (
 						<tr>
-							<td colSpan={4} className="text-center px-4 py-6">
-								No referrals found
+							<td colSpan={4} className="text-center px-4 py-6 text-gray-500">
+								No referrals found.
 							</td>
 						</tr>
 					)}
