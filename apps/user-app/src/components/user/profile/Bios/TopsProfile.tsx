@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function TopsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
@@ -12,8 +13,8 @@ export default function TopsProfile({ userId }: { userId: string }) {
 	});
 
 	const [loading, setLoading] = useState(true);
-	const [isEditMode, setIsEditMode] = useState(false); // NEW
-	const [submitting, setSubmitting] = useState(false); // NEW
+	const [isEditMode, setIsEditMode] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 
 	useEffect(() => {
 		const fetchProfile = async () => {
@@ -31,7 +32,7 @@ export default function TopsProfile({ userId }: { userId: string }) {
 						story: data.data.story || [],
 						idealReferralPartner: data.data.idealReferralPartner || [],
 					});
-					setIsEditMode(true); // ✅ Switch to update mode if profile exists
+					setIsEditMode(true);
 				}
 			} catch (error) {
 				console.error("Error fetching profile:", error);
@@ -65,11 +66,16 @@ export default function TopsProfile({ userId }: { userId: string }) {
 			});
 			if (!res.ok) throw new Error("Failed to save profile");
 
-			alert(`Profile ${isEditMode ? "updated" : "saved"} successfully!`);
+			toast.success(
+				isEditMode
+					? "Tops Profile updated successfully!"
+					: "Tops Profile saved successfully!"
+			);
+
 			if (!isEditMode) setIsEditMode(true);
 		} catch (error) {
 			console.error(error);
-			alert("An error occurred while saving profile.");
+			toast.error("An error occurred while saving Tops Profile.");
 		} finally {
 			setSubmitting(false);
 		}

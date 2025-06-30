@@ -31,29 +31,26 @@ export default function ReferralForm() {
 	const { data: session, status } = useSession();
 
 	useEffect(() => {
-		if (status === "loading") return; // Wait until session is ready
-
+		if (status === "loading") return;
 		if (status === "unauthenticated") {
 			unAuthorizedUser();
 			router.push("/login");
 			return;
 		}
 		if (session) {
-			if (session.user) {
-				switch (session.user.membershipType) {
-					case UserMembershipType.VIP:
-						setUri("vip");
-						break;
-					case UserMembershipType.GOLD:
-						setUri("gold");
-						break;
-					case UserMembershipType.FREE:
-						setUri("free");
-						break;
-					default:
-						unAuthorizedUser();
-						router.push("/login");
-				}
+			switch (session.user.membershipType) {
+				case UserMembershipType.VIP:
+					setUri("vip");
+					break;
+				case UserMembershipType.GOLD:
+					setUri("gold");
+					break;
+				case UserMembershipType.FREE:
+					setUri("free");
+					break;
+				default:
+					unAuthorizedUser();
+					router.push("/login");
 			}
 		}
 	}, [status]);
@@ -87,9 +84,7 @@ export default function ReferralForm() {
 			})
 				.then((res) => res.json())
 				.then((data) => {
-					console.log(data);
 					setReceiverOptions(data.data || []);
-					console.log("data", data.data);
 				});
 		}, 300);
 
@@ -97,14 +92,9 @@ export default function ReferralForm() {
 	}, [receiverQuery, uri]);
 
 	const handleSubmit = async () => {
-		if (!selectedReceiver?.id) {
-			alert("Please select a receiver");
-			return;
-		}
-
+		if (!selectedReceiver?.id) return alert("Please select a receiver");
 		if (referralType === "THIRD_PARTY" && !thirdPartyDetails.name.trim()) {
-			alert("Third party name is required");
-			return;
+			return alert("Third party name is required");
 		}
 
 		setSubmitting(true);
@@ -141,34 +131,45 @@ export default function ReferralForm() {
 	};
 
 	return (
-		<div className="max-w-xl mx-auto p-6 border rounded-md shadow-sm bg-white space-y-4">
-			<h2 className="text-xl font-bold">Create Referral</h2>
+		<div className="max-w-2xl mx-auto p-6 bg-slate-100 space-y-6 my-10 border border-gray-200">
+			<div className="text-center space-y-1">
+				<h1 className="text-3xl font-bold tracking-tight text-black">
+					<span className="text-red-600">Biz-</span>Network
+					<sup className="text-xs align-top">®</sup> Referral Form
+				</h1>
+
+				<p className="text-sm text-gray-500 italic">
+					(Be Sure To Announce This At The Meeting)
+				</p>
+			</div>
 
 			{/* Referral Type */}
-			<div className="space-x-4">
-				<label>
+			<div className="flex gap-6 items-center">
+				<label className="flex items-center gap-2">
 					<input
 						type="radio"
 						value="SELF"
 						checked={referralType === "SELF"}
 						onChange={() => setReferralType("SELF")}
-					/>{" "}
-					Self
+					/>
+					<span className="text-sm font-medium">Self</span>
 				</label>
-				<label>
+				<label className="flex items-center gap-2">
 					<input
 						type="radio"
 						value="THIRD_PARTY"
 						checked={referralType === "THIRD_PARTY"}
 						onChange={() => setReferralType("THIRD_PARTY")}
-					/>{" "}
-					Third Party
+					/>
+					<span className="text-sm font-medium">Third Party</span>
 				</label>
 			</div>
 
 			{/* Receiver Search */}
 			<div className="relative">
-				<label className="block font-medium">Search Receiver</label>
+				<label className="block font-semibold text-sm mb-1">
+					Search Receiver
+				</label>
 				<input
 					type="text"
 					value={receiverQuery}
@@ -177,22 +178,22 @@ export default function ReferralForm() {
 						setSelectedReceiver(null);
 					}}
 					placeholder="Enter name or email..."
-					className="mt-1 w-full border rounded px-3 py-2"
+					className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-red-500"
 				/>
 				{receiverOptions.length > 0 && !selectedReceiver && (
-					<ul className=" absolute top z-20 border mt-1 bg-white rounded shadow-sm max-h-40 overflow-y-auto">
+					<ul className="absolute z-30 w-full bg-white border mt-1 rounded shadow max-h-40 overflow-y-auto">
 						{receiverOptions.map((user) => (
 							<li
 								key={user.id}
 								onClick={() => {
 									setSelectedReceiver(user);
 									setReceiverQuery(
-										`${user.firstname + user.lastname} (${user.email})`
+										`${user.firstname + " " + user.lastname} (${user.email})`
 									);
 									setReceiverOptions([]);
 								}}
-								className="px-3 py-2 hover:bg-gray-100 cursor-pointer">
-								{user.firstname + user.lastname} - {user.email} -{" "}
+								className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+								{user.firstname} {user.lastname} - {user.email} -{" "}
 								{user.homeClub.name} - {user.homeClub.chapter.name}
 							</li>
 						))}
@@ -202,42 +203,47 @@ export default function ReferralForm() {
 
 			{/* Business Details */}
 			<div>
-				<label className="block font-medium">Business Details</label>
+				<label className="block font-semibold text-sm mb-1">
+					Business Details
+				</label>
 				<textarea
 					value={businessDetails}
 					onChange={(e) => setBusinessDetails(e.target.value)}
-					className="w-full mt-1 border px-3 py-2 rounded"
+					className="w-full border px-4 py-2 rounded resize-none focus:ring-2 focus:ring-red-500"
+					rows={3}
 				/>
 			</div>
 
 			{/* Phone & Email */}
-			<div className="grid grid-cols-2 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
-					<label className="block font-medium">Phone</label>
+					<label className="block font-semibold text-sm mb-1">Phone</label>
 					<input
 						type="text"
 						value={phone}
 						onChange={(e) => setPhone(e.target.value)}
-						className="w-full mt-1 border px-3 py-2 rounded"
+						className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-red-500"
 					/>
 				</div>
 				<div>
-					<label className="block font-medium">Email</label>
+					<label className="block font-semibold text-sm mb-1">Email</label>
 					<input
 						type="email"
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
-						className="w-full mt-1 border px-3 py-2 rounded"
+						className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-red-500"
 					/>
 				</div>
 			</div>
 
 			{/* Third Party Details */}
 			{referralType === "THIRD_PARTY" && (
-				<div className="border rounded p-4 bg-gray-50 space-y-3">
-					<h3 className="font-semibold">Third Party Details</h3>
+				<div className="bg-gray-50 p-4 rounded border space-y-4">
+					<h3 className="text-md font-semibold text-gray-800">
+						Third Party Details
+					</h3>
 					<div>
-						<label className="block font-medium">Name *</label>
+						<label className="block text-sm font-medium">Name *</label>
 						<input
 							type="text"
 							value={thirdPartyDetails.name}
@@ -247,12 +253,12 @@ export default function ReferralForm() {
 									name: e.target.value,
 								})
 							}
-							className="w-full mt-1 border px-3 py-2 rounded"
+							className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-red-500"
 							required
 						/>
 					</div>
 					<div>
-						<label className="block font-medium">Other Info</label>
+						<label className="block text-sm font-medium">Other Info</label>
 						<textarea
 							value={thirdPartyDetails.otherInfo}
 							onChange={(e) =>
@@ -261,7 +267,8 @@ export default function ReferralForm() {
 									otherInfo: e.target.value,
 								})
 							}
-							className="w-full mt-1 border px-3 py-2 rounded"
+							className="w-full border px-4 py-2 rounded resize-none focus:ring-2 focus:ring-red-500"
+							rows={2}
 						/>
 					</div>
 				</div>
@@ -269,26 +276,27 @@ export default function ReferralForm() {
 
 			{/* Comments */}
 			<div>
-				<label className="block font-medium">Comments</label>
+				<label className="block font-semibold text-sm mb-1">Comments</label>
 				<textarea
 					value={comments}
 					onChange={(e) => setComments(e.target.value)}
-					className="w-full mt-1 border px-3 py-2 rounded"
+					className="w-full border px-4 py-2 rounded resize-none focus:ring-2 focus:ring-red-500"
+					rows={3}
 				/>
 			</div>
 
-			{/* Submit Button */}
+			{/* Submit */}
 			<div className="flex justify-end">
 				<button
 					onClick={handleSubmit}
 					disabled={submitting}
-					className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+					className="bg-red-600 text-white px-6 py-2 rounded font-semibold hover:bg-red-700 transition disabled:opacity-50">
 					{submitting ? "Submitting..." : "Create Referral"}
 				</button>
 			</div>
 
 			{success && (
-				<p className="text-green-600 font-medium text-center">
+				<p className="text-green-600 text-sm font-medium text-center">
 					Referral created successfully!
 				</p>
 			)}

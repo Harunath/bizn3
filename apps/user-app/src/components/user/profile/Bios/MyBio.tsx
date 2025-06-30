@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function MyBio({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
@@ -19,9 +20,8 @@ export default function MyBio({ userId }: { userId: string }) {
 	});
 
 	const [loading, setLoading] = useState(true);
-	const [updating, setUpdating] = useState(false); // 👈 if bio exists
+	const [updating, setUpdating] = useState(false);
 	const [saving, setSaving] = useState(false);
-	const [message, setMessage] = useState("");
 
 	useEffect(() => {
 		const fetchBio = async () => {
@@ -98,7 +98,6 @@ export default function MyBio({ userId }: { userId: string }) {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setSaving(true);
-		setMessage("");
 
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/my-bio`, {
@@ -108,12 +107,14 @@ export default function MyBio({ userId }: { userId: string }) {
 			});
 			if (!res.ok) throw new Error("Failed to save bio");
 
-			setMessage(
-				updating ? "Bio updated successfully!" : "Bio created successfully!"
+			toast.success(
+				updating
+					? "My Bio updated successfully!"
+					: "My Bio created successfully!"
 			);
 		} catch (error) {
 			console.error(error);
-			setMessage("An error occurred while saving the bio.");
+			toast.error("An error occurred while saving the bio.");
 		} finally {
 			setSaving(false);
 		}
@@ -126,7 +127,6 @@ export default function MyBio({ userId }: { userId: string }) {
 			<form
 				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6"
 				onSubmit={handleSubmit}>
-				{/* Form fields below */}
 				<FormField
 					label="Years In Business"
 					name="yearsInBusiness"
@@ -185,7 +185,6 @@ export default function MyBio({ userId }: { userId: string }) {
 					onRemove={handleRemoveItem}
 				/>
 
-				{/* Submit */}
 				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
@@ -200,28 +199,25 @@ export default function MyBio({ userId }: { userId: string }) {
 								: "Save"}
 					</button>
 				</div>
-
-				{message && (
-					<p
-						className={`mt-4 font-semibold ${message.includes("successfully") ? "text-green-700" : "text-red-700"}`}>
-						{message}
-					</p>
-				)}
 			</form>
 		</div>
 	);
 }
 
 // ——— Subcomponents ———
-function FormField({ label, name, value, onChange, type = "text" }: 
-	{
+function FormField({
+	label,
+	name,
+	value,
+	onChange,
+	type = "text",
+}: {
 	label: string;
 	name: string;
 	value: string | number;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	type?: "text" | "number";
-}
-) {
+}) {
 	return (
 		<div>
 			<label className="block font-semibold text-black mb-1">{label}</label>
@@ -236,7 +232,12 @@ function FormField({ label, name, value, onChange, type = "text" }:
 	);
 }
 
-function TextAreaField({ label, name, value, onChange }: {
+function TextAreaField({
+	label,
+	name,
+	value,
+	onChange,
+}: {
 	label: string;
 	name: string;
 	value: string;
