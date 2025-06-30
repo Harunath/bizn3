@@ -72,6 +72,23 @@ export const POST = async (req: NextRequest) => {
 				{ status: 400 }
 			);
 		}
+		const homeClub = await prisma.club.findUnique({
+			where: {
+				id: session.user.homeClub,
+			},
+			select: {
+				chapterId: true,
+			},
+		});
+
+		const chapterId = homeClub?.chapterId;
+		if (!chapterId) {
+			// Handle error or empty result
+			return NextResponse.json(
+				{ error: "Could not find the chapter" },
+				{ status: 400 }
+			);
+		}
 
 		const user = await prisma.user.findUnique({
 			where: {
@@ -90,21 +107,35 @@ export const POST = async (req: NextRequest) => {
 		}
 		const clubIds = user.clubs?.map((club) => club.id) || [];
 		clubIds.push(session.user.homeClub);
-
-		const isReceiverMember = await prisma.club.findFirst({
+		const isReceiverMember = await prisma.user.findFirst({
 			where: {
-				id: {
-					in: clubIds, // ← multiple club IDs here
-				},
-				members: {
-					some: {
-						id: receiverId,
+				AND: [
+					{ id: receiverId },
+					{
+						OR: [
+							{
+								membershipType: "VIP",
+								homeClub: {
+									chapterId,
+								},
+							},
+							{
+								homeClub: {
+									chapterId,
+								},
+							},
+							{
+								clubs: {
+									some: {
+										id: { in: clubIds },
+									},
+								},
+							},
+						],
 					},
-				},
+				],
 			},
-			select: { id: true },
 		});
-		console.log("isReceiverMember : ", isReceiverMember);
 		if (!isReceiverMember) {
 			return NextResponse.json(
 				{ error: "Receiver is not a member of your club" },
