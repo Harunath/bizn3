@@ -66,7 +66,7 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					accomplishments: formData.accomplishments,
 					networks: formData.networks,
 					skills: formData.skills,
-					intrests: formData.interests, // still sending as `intrests` due to schema
+					intrests: formData.interests,
 				}),
 			});
 
@@ -114,103 +114,93 @@ export default function GainsProfile({ userId }: { userId: string }) {
 	if (loading) return <div className="p-8 text-center">Loading...</div>;
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
-			<form
-				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6">
-				{/* Goals */}
-				<TextareaField
-					name="goals"
-					label="Goals"
-					value={formData.goals}
-					onChange={handleChange}
-					required
-				/>
+		<form
+			onSubmit={handleSubmit}
+			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6 mx-auto">
+			<TextareaField
+				name="goals"
+				label="Goals"
+				value={formData.goals}
+				onChange={handleChange}
+				required
+			/>
 
-				{/* Accomplishments */}
-				<TextareaField
-					name="accomplishments"
-					label="Accomplishments"
-					value={formData.accomplishments}
-					onChange={handleChange}
-				/>
+			<TextareaField
+				name="accomplishments"
+				label="Accomplishments"
+				value={formData.accomplishments}
+				onChange={handleChange}
+			/>
 
-				{/* Interests */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Interests
-					</label>
-					<div className="flex items-center gap-2 mb-2">
-						<input
-							type="text"
-							value={formData.newInterest}
-							onChange={(e) =>
-								setFormData((prev) => ({
-									...prev,
-									newInterest: e.target.value,
-								}))
-							}
-							onKeyDown={handleKeyDown}
-							placeholder="Type and press Enter"
-							className="flex-grow border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-						<button
-							type="button"
-							onClick={handleAddInterest}
-							className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-							Add
-						</button>
-					</div>
-					<div className="flex flex-wrap gap-2">
-						{formData.interests.map((item, idx) => (
-							<span
-								key={idx}
-								className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
-								{item}
-								<button
-									type="button"
-									onClick={() => handleRemoveInterest(item)}
-									className="text-red-600 hover:text-red-800">
-									&times;
-								</button>
-							</span>
-						))}
-					</div>
-				</div>
-
-				{/* Networks */}
-				<TextareaField
-					name="networks"
-					label="Networks"
-					value={formData.networks}
-					onChange={handleChange}
-				/>
-
-				{/* Skills */}
-				<TextareaField
-					name="skills"
-					label="Skills"
-					value={formData.skills}
-					onChange={handleChange}
-				/>
-
-				{/* Submit */}
-				<div className="flex justify-end pt-6">
+			<div>
+				<label className="block font-semibold text-black mb-1">Interests</label>
+				<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+					<input
+						type="text"
+						value={formData.newInterest}
+						onChange={(e) =>
+							setFormData((prev) => ({
+								...prev,
+								newInterest: e.target.value,
+							}))
+						}
+						onKeyDown={handleKeyDown}
+						placeholder="Type and press Enter"
+						className="flex-grow bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+					/>
 					<button
-						type="submit"
-						disabled={submitting}
-						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
-						{submitting
-							? isEditMode
-								? "Updating..."
-								: "Saving..."
-							: isEditMode
-								? "Update"
-								: "Save"}
+						type="button"
+						onClick={handleAddInterest}
+						className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+						Add
 					</button>
 				</div>
-			</form>
-		</div>
+				<div className="flex flex-wrap gap-2">
+					{formData.interests.map((item, idx) => (
+						<span
+							key={idx}
+							className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+							{item}
+							<button
+								type="button"
+								onClick={() => handleRemoveInterest(item)}
+								className="text-red-600 hover:text-red-800">
+								&times;
+							</button>
+						</span>
+					))}
+				</div>
+			</div>
+
+			<TextareaField
+				name="networks"
+				label="Networks"
+				value={formData.networks}
+				onChange={handleChange}
+			/>
+
+			<TextareaField
+				name="skills"
+				label="Skills"
+				value={formData.skills}
+				onChange={handleChange}
+			/>
+
+			<div className="flex justify-end pt-4">
+				<button
+					type="submit"
+					disabled={submitting}
+					className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+					{submitting
+						? isEditMode
+							? "Updating..."
+							: "Saving..."
+						: isEditMode
+							? "Update"
+							: "Save"}
+				</button>
+			</div>
+		</form>
 	);
 }
 
@@ -240,7 +230,7 @@ function TextareaField({
 				rows={4}
 				required={required}
 				placeholder={`Enter ${label.toLowerCase()} (one per line)...`}
-				className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+				className="w-full bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 			/>
 		</div>
 	);

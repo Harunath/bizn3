@@ -17,6 +17,10 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 	const [country, setCountry] = useState("");
 	const [pincode, setPincode] = useState("");
 	const [exist, setExist] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [message, setMessage] = useState("");
+
+	const apiBase = `/api/user/${userId}/my-profile/address`;
 
 	useEffect(() => {
 		if (addressProp) {
@@ -29,11 +33,6 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 			setPincode(addressProp.pincode || "");
 		}
 	}, [addressProp]);
-
-	const [loading, setLoading] = useState(false);
-	const [message, setMessage] = useState("");
-
-	const apiBase = `/api/user/${userId}/my-profile/address`;
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -62,26 +61,25 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 				throw new Error(result.message || "Failed to save address");
 			}
 
-			setMessage(
-				exist ? "Address updated successfully." : "Address saved successfully."
-			);
-			toast.success(
-				exist ? "Address updated successfully." : "Address saved successfully."
-			);
+			const successMsg = exist
+				? "Address updated successfully."
+				: "Address saved successfully.";
+			setMessage(successMsg);
+			toast.success(successMsg);
 		} catch (error) {
-			setMessage(
-				error instanceof Error ? error.message : "Something went wrong"
-			);
+			const errMsg =
+				error instanceof Error ? error.message : "Something went wrong";
+			setMessage(errMsg);
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start p-4 md:p-6">
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 shadow space-y-8">
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-8">
 				<h2 className="text-xl font-bold text-black">Personal Address</h2>
 
 				{/* Form Fields */}
@@ -98,7 +96,7 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 						setValue={setAddressLane2}
 					/>
 
-					<div className="grid grid-cols-2 gap-6">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<InputField label="City" value={city} setValue={setCity} />
 						<InputField
 							label="State"
@@ -107,7 +105,8 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 							required
 						/>
 					</div>
-					<div className="grid grid-cols-2 gap-6">
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<InputField
 							label="Country"
 							value={country}
@@ -128,11 +127,11 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 						type="submit"
 						disabled={loading}
 						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
-						{loading ? "saving..." : "Update"}
+						{loading ? "Saving..." : exist ? "Update" : "Save"}
 					</button>
 				</div>
 
-				{/* Feedback */}
+				{/* Fallback Text Feedback */}
 				{message && (
 					<p
 						className={`mt-4 font-semibold ${
@@ -141,13 +140,6 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 						{message}
 					</p>
 				)}
-
-				{/* {updatedFields.length > 0 && (
-					<div className="mt-4 text-sm text-gray-600">
-						Updated fields:{" "}
-						<span className="font-semibold">{updatedFields.join(", ")}</span>
-					</div>
-				)} */}
 			</form>
 		</div>
 	);
@@ -166,13 +158,13 @@ function InputField({
 }) {
 	return (
 		<div>
-			<label className="block font-semibold mb-1">{label}</label>
+			<label className="block font-semibold mb-1 text-black">{label}</label>
 			<input
 				type="text"
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
-				className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
 				required={required}
+				className="w-full bg-white border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
 			/>
 		</div>
 	);

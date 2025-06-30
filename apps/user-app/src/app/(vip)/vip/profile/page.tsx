@@ -26,14 +26,20 @@ const page = async () => {
 		<div>
 			<div className="flex items-center justify-between p-4 flex-wrap">
 				<div className="flex-1 flex justify-center items-baseline-last gap-x-2 flex-wrap">
-					<h1 className="text-3xl font-semibold flex items-center space-x-2">
-						<span className="text-red-600">{session.user.firstname}</span>
-						<span className="inline-flex items-center">
-							Biz-<span className="text-black">Network</span>
-							<span className="text-sm align-top ml-0.5">®</span>
-						</span>
-						<span>Profile</span>
-					</h1>
+					<div className="text-center md:text-left">
+						<h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-x-1">
+							<span className="text-red-600">Biz</span>
+							<span className="text-black">-Network</span>
+							<span className="text-sm align-top">®</span>
+						</h1>
+
+						<p className="text-gray-600 text-sm mt-1">
+							Welcome back,{" "}
+							<span className="font-semibold text-red-600">
+								{session.user.firstname}
+							</span>
+						</p>
+					</div>
 				</div>
 				<div className="w-fit">
 					<SignOutButton>

@@ -19,10 +19,7 @@ export default function TopsProfile({ userId }: { userId: string }) {
 	useEffect(() => {
 		const fetchProfile = async () => {
 			try {
-				const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
-					method: "GET",
-					headers: { "Content-Type": "application/json" },
-				});
+				const res = await fetch(`/api/user/${userId}/bios/top-profile`);
 				if (res.status === 200) {
 					const data = await res.json();
 					setFormData({
@@ -84,99 +81,91 @@ export default function TopsProfile({ userId }: { userId: string }) {
 	if (loading) return <div className="p-8 text-center">Loading...</div>;
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
-			<form
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6"
-				onSubmit={handleSubmit}>
-				{/* Ideal Referral */}
-				<TextAreaField
-					label="Ideal Referral"
-					name="idealReferral"
-					value={formatArray(formData.idealReferral)}
-					onChange={handleChange}
-					placeholder="Describe your ideal referral (one per line)..."
-				/>
+		<form
+			onSubmit={handleSubmit}
+			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6 mx-auto">
+			<TextAreaField
+				label="Ideal Referral"
+				name="idealReferral"
+				value={formatArray(formData.idealReferral)}
+				onChange={handleChange}
+				placeholder="Describe your ideal referral (one per line)..."
+			/>
 
-				{/* Top Product */}
-				<TextAreaField
-					label="Top Product"
-					name="topProduct"
-					value={formatArray(formData.topProduct)}
-					onChange={handleChange}
-					placeholder="List your top products or services (one per line)..."
-				/>
+			<TextAreaField
+				label="Top Product"
+				name="topProduct"
+				value={formatArray(formData.topProduct)}
+				onChange={handleChange}
+				placeholder="List your top products or services (one per line)..."
+			/>
 
-				{/* Top Problem Solved */}
-				<TextAreaField
-					label="Top Problem Solved"
-					name="topProblemSolved"
-					value={formatArray(formData.topProblemSolved)}
-					onChange={handleChange}
-					placeholder="Explain the key problems you've solved (one per line)..."
-				/>
+			<TextAreaField
+				label="Top Problem Solved"
+				name="topProblemSolved"
+				value={formatArray(formData.topProblemSolved)}
+				onChange={handleChange}
+				placeholder="Explain the key problems you've solved (one per line)..."
+			/>
 
-				{/* BNI Story */}
-				<TextAreaField
-					label="My Favourite BNI Story"
-					name="story"
-					value={formatArray(formData.story)}
-					onChange={handleChange}
-					placeholder="Share your favorite BNI experiences (one per line)..."
-				/>
+			<TextAreaField
+				label="My Favourite BNI Story"
+				name="story"
+				value={formatArray(formData.story)}
+				onChange={handleChange}
+				placeholder="Share your favorite BNI experiences (one per line)..."
+			/>
 
-				{/* Ideal Referral Partner */}
-				<TextAreaField
-					label="My Ideal Referral Partner"
-					name="idealReferralPartner"
-					value={formatArray(formData.idealReferralPartner)}
-					onChange={handleChange}
-					placeholder="List ideal partners you'd like to work with (one per line)..."
-				/>
+			<TextAreaField
+				label="My Ideal Referral Partner"
+				name="idealReferralPartner"
+				value={formatArray(formData.idealReferralPartner)}
+				onChange={handleChange}
+				placeholder="List ideal partners you'd like to work with (one per line)..."
+			/>
 
-				{/* Submit Button */}
-				<div className="flex justify-end pt-6">
-					<button
-						type="submit"
-						disabled={submitting}
-						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
-						{submitting
-							? isEditMode
-								? "Updating..."
-								: "Saving..."
-							: isEditMode
-								? "Update"
-								: "Save"}
-					</button>
-				</div>
-			</form>
-		</div>
+			<div className="flex justify-end pt-4">
+				<button
+					type="submit"
+					disabled={submitting}
+					className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+					{submitting
+						? isEditMode
+							? "Updating..."
+							: "Saving..."
+						: isEditMode
+							? "Update"
+							: "Save"}
+				</button>
+			</div>
+		</form>
 	);
 }
 
-type TextAreaFieldProps = {
-	label: string;
-	name: string;
-	value: string;
-	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-	placeholder?: string;
-};
-
-const TextAreaField: React.FC<TextAreaFieldProps> = ({
+function TextAreaField({
 	label,
 	name,
 	value,
 	onChange,
 	placeholder = "",
-}) => (
-	<div>
-		<label className="block font-semibold text-black mb-1">{label}</label>
-		<textarea
-			name={name}
-			value={value}
-			onChange={onChange}
-			rows={4}
-			placeholder={placeholder}
-			className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-		/>
-	</div>
-);
+}: {
+	label: string;
+	name: string;
+	value: string;
+	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+	placeholder?: string;
+}) {
+	return (
+		<div>
+			<label className="block font-semibold text-black mb-1">{label}</label>
+			<textarea
+				name={name}
+				value={value}
+				onChange={onChange}
+				rows={4}
+				placeholder={placeholder}
+				className="w-full bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+			/>
+		</div>
+	);
+}

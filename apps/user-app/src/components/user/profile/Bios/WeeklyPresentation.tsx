@@ -138,11 +138,11 @@ export default function WeeklyPresentation({
 	if (loading) return <div className="p-6 text-center">Loading...</div>;
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center p-6">
+		<div className="min-h-screen flex justify-center p-4 md:p-6">
 			<ToastContainer position="top-center" autoClose={3000} />
-			<div className="w-full max-w-3xl space-y-8">
+			<div className="w-full max-w-4xl space-y-8">
 				{globalError && (
-					<div className="bg-yellow-100 text-yellow-800 border border-yellow-400 p-4 rounded mb-4 text-center">
+					<div className="bg-yellow-100 text-yellow-800 border border-yellow-400 p-4 rounded text-center">
 						{globalError}
 					</div>
 				)}
@@ -156,7 +156,7 @@ export default function WeeklyPresentation({
 				{presentations.map((presentation, index) => (
 					<div
 						key={presentation.id ?? index}
-						className="bg-white p-6 rounded-lg shadow border space-y-4">
+						className="bg-slate-100 p-6 rounded-lg shadow border space-y-4">
 						<h3 className="text-lg font-bold">
 							Presentation {index + 1}
 							{index === 0 && <span className="text-red-500"> *</span>}
@@ -168,7 +168,7 @@ export default function WeeklyPresentation({
 							value={presentation.title}
 							onChange={(e) => handleChange(index, "title", e.target.value)}
 							disabled={savingIndex !== null}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 
 						<textarea
@@ -179,7 +179,7 @@ export default function WeeklyPresentation({
 							}
 							rows={4}
 							disabled={savingIndex !== null}
-							className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full  bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 
 						{presentation.error && (

@@ -17,7 +17,6 @@ interface UserType {
 	firstname: string;
 	lastname: string;
 	profileImage: string;
-
 	personalDetails: PersonalDetails;
 	contactDetails: ContactDetails;
 	fullAddress: Address;
@@ -45,7 +44,7 @@ function ProfileHome() {
 		setLoading(true);
 		const response = await fetch(`/api/user/${userId}/my-profile`);
 		const data = await response.json();
-		if (data.message != "success") {
+		if (data.message !== "success") {
 			toast.error("Error fetching the User details");
 			setLoading(false);
 			throw new Error(data.message);
@@ -56,7 +55,7 @@ function ProfileHome() {
 	};
 
 	if (!userId) {
-		return <>User is not logged in</>;
+		return <p className="text-center text-red-600">User is not logged in</p>;
 	}
 
 	if (session.status === "loading" || loading) {
@@ -68,25 +67,26 @@ function ProfileHome() {
 	}
 
 	return (
-		<div className="p-4">
+		<div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
 			{/* Tab Buttons */}
-			<div className="flex gap-2 border-b mb-4 pb-2">
+			<div className="flex flex-wrap gap-2 border-b border-gray-200 mb-4 pb-2 overflow-x-auto">
 				{tabs.map((tab) => (
 					<button
 						key={tab.id}
 						onClick={() => setActiveTab(tab.id)}
-						className={`px-4 py-2 rounded-t-md font-medium ${
-							activeTab === tab.id
-								? "bg-red-600 text-white"
-								: "bg-gray-100 text-gray-800"
-						}`}>
+						className={`px-4 py-2 rounded-t-md font-medium whitespace-nowrap transition-all duration-150
+							${
+								activeTab === tab.id
+									? "bg-red-600 text-white shadow"
+									: "bg-gray-100 text-gray-800 hover:bg-red-100"
+							}`}>
 						{tab.label}
 					</button>
 				))}
 			</div>
 
 			{/* Tab Content */}
-			<div className="rounded-b-md shadow-sm">
+			<div className=" p-4 sm:p-6">
 				{user && (
 					<>
 						{activeTab === "profile" && (

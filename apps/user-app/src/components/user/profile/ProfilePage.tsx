@@ -237,14 +237,14 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 						<h2 className="text-lg font-bold text-red-600 mb-4">My Bio</h2>
 						<div className="grid divide-y divide-gray-300">
 							{[
-								{ label: "GAINS Profile", href: "/free/profile/bios" },
-								{ label: "My Bio", href: "/free/profile/bios" },
-								{ label: "Tops Profile", href: "/free/profile/bios" },
-								{ label: "Weekly Presentations", href: "/free/profile/bios" },
+								{ label: "GAINS Profile", slug: "bios" },
+								{ label: "My Bio", slug: "bios" },
+								{ label: "Tops Profile", slug: "bios" },
+								{ label: "Weekly Presentations", slug: "bios" },
 							].map((item) => (
 								<Link
 									key={item.label}
-									href={item.href}
+									href={`/${SetMembershipUrl(membershipType)}/profile/${item.slug}`}
 									className="flex justify-between items-center px-5 py-4 hover:bg-gray-50">
 									<span>{item.label}</span>
 									<FiChevronRight className="text-gray-400" />
@@ -299,7 +299,7 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 							<div className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3">
 								<span>Business Images</span>
 							</div>
-							<div className="flex space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 pb-2">
+							<div className="flex space-x-4 overflow-x-auto pb-2">
 								{user.businessDetails.images.map(
 									(image: string, index: number) => (
 										<div

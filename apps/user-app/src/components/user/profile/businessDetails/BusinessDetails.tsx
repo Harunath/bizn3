@@ -146,10 +146,10 @@ export default function BusinessDetails() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen  flex justify-center items-start p-6">
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow-xl space-y-8">
+				className="w-full max-w-5xl bg-slate-100 p-8  shadow-xl space-y-8">
 				<h2 className="text-2xl font-bold text-black mb-4">Business Details</h2>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -181,15 +181,15 @@ export default function BusinessDetails() {
 										typeof value === "string"
 											? value
 											: Array.isArray(value)
-											? value.join(", ")
-											: typeof value === "boolean"
-											? value
-												? "Yes"
-												: "No"
-											: value ?? ""
+												? value.join(", ")
+												: typeof value === "boolean"
+													? value
+														? "Yes"
+														: "No"
+													: (value ?? "")
 									}
 									onChange={handleChange}
-									className="block w-full rounded border border-gray-400 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 hover:border-red-600 transition"
+									className="block w-full bg-white rounded border border-gray-400 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 hover:border-red-600 transition"
 									placeholder={`Enter ${key}`}
 								/>
 							</div>
@@ -214,7 +214,7 @@ export default function BusinessDetails() {
 									handleAddKeyword();
 								}
 							}}
-							className="flex-grow border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="flex-grow bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 						<button
 							type="button"
