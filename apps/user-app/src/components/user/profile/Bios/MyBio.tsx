@@ -123,30 +123,33 @@ export default function MyBio({ userId }: { userId: string }) {
 	if (loading) return <div className="p-8 text-center">Loading...</div>;
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start ">
 			<form
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6"
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6"
 				onSubmit={handleSubmit}>
-				<FormField
-					label="Years In Business"
-					name="yearsInBusiness"
-					type="number"
-					value={formData.yearsInBusiness}
-					onChange={handleChange}
-				/>
-				<FormField
-					label="City of Residence"
-					name="cityOfResidence"
-					value={formData.cityOfResidence}
-					onChange={handleChange}
-				/>
-				<FormField
-					label="Years in that City"
-					name="yearsInCity"
-					type="number"
-					value={formData.yearsInCity}
-					onChange={handleChange}
-				/>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FormField
+						label="Years In Business"
+						name="yearsInBusiness"
+						type="number"
+						value={formData.yearsInBusiness}
+						onChange={handleChange}
+					/>
+					<FormField
+						label="Years in that City"
+						name="yearsInCity"
+						type="number"
+						value={formData.yearsInCity}
+						onChange={handleChange}
+					/>
+					<FormField
+						label="City of Residence"
+						name="cityOfResidence"
+						value={formData.cityOfResidence}
+						onChange={handleChange}
+					/>
+				</div>
+
 				<TextAreaField
 					label="My Burning Desire is to"
 					name="burningDesire"
@@ -189,7 +192,9 @@ export default function MyBio({ userId }: { userId: string }) {
 					<button
 						type="submit"
 						disabled={saving}
-						className={`px-6 py-2 rounded font-semibold text-white ${updating ? "bg-red-600" : "bg-black"} hover:opacity-90 disabled:opacity-50`}>
+						className={`px-6 py-2 rounded font-semibold text-white ${
+							updating ? "bg-red-600" : "bg-black"
+						} hover:opacity-90 disabled:opacity-50`}>
 						{saving
 							? updating
 								? "Updating..."
@@ -204,7 +209,6 @@ export default function MyBio({ userId }: { userId: string }) {
 	);
 }
 
-// ——— Subcomponents ———
 function FormField({
 	label,
 	name,
@@ -226,7 +230,7 @@ function FormField({
 				name={name}
 				value={value}
 				onChange={onChange}
-				className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+				className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 			/>
 		</div>
 	);
@@ -251,7 +255,7 @@ function TextAreaField({
 				value={value}
 				onChange={onChange}
 				rows={3}
-				className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
+				className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
 			/>
 		</div>
 	);
@@ -288,14 +292,14 @@ const ArrayInputField: React.FC<ArrayInputFieldProps> = ({
 	return (
 		<div className="mb-4">
 			<label className="block font-semibold text-black mb-1">{label}</label>
-			<div className="flex items-center gap-2 mb-2">
+			<div className="flex flex-col md:flex-row items-start md:items-center gap-2 mb-2">
 				<input
 					type="text"
 					value={tempValue}
 					onChange={(e) => onTempChange(fieldKey, e.target.value)}
 					onKeyDown={handleKeyDown}
 					placeholder={placeholder}
-					className="flex-grow border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+					className="flex-grow bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 				/>
 				<button
 					type="button"

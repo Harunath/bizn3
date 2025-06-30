@@ -44,7 +44,6 @@ export default function PersonalDetailsComp({
 		setError(null);
 		setSuccess(null);
 
-		// 🛠️ Filter invalid enum values before sending
 		const payload = {
 			title: title ? title : undefined,
 			firstname: firstName.trim(),
@@ -63,12 +62,9 @@ export default function PersonalDetailsComp({
 					body: JSON.stringify(payload),
 				}
 			);
-
 			const result = await res.json();
-
-			if (!res.ok) {
+			if (!res.ok)
 				throw new Error(result.message || "Failed to submit details");
-			}
 
 			setSuccess(
 				recordExists
@@ -77,28 +73,24 @@ export default function PersonalDetailsComp({
 			);
 			setRecordExists(true);
 		} catch (err) {
-			if (err instanceof Error) {
-				setError(err.message);
-			} else {
-				setError("Unknown error");
-			}
+			setError(err instanceof Error ? err.message : "Unknown error");
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen  flex justify-center items-start  md:p-6">
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-6xl bg-white p-8 rounded-lg shadow">
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl">
 				{loading && <p className="text-center text-red-600">Loading...</p>}
 				{error && <p className="text-center text-red-600">{error}</p>}
 				{success && <p className="text-center text-green-600">{success}</p>}
 
-				<div className="grid grid-cols-2 gap-6 items-start">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{/* Left Column */}
-					<div className="space-y-6">
+					<div className="space-y-4">
 						<div>
 							<label htmlFor="title" className="block font-semibold mb-1">
 								Title
@@ -107,7 +99,7 @@ export default function PersonalDetailsComp({
 								id="title"
 								value={title}
 								onChange={(e) => setTitle(e.target.value as TitleTypes)}
-								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
 								disabled={loading}>
 								<option value="">Select</option>
@@ -130,7 +122,7 @@ export default function PersonalDetailsComp({
 								type="text"
 								value={firstName}
 								onChange={(e) => setFirstName(e.target.value)}
-								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
 								disabled={loading}
 							/>
@@ -145,7 +137,7 @@ export default function PersonalDetailsComp({
 								type="text"
 								value={lastName}
 								onChange={(e) => setLastName(e.target.value)}
-								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 								required
 								disabled={loading}
 							/>
@@ -153,10 +145,10 @@ export default function PersonalDetailsComp({
 					</div>
 
 					{/* Right Column */}
-					<div className="space-y-6 pt-1">
+					<div className="space-y-4">
 						<div>
 							<label className="block font-semibold mb-1">Gender</label>
-							<div className="flex items-center gap-6">
+							<div className="flex items-center gap-4">
 								<label className="inline-flex items-center gap-2">
 									<input
 										type="radio"
@@ -193,7 +185,7 @@ export default function PersonalDetailsComp({
 								type="text"
 								value={suffix}
 								onChange={(e) => setSuffix(e.target.value)}
-								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 								disabled={loading}
 							/>
 						</div>
@@ -207,7 +199,7 @@ export default function PersonalDetailsComp({
 								type="text"
 								value={displayName}
 								onChange={(e) => setDisplayName(e.target.value)}
-								className="bg-white border border-black rounded px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 								disabled={loading}
 							/>
 						</div>
@@ -215,11 +207,11 @@ export default function PersonalDetailsComp({
 				</div>
 
 				{/* Submit */}
-				<div className="mt-10 flex justify-center">
+				<div className="mt-8 flex justify-center">
 					<button
 						type="submit"
 						disabled={loading}
-						className="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 font-semibold disabled:opacity-50">
+						className="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 font-semibold disabled:opacity-50 transition">
 						{recordExists ? "Update" : "Create"}
 					</button>
 				</div>

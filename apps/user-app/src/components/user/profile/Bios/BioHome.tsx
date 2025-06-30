@@ -50,7 +50,7 @@ function BioHome() {
 			</div>
 
 			{/* Tab Content */}
-			<div className="rounded-b-md shadow-sm">
+			<div>
 				{activeTab === "bio" && <MyBio userId={userId} />}
 				{activeTab === "tops" && <TopsProfile userId={userId} />}
 				{activeTab === "gains" && <GainsProfile userId={userId} />}

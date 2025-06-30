@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { FiTrash } from "react-icons/fi";
 import Image from "next/image";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import { upload } from "@repo/common/upload";
 import { z } from "zod";
+import { useSession } from "next-auth/react";
 
 const passwordSchema = z.object({
 	oldPassword: z.string().min(1, "Old password is required"),
@@ -26,191 +28,180 @@ export default function UserProfile({
 	userId: string;
 	profileImageUrl: string;
 }) {
+	const { data: session } = useSession();
 	const [profileImage, setProfileImage] = useState<string | null>(
 		profileImageUrl
 	);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [password, setPassword] = useState("");
 	const [oldPassword, setOldPassword] = useState("");
 	const [open, setOpen] = useState(false);
-	const [language, setLanguage] = useState("English (IN)");
-	const [timezone, setTimezone] = useState("Asia/Kolkata");
+	const [language] = useState("English (IN)");
+	const [timezone] = useState("Asia/Kolkata");
 
-	const [statusMessage, setStatusMessage] = useState<string | null>(null);
-	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
 			const reader = new FileReader();
 			reader.onload = () => setProfileImage(reader.result as string);
 			reader.readAsDataURL(file);
+			setSelectedFile(file); // store for later upload
 		}
-		const files = e.target.files;
-		if (!files) return;
-		const res = await fetch("/api/user/upload-image", {
-			method: "POST",
-		});
-		const result = await res.json();
-		const { signature, timestamp, folder, apiKey, cloudName } = result;
-		const filesArray = Array.from(files);
-		const urls = await upload({
-			signature,
-			files: filesArray,
-			timestamp,
-			folder,
-			apiKey,
-			cloudName,
-		});
-		setProfileImage(urls[0] ?? null);
+	};
+
+	const handleSaveImage = async () => {
+		if (!selectedFile) {
+			toast.error("No new image selected.");
+			return;
+		}
+		try {
+			const res = await fetch("/api/user/upload-image", { method: "POST" });
+			const result = await res.json();
+			const { signature, timestamp, folder, apiKey, cloudName } = result;
+
+			const urls = await upload({
+				signature,
+				files: [selectedFile],
+				timestamp,
+				folder,
+				apiKey,
+				cloudName,
+			});
+
+			if (urls.length > 0) {
+				const uploadedUrl = urls[0];
+				const updateRes = await fetch(
+					`/api/user/${userId}/my-profile/user-profile/profile-image`,
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ imageUrl: uploadedUrl }),
+					}
+				);
+				if (!updateRes.ok) throw new Error("Failed to update profile image");
+
+				toast.success("Profile image updated successfully.");
+				setSelectedFile(null);
+			} else {
+				toast.error("Upload failed. No image URL received.");
+			}
+		} catch (error) {
+			const errMsg =
+				error instanceof Error ? error.message : "An unknown error occurred.";
+			toast.error(errMsg);
+		}
+		
+		
 	};
 
 	const handleDeleteImage = () => {
 		setProfileImage(null);
-		setStatusMessage("Profile image deleted.");
+		setSelectedFile(null);
+		toast.success("Profile image deleted.");
 	};
 
 	const updatePassword = async () => {
-		setStatusMessage(null);
-		setErrorMessage(null);
-
 		const result = passwordSchema.safeParse({ oldPassword, password });
-
 		if (!result.success) {
 			const firstError = result.error.errors[0]?.message || "Invalid input.";
-			setErrorMessage(firstError);
 			toast.error(firstError);
 			return;
 		}
-
 		try {
 			const res = await fetch(
 				`/api/user/${userId}/my-profile/user-profile/update-password`,
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						oldPassword,
-						newPassword: password,
-					}),
+					body: JSON.stringify({ oldPassword, newPassword: password }),
 				}
 			);
-
 			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
-
 			const response = await res.json();
-			setStatusMessage("Password updated successfully.");
-			toast.success(response.data);
+			toast.success(response.data || "Password updated successfully.");
 			setPassword("");
 			setOldPassword("");
 			setOpen(false);
 		} catch (e) {
-			if (e instanceof Error) {
-				setErrorMessage(e.message);
-			} else {
-				setErrorMessage("An unknown error occurred.");
-			}
-			toast.error("Failed to change password");
-		}
-	};
-
-	const updateProfileImage = async (imageUrl: string) => {
-		setStatusMessage(null);
-		setErrorMessage(null);
-		if (!imageUrl) {
-			setErrorMessage("No profile image to update.");
-			return;
-		}
-		try {
-			const res = await fetch(
-				`/api/user/${userId}/my-profile/user-profile/profile-image`,
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ imageUrl: imageUrl }),
-				}
-			);
-			if (!res.ok) throw new Error(`Error: ${res.statusText}`);
-
-			// ✅ Only this line changed:
-			toast.success("Image uploaded successfully.");
-		} catch (e) {
-			if (e instanceof Error) {
-				setErrorMessage(e.message);
-			} else {
-				setErrorMessage("An unknown error occurred.");
-			}
-			toast.error("Failed to change profileImage");
+			const errMsg =
+				e instanceof Error ? e.message : "An unknown error occurred.";
+			toast.error(errMsg);
 		}
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start p-4 sm:p-6">
+			<ToastContainer position="top-right" autoClose={3000} />
 			<form
-				className="w-full max-w-6xl bg-white p-8 rounded-lg shadow"
+				className="w-full max-w-6xl bg-slate-100 p-4 sm:p-4 shadow-xl space-y-6"
 				onSubmit={(e) => e.preventDefault()}>
-				<div className="grid grid-cols-2 gap-6 items-start">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div className="space-y-6">
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Username
 							</label>
-							<div className="flex items-center gap-4">{/* User name */}</div>
+							<div className="text-gray-800 bg-gray-200 rounded px-4 py-2">
+								{session?.user?.firstname} {session?.user?.lastname}
+							</div>
 						</div>
 
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Password
 							</label>
-							<div className="flex items-center gap-4 relative">
+							<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
 								<input
 									type="password"
 									value="password"
-									placeholder="Enter new password"
-									className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
+									className="bg-gray-200 rounded px-4 py-2 flex-1"
 									disabled
 								/>
 								<motion.button
 									transition={{ duration: 0.1 }}
 									type="button"
 									onClick={() => setOpen(true)}
-									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer">
+									className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
 									Change Password
 								</motion.button>
 							</div>
 						</div>
 
 						{open && (
-							<motion.div
-								className=" fixed z-50 inset-0 backdrop-blur-md flex items-center justify-center"
-								transition={{ duration: 0.1 }}>
-								<div className="flex flex-col gap-y-4 bg-gray-100 p-8 rounded-2xl relative">
+							<motion.div className="fixed z-50 inset-0 backdrop-blur-md flex items-center justify-center">
+								<div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
 									<button
-										type="button"
 										onClick={() => setOpen(false)}
-										className=" absolute -right-8 -top-8 text-gray-400  p-2 rounded hover:text-black">
-										X
+										className="absolute -top-4 -right-4 text-gray-600 bg-white rounded-full p-2 shadow hover:text-red-600">
+										✕
 									</button>
-									<input
-										type="password"
-										value={oldPassword}
-										onChange={(e) => setOldPassword(e.target.value)}
-										placeholder="Enter old password"
-										className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
-									/>
-									<input
-										type="password"
-										value={password}
-										onChange={(e) => setPassword(e.target.value)}
-										placeholder="Enter new password"
-										className="bg-gray-200 rounded px-4 py-2 flex-1 focus:outline-none"
-									/>
-									<button
-										type="button"
-										onClick={updatePassword}
-										className={`bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 ${password != oldPassword ? "cursor-pointer" : "cursor-not-allowed"}`}
-										disabled={!password || !oldPassword}>
-										Update password
-									</button>
+									<div className="space-y-4">
+										<input
+											type="password"
+											value={oldPassword}
+											onChange={(e) => setOldPassword(e.target.value)}
+											placeholder="Enter old password"
+											className="bg-gray-200 w-full rounded px-4 py-2 focus:outline-none"
+										/>
+										<input
+											type="password"
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											placeholder="Enter new password"
+											className="bg-gray-200 w-full rounded px-4 py-2 focus:outline-none"
+										/>
+										<button
+											type="button"
+											onClick={updatePassword}
+											disabled={!password || !oldPassword}
+											className={`w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition ${
+												!password || !oldPassword
+													? "opacity-50 cursor-not-allowed"
+													: ""
+											}`}>
+											Update Password
+										</button>
+									</div>
 								</div>
 							</motion.div>
 						)}
@@ -219,7 +210,7 @@ export default function UserProfile({
 							<label className="block text-gray-700 font-semibold mb-1">
 								Profile Image
 							</label>
-							<div className="flex items-start gap-4">
+							<div className="flex flex-col sm:flex-row items-start gap-4">
 								<div className="w-32 h-40 overflow-hidden rounded bg-gray-200">
 									{profileImage ? (
 										<Image
@@ -253,12 +244,10 @@ export default function UserProfile({
 									</button>
 									<button
 										type="button"
-										onClick={() =>
-											profileImage && updateProfileImage(profileImage)
-										}
-										disabled={!profileImage}
+										onClick={handleSaveImage}
+										disabled={!selectedFile}
 										className={`bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-2 ${
-											!profileImage ? "opacity-50 cursor-not-allowed" : ""
+											!selectedFile ? "opacity-50 cursor-not-allowed" : ""
 										}`}>
 										Save Profile Image
 									</button>
@@ -267,42 +256,31 @@ export default function UserProfile({
 						</div>
 					</div>
 
-					<div className="space-y-6 pt-1">
+					<div className="space-y-6">
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Language
 							</label>
-							<div className="flex items-center gap-4">
-								<input
-									type="text"
-									value={language}
-									onChange={(e) => setLanguage(e.target.value)}
-									className="bg-white border border-gray-300 rounded px-4 py-2 flex-1 focus:outline-none"
-									disabled
-								/>
-							</div>
+							<input
+								type="text"
+								value={language}
+								className="bg-white border border-gray-300 rounded px-4 py-2 w-full"
+								disabled
+							/>
 						</div>
 
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Timezone
 							</label>
-							<div className="flex items-center gap-4">
-								<input
-									type="text"
-									value={timezone}
-									onChange={(e) => setTimezone(e.target.value)}
-									className="bg-white border border-gray-300 rounded px-4 py-2 flex-1 focus:outline-none"
-									disabled
-								/>
-							</div>
+							<input
+								type="text"
+								value={timezone}
+								className="bg-white border border-gray-300 rounded px-4 py-2 w-full"
+								disabled
+							/>
 						</div>
 					</div>
-				</div>
-
-				<div className="mt-6">
-					{statusMessage && <p className="text-green-600">{statusMessage}</p>}
-					{errorMessage && <p className="text-red-600">{errorMessage}</p>}
 				</div>
 			</form>
 		</div>

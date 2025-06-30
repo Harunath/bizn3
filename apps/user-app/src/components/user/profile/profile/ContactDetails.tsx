@@ -25,7 +25,26 @@ export default function ContactDetailsComp({
 
 	useEffect(() => {
 		if (contactDetails) {
-			setAddress(JSON.stringify(contactDetails.billingAddress || ""));
+			try {
+				const parsedAddress =
+					typeof contactDetails.billingAddress === "string"
+						? JSON.parse(contactDetails.billingAddress)
+						: contactDetails.billingAddress;
+
+				setAddress(
+					parsedAddress !== undefined && parsedAddress !== null
+						? String(parsedAddress)
+						: ""
+				);
+			} catch {
+				setAddress(
+					contactDetails.billingAddress !== undefined &&
+						contactDetails.billingAddress !== null
+						? String(contactDetails.billingAddress)
+						: ""
+				);
+			}
+
 			setPhone(contactDetails.phone || "");
 			setMobileNumber(contactDetails.mobile || "");
 			setHomeNumber(contactDetails.houseNo || "");
@@ -55,11 +74,10 @@ export default function ContactDetailsComp({
 		setMessage(null);
 
 		const payload = {
-			billingAddress: address,
+			billingAddress: address.trim(),
 			phone,
 			mobile: mobileNumber,
 			houseNo: homeNumber,
-
 			website,
 			links: socialLinks.filter((link) => link.trim() !== ""),
 		};
@@ -94,11 +112,11 @@ export default function ContactDetailsComp({
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start p-4 md:p-6">
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6">
-				{/* Feedback Message */}
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6">
+				{/* Feedback */}
 				{message && (
 					<p
 						className={`text-center font-semibold ${
@@ -108,7 +126,7 @@ export default function ContactDetailsComp({
 					</p>
 				)}
 
-				{/* Name and Address */}
+				{/* Name & Address */}
 				<div>
 					<label className="block font-semibold text-black mb-1">
 						Name and Address
@@ -117,13 +135,13 @@ export default function ContactDetailsComp({
 						type="text"
 						value={address}
 						onChange={(e) => setAddress(e.target.value)}
-						placeholder="Enter Full Name & Address"
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+						placeholder="Enter full name and billing address"
+						className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
 
 				{/* Phone Fields */}
-				<div className="grid grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label className="block font-semibold text-black mb-1">
 							Phone<span className="text-red-600">*</span>
@@ -134,7 +152,7 @@ export default function ContactDetailsComp({
 							onChange={(e) => setPhone(e.target.value)}
 							required
 							placeholder="Enter Phone Number"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full border bg-white border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 					</div>
 					<div>
@@ -146,19 +164,21 @@ export default function ContactDetailsComp({
 							value={mobileNumber}
 							onChange={(e) => setMobileNumber(e.target.value)}
 							placeholder="Enter Mobile Number"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full border bg-white border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">Home</label>
-						<input
-							type="text"
-							value={homeNumber}
-							onChange={(e) => setHomeNumber(e.target.value)}
-							placeholder="Enter Home Number"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
+				</div>
+
+				{/* Home Number */}
+				<div>
+					<label className="block font-semibold text-black mb-1">Home</label>
+					<input
+						type="text"
+						value={homeNumber}
+						onChange={(e) => setHomeNumber(e.target.value)}
+						placeholder="Enter Home Number"
+						className="w-full bg-white border  border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+					/>
 				</div>
 
 				{/* Website */}
@@ -169,7 +189,7 @@ export default function ContactDetailsComp({
 						value={website}
 						onChange={(e) => setWebsite(e.target.value)}
 						placeholder="Enter Website URL"
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+						className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
 
@@ -180,13 +200,15 @@ export default function ContactDetailsComp({
 					</label>
 
 					{socialLinks.map((link, index) => (
-						<div key={index} className="flex items-center mb-3 gap-3">
+						<div
+							key={index}
+							className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-3">
 							<input
 								type="url"
 								placeholder={`Social Link ${index + 1}`}
 								value={link}
 								onChange={(e) => handleSocialChange(index, e.target.value)}
-								className="flex-1 border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white md:flex-1 border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 							/>
 							<button
 								type="button"
@@ -207,13 +229,13 @@ export default function ContactDetailsComp({
 					</button>
 				</div>
 
-				{/* Submit */}
-				<div className="flex justify-end gap-4 pt-6">
+				{/* Submit Button */}
+				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
 						disabled={loading}
 						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
-						{recordExists ? "Update" : "Save"}
+						{loading ? "Saving..." : recordExists ? "Update" : "Save"}
 					</button>
 				</div>
 			</form>
