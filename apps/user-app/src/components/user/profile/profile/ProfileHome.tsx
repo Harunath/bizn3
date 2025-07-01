@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import PersonalDetailsComp from "./PersonalDetails";
 import ContactDetailsComp from "./ContactDetails";
 import AddressComp from "./Address";
 import { useSession } from "next-auth/react";
 import UserProfile from "./Userprofile";
 import { toast } from "react-toastify";
-
 import { PersonalDetails, ContactDetails, Address } from "@repo/db/client";
 
 interface UserType {
@@ -30,35 +29,44 @@ const tabs = [
 ];
 
 function ProfileHome() {
-	const session = useSession();
-	const [user, setUser] = useState<UserType>();
-	const userId = session.data?.user.id;
+	const { data: sessionData, status } = useSession();
+	const userId = sessionData?.user?.id;
+
+	const [user, setUser] = useState<UserType | null>(null);
 	const [activeTab, setActiveTab] = useState("profile");
 	const [loading, setLoading] = useState(false);
 
-	useEffect(() => {
-		if (session.data?.user) fetchUser();
-	}, [session.status]);
+	const fetchUser = useCallback(async () => {
+		if (!userId) return;
+		try {
+			setLoading(true);
+			const response = await fetch(`/api/user/${userId}/my-profile`);
+			const data = await response.json();
 
-	const fetchUser = async () => {
-		setLoading(true);
-		const response = await fetch(`/api/user/${userId}/my-profile`);
-		const data = await response.json();
-		if (data.message !== "success") {
-			toast.error("Error fetching the User details");
-			setLoading(false);
-			throw new Error(data.message);
-		} else {
+			if (data.message !== "success") {
+				toast.error("Error fetching the User details");
+				throw new Error(data.message);
+			}
+
 			setUser(data.data);
+		} catch (error) {
+			console.error(error);
+		} finally {
 			setLoading(false);
 		}
-	};
+	}, [userId]);
+
+	useEffect(() => {
+		if (status === "authenticated" && userId) {
+			fetchUser();
+		}
+	}, [status, userId, fetchUser]);
 
 	if (!userId) {
 		return <p className="text-center text-red-600">User is not logged in</p>;
 	}
 
-	if (session.status === "loading" || loading) {
+	if (status === "loading" || loading) {
 		return (
 			<div className="flex justify-center items-center h-screen">
 				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
@@ -86,7 +94,7 @@ function ProfileHome() {
 			</div>
 
 			{/* Tab Content */}
-			<div className=" p-4 sm:p-6">
+			<div className="p-4 sm:p-6">
 				{user && (
 					<>
 						{activeTab === "profile" && (
@@ -95,18 +103,21 @@ function ProfileHome() {
 								profileImageUrl={user.profileImage || ""}
 							/>
 						)}
+
 						{activeTab === "personal" && (
 							<PersonalDetailsComp
 								userId={userId}
 								personalDetails={user.personalDetails}
 							/>
 						)}
+
 						{activeTab === "contact" && (
 							<ContactDetailsComp
 								userId={userId}
 								contactDetails={user.contactDetails}
 							/>
 						)}
+
 						{activeTab === "address" && (
 							<AddressComp userId={userId} addressProp={user.fullAddress} />
 						)}

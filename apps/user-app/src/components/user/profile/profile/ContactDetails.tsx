@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { FiTrash } from "react-icons/fi";
 import { ContactDetails } from "@repo/db/client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ContactDetailsProps {
 	userId: string;
@@ -17,11 +19,10 @@ export default function ContactDetailsComp({
 	const [phone, setPhone] = useState("");
 	const [mobileNumber, setMobileNumber] = useState("");
 	const [homeNumber, setHomeNumber] = useState("");
-	const [website, setWebsite] = useState<string>("");
+	const [website, setWebsite] = useState("");
 	const [socialLinks, setSocialLinks] = useState<string[]>([]);
 	const [recordExists, setRecordExists] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [message, setMessage] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (contactDetails) {
@@ -71,7 +72,6 @@ export default function ContactDetailsComp({
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		setMessage(null);
 
 		const payload = {
 			billingAddress: address.trim(),
@@ -100,12 +100,14 @@ export default function ContactDetailsComp({
 				throw new Error(result.message || "Failed to save contact details.");
 			}
 
-			setMessage(
-				recordExists ? "Updated successfully!" : "Saved successfully!"
+			toast.success(
+				recordExists
+					? "Contact details updated successfully!"
+					: "Contact details saved successfully!"
 			);
 			setRecordExists(true);
 		} catch (error) {
-			setMessage(`Error: ${(error as Error).message}`);
+			toast.error((error as Error).message || "Failed to save contact details");
 		} finally {
 			setLoading(false);
 		}
@@ -113,19 +115,10 @@ export default function ContactDetailsComp({
 
 	return (
 		<div className="min-h-screen flex justify-center items-start p-4 md:p-6">
+			<ToastContainer position="top-right" autoClose={3000} />
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6">
-				{/* Feedback */}
-				{message && (
-					<p
-						className={`text-center font-semibold ${
-							message.startsWith("Error") ? "text-red-600" : "text-green-600"
-						}`}>
-						{message}
-					</p>
-				)}
-
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6">
 				{/* Name & Address */}
 				<div>
 					<label className="block font-semibold text-black mb-1">
@@ -177,7 +170,7 @@ export default function ContactDetailsComp({
 						value={homeNumber}
 						onChange={(e) => setHomeNumber(e.target.value)}
 						placeholder="Enter Home Number"
-						className="w-full bg-white border  border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+						className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
 

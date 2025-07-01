@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { FiTrash } from "react-icons/fi";
 import Image from "next/image";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { upload } from "@repo/common/upload";
 import { z } from "zod";
@@ -36,24 +35,31 @@ export default function UserProfile({
 	const [password, setPassword] = useState("");
 	const [oldPassword, setOldPassword] = useState("");
 	const [open, setOpen] = useState(false);
-	const [language] = useState("English (IN)");
-	const [timezone] = useState("Asia/Kolkata");
+	const [saving, setSaving] = useState(false);
 
-	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = () => setProfileImage(reader.result as string);
-			reader.readAsDataURL(file);
-			setSelectedFile(file); // store for later upload
-		}
-	};
+	const language = "English (IN)";
+	const timezone = "Asia/Kolkata";
 
-	const handleSaveImage = async () => {
+	const handleImageChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0];
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = () => setProfileImage(reader.result as string);
+				reader.readAsDataURL(file);
+				setSelectedFile(file);
+			}
+		},
+		[]
+	);
+
+	const handleSaveImage = useCallback(async () => {
 		if (!selectedFile) {
 			toast.error("No new image selected.");
 			return;
 		}
+
+		setSaving(true);
 		try {
 			const res = await fetch("/api/user/upload-image", { method: "POST" });
 			const result = await res.json();
@@ -89,22 +95,21 @@ export default function UserProfile({
 			const errMsg =
 				error instanceof Error ? error.message : "An unknown error occurred.";
 			toast.error(errMsg);
+		} finally {
+			setSaving(false);
 		}
-		
-		
-	};
+	}, [selectedFile, userId]);
 
-	const handleDeleteImage = () => {
+	const handleDeleteImage = useCallback(() => {
 		setProfileImage(null);
 		setSelectedFile(null);
 		toast.success("Profile image deleted.");
-	};
+	}, []);
 
-	const updatePassword = async () => {
+	const updatePassword = useCallback(async () => {
 		const result = passwordSchema.safeParse({ oldPassword, password });
 		if (!result.success) {
-			const firstError = result.error.errors[0]?.message || "Invalid input.";
-			toast.error(firstError);
+			toast.error(result.error.errors[0]?.message || "Invalid input.");
 			return;
 		}
 		try {
@@ -127,16 +132,16 @@ export default function UserProfile({
 				e instanceof Error ? e.message : "An unknown error occurred.";
 			toast.error(errMsg);
 		}
-	};
+	}, [oldPassword, password, userId]);
 
 	return (
 		<div className="min-h-screen flex justify-center items-start p-4 sm:p-6">
-			<ToastContainer position="top-right" autoClose={3000} />
 			<form
 				className="w-full max-w-6xl bg-slate-100 p-4 sm:p-4 shadow-xl space-y-6"
 				onSubmit={(e) => e.preventDefault()}>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div className="space-y-6">
+						{/* Username */}
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Username
@@ -146,6 +151,7 @@ export default function UserProfile({
 							</div>
 						</div>
 
+						{/* Password */}
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Password
@@ -167,6 +173,7 @@ export default function UserProfile({
 							</div>
 						</div>
 
+						{/* Password Modal */}
 						{open && (
 							<motion.div className="fixed z-50 inset-0 backdrop-blur-md flex items-center justify-center">
 								<div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
@@ -181,14 +188,14 @@ export default function UserProfile({
 											value={oldPassword}
 											onChange={(e) => setOldPassword(e.target.value)}
 											placeholder="Enter old password"
-											className="bg-gray-200 w-full rounded px-4 py-2 focus:outline-none"
+											className="bg-gray-200 w-full rounded px-4 py-2"
 										/>
 										<input
 											type="password"
 											value={password}
 											onChange={(e) => setPassword(e.target.value)}
 											placeholder="Enter new password"
-											className="bg-gray-200 w-full rounded px-4 py-2 focus:outline-none"
+											className="bg-gray-200 w-full rounded px-4 py-2"
 										/>
 										<button
 											type="button"
@@ -206,6 +213,7 @@ export default function UserProfile({
 							</motion.div>
 						)}
 
+						{/* Profile Image */}
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Profile Image
@@ -245,17 +253,42 @@ export default function UserProfile({
 									<button
 										type="button"
 										onClick={handleSaveImage}
-										disabled={!selectedFile}
-										className={`bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-2 ${
-											!selectedFile ? "opacity-50 cursor-not-allowed" : ""
+										disabled={!selectedFile || saving}
+										className={`bg-red-600 text-white px-4 py-2 rounded mt-2 flex items-center justify-center gap-2 hover:bg-red-700 transition ${
+											!selectedFile || saving
+												? "opacity-50 cursor-not-allowed"
+												: ""
 										}`}>
-										Save Profile Image
+										{saving ? (
+											<svg
+												className="animate-spin h-5 w-5 text-white"
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24">
+												<circle
+													className="opacity-25"
+													cx="12"
+													cy="12"
+													r="10"
+													stroke="currentColor"
+													strokeWidth="4"
+												/>
+												<path
+													className="opacity-75"
+													fill="currentColor"
+													d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+												/>
+											</svg>
+										) : (
+											"Save Profile Image"
+										)}
 									</button>
 								</div>
 							</div>
 						</div>
 					</div>
 
+					{/* Language & Timezone */}
 					<div className="space-y-6">
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
@@ -268,7 +301,6 @@ export default function UserProfile({
 								disabled
 							/>
 						</div>
-
 						<div>
 							<label className="block text-gray-700 font-semibold mb-1">
 								Timezone

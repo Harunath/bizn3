@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Address } from "@repo/db/client";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface AddressProps {
 	userId: string;
@@ -18,7 +19,6 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 	const [pincode, setPincode] = useState("");
 	const [exist, setExist] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [message, setMessage] = useState("");
 
 	const apiBase = `/api/user/${userId}/my-profile/address`;
 
@@ -37,7 +37,6 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		setMessage("");
 
 		const payload = {
 			addressLane1,
@@ -62,14 +61,14 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 			}
 
 			const successMsg = exist
-				? "Address updated successfully."
-				: "Address saved successfully.";
-			setMessage(successMsg);
+				? "Address updated successfully!"
+				: "Address saved successfully!";
 			toast.success(successMsg);
+			setExist(true);
 		} catch (error) {
 			const errMsg =
 				error instanceof Error ? error.message : "Something went wrong";
-			setMessage(errMsg);
+			toast.error(errMsg);
 		} finally {
 			setLoading(false);
 		}
@@ -77,9 +76,10 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 
 	return (
 		<div className="min-h-screen flex justify-center items-start p-4 md:p-6">
+			<ToastContainer position="top-right" autoClose={3000} />
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-8">
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-8">
 				<h2 className="text-xl font-bold text-black">Personal Address</h2>
 
 				{/* Form Fields */}
@@ -130,22 +130,13 @@ export default function AddressComp({ userId, addressProp }: AddressProps) {
 						{loading ? "Saving..." : exist ? "Update" : "Save"}
 					</button>
 				</div>
-
-				{/* Fallback Text Feedback */}
-				{message && (
-					<p
-						className={`mt-4 font-semibold ${
-							message.includes("success") ? "text-green-700" : "text-red-700"
-						}`}>
-						{message}
-					</p>
-				)}
 			</form>
 		</div>
 	);
 }
 
-function InputField({
+// Memoized and optimized InputField
+const InputField = ({
 	label,
 	value,
 	setValue,
@@ -155,17 +146,24 @@ function InputField({
 	value: string;
 	setValue: (val: string) => void;
 	required?: boolean;
-}) {
+}) => {
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setValue(e.target.value);
+		},
+		[setValue]
+	);
+
 	return (
 		<div>
 			<label className="block font-semibold mb-1 text-black">{label}</label>
 			<input
 				type="text"
 				value={value}
-				onChange={(e) => setValue(e.target.value)}
+				onChange={handleChange}
 				required={required}
 				className="w-full bg-white border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
 			/>
 		</div>
 	);
-}
+};
