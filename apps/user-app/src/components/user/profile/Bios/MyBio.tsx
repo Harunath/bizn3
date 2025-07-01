@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+	useEffect,
+	useState,
+	ChangeEvent,
+	FormEvent,
+	KeyboardEvent,
+} from "react";
 import { toast } from "react-toastify";
 
 export default function MyBio({ userId }: { userId: string }) {
@@ -29,8 +35,7 @@ export default function MyBio({ userId }: { userId: string }) {
 				const res = await fetch(`/api/user/${userId}/bios/my-bio`);
 				if (!res.ok) throw new Error("Failed to fetch bio");
 
-				const response = await res.json();
-				const data = response.data;
+				const { data } = await res.json();
 
 				setFormData({
 					yearsInBusiness: data.yearsInBusiness?.toString() || "",
@@ -67,10 +72,11 @@ export default function MyBio({ userId }: { userId: string }) {
 
 	const handleAddItem = (key: string) => {
 		const value =
-			formData.newValues[key as "previousJobs" | "hobbiesIntrests"].trim();
+			formData.newValues[key as keyof typeof formData.newValues].trim();
 		if (!value) return;
 
-		if (!formData[key as "previousJobs" | "hobbiesIntrests"].includes(value)) {
+		const arr = formData[key as keyof typeof formData];
+		if (Array.isArray(arr) && !arr.includes(value)) {
 			setFormData((prev) => ({
 				...prev,
 				[key]: [...(prev[key as keyof typeof formData] as string[]), value],
@@ -89,13 +95,13 @@ export default function MyBio({ userId }: { userId: string }) {
 	};
 
 	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setSaving(true);
 
@@ -105,6 +111,7 @@ export default function MyBio({ userId }: { userId: string }) {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),
 			});
+
 			if (!res.ok) throw new Error("Failed to save bio");
 
 			toast.success(
@@ -112,20 +119,25 @@ export default function MyBio({ userId }: { userId: string }) {
 					? "My Bio updated successfully!"
 					: "My Bio created successfully!"
 			);
+			setUpdating(true);
 		} catch (error) {
-			console.error(error);
-			toast.error("An error occurred while saving the bio.");
+			toast.error((error as Error).message || "Failed to save My Bio");
 		} finally {
 			setSaving(false);
 		}
-	};
+		};
 
-	if (loading) return <div className="p-8 text-center">Loading...</div>;
+	if (loading)
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
 
 	return (
-		<div className="min-h-screen flex justify-center items-start ">
+		<div className="min-h-screen flex justify-center items-start">
 			<form
-				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6"
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6"
 				onSubmit={handleSubmit}>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<FormField
@@ -178,6 +190,7 @@ export default function MyBio({ userId }: { userId: string }) {
 					onAdd={handleAddItem}
 					onRemove={handleRemoveItem}
 				/>
+
 				<ArrayInputField
 					label="Hobbies & Interests"
 					fieldKey="hobbiesIntrests"
@@ -192,9 +205,7 @@ export default function MyBio({ userId }: { userId: string }) {
 					<button
 						type="submit"
 						disabled={saving}
-						className={`px-6 py-2 rounded font-semibold text-white ${
-							updating ? "bg-red-600" : "bg-black"
-						} hover:opacity-90 disabled:opacity-50`}>
+						className={`px-6 py-2 rounded font-semibold text-white ${updating ? "bg-red-600" : "bg-black"} hover:opacity-90 disabled:opacity-50`}>
 						{saving
 							? updating
 								? "Updating..."
@@ -228,7 +239,7 @@ function FormField({
 			<input
 				type={type}
 				name={name}
-				value={value}
+				value={String(value)}
 				onChange={onChange}
 				className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 			/>
@@ -245,7 +256,7 @@ function TextAreaField({
 	label: string;
 	name: string;
 	value: string;
-	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+	onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
 }) {
 	return (
 		<div>
@@ -272,7 +283,7 @@ type ArrayInputFieldProps = {
 	placeholder?: string;
 };
 
-const ArrayInputField: React.FC<ArrayInputFieldProps> = ({
+const ArrayInputField = ({
 	label,
 	fieldKey,
 	values,
@@ -281,8 +292,8 @@ const ArrayInputField: React.FC<ArrayInputFieldProps> = ({
 	onAdd,
 	onRemove,
 	placeholder = "Type and press Enter",
-}) => {
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+}: ArrayInputFieldProps) => {
+	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			e.preventDefault();
 			onAdd(fieldKey);

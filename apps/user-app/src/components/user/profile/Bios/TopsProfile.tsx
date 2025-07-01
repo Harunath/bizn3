@@ -5,11 +5,11 @@ import { toast } from "react-toastify";
 
 export default function TopsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
-		idealReferral: [] as string[],
-		topProduct: [] as string[],
-		topProblemSolved: [] as string[],
-		story: [] as string[],
-		idealReferralPartner: [] as string[],
+		idealReferral: "",
+		topProduct: "",
+		topProblemSolved: "",
+		story: "",
+		idealReferralPartner: "",
 	});
 
 	const [loading, setLoading] = useState(true);
@@ -23,11 +23,11 @@ export default function TopsProfile({ userId }: { userId: string }) {
 				if (res.status === 200) {
 					const data = await res.json();
 					setFormData({
-						idealReferral: data.data.idealReferral || [],
-						topProduct: data.data.topProduct || [],
-						topProblemSolved: data.data.topProblemSolved || [],
-						story: data.data.story || [],
-						idealReferralPartner: data.data.idealReferralPartner || [],
+						idealReferral: (data.data.idealReferral || []).join("\n"),
+						topProduct: (data.data.topProduct || []).join("\n"),
+						topProblemSolved: (data.data.topProblemSolved || []).join("\n"),
+						story: (data.data.story || []).join("\n"),
+						idealReferralPartner: (data.data.idealReferralPartner || []).join("\n"),
 					});
 					setIsEditMode(true);
 				}
@@ -42,24 +42,41 @@ export default function TopsProfile({ userId }: { userId: string }) {
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
-		const lines = value
-			.split("\n")
-			.map((line) => line.trim())
-			.filter(Boolean);
-		setFormData((prev) => ({ ...prev, [name]: lines }));
+		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
-
-	const formatArray = (arr: string[]) => arr.join("\n");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setSubmitting(true);
 
+		const payload = {
+			idealReferral: formData.idealReferral
+				.split("\n")
+				.map((s) => s.trim())
+				.filter(Boolean),
+			topProduct: formData.topProduct
+				.split("\n")
+				.map((s) => s.trim())
+				.filter(Boolean),
+			topProblemSolved: formData.topProblemSolved
+				.split("\n")
+				.map((s) => s.trim())
+				.filter(Boolean),
+			story: formData.story
+				.split("\n")
+				.map((s) => s.trim())
+				.filter(Boolean),
+			idealReferralPartner: formData.idealReferralPartner
+				.split("\n")
+				.map((s) => s.trim())
+				.filter(Boolean),
+		};
+
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/top-profile`, {
 				method: isEditMode ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(formData),
+				body: JSON.stringify(payload),
 			});
 			if (!res.ok) throw new Error("Failed to save profile");
 
@@ -68,7 +85,6 @@ export default function TopsProfile({ userId }: { userId: string }) {
 					? "Tops Profile updated successfully!"
 					: "Tops Profile saved successfully!"
 			);
-
 			if (!isEditMode) setIsEditMode(true);
 		} catch (error) {
 			console.error(error);
@@ -78,16 +94,22 @@ export default function TopsProfile({ userId }: { userId: string }) {
 		}
 	};
 
-	if (loading) return <div className="p-8 text-center">Loading...</div>;
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6 mx-auto">
+			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6 mx-auto">
 			<TextAreaField
 				label="Ideal Referral"
 				name="idealReferral"
-				value={formatArray(formData.idealReferral)}
+				value={formData.idealReferral}
 				onChange={handleChange}
 				placeholder="Describe your ideal referral (one per line)..."
 			/>
@@ -95,7 +117,7 @@ export default function TopsProfile({ userId }: { userId: string }) {
 			<TextAreaField
 				label="Top Product"
 				name="topProduct"
-				value={formatArray(formData.topProduct)}
+				value={formData.topProduct}
 				onChange={handleChange}
 				placeholder="List your top products or services (one per line)..."
 			/>
@@ -103,7 +125,7 @@ export default function TopsProfile({ userId }: { userId: string }) {
 			<TextAreaField
 				label="Top Problem Solved"
 				name="topProblemSolved"
-				value={formatArray(formData.topProblemSolved)}
+				value={formData.topProblemSolved}
 				onChange={handleChange}
 				placeholder="Explain the key problems you've solved (one per line)..."
 			/>
@@ -111,7 +133,7 @@ export default function TopsProfile({ userId }: { userId: string }) {
 			<TextAreaField
 				label="My Favourite BNI Story"
 				name="story"
-				value={formatArray(formData.story)}
+				value={formData.story}
 				onChange={handleChange}
 				placeholder="Share your favorite BNI experiences (one per line)..."
 			/>
@@ -119,7 +141,7 @@ export default function TopsProfile({ userId }: { userId: string }) {
 			<TextAreaField
 				label="My Ideal Referral Partner"
 				name="idealReferralPartner"
-				value={formatArray(formData.idealReferralPartner)}
+				value={formData.idealReferralPartner}
 				onChange={handleChange}
 				placeholder="List ideal partners you'd like to work with (one per line)..."
 			/>
