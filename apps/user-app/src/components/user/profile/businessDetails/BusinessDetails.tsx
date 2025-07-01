@@ -49,7 +49,10 @@ export default function BusinessDetails() {
 				if (!res.ok) throw new Error("Failed to fetch business details");
 				const data = await res.json();
 				if (data?.data) {
-					const { createdAt, updatedAt, ...cleaned } = data.data;
+					const cleaned = { ...data.data };
+					delete cleaned.createdAt;
+					delete cleaned.updatedAt;
+
 					setFormData({
 						...cleaned,
 						keywords: cleaned.keywords ? cleaned.keywords.split(",") : [],
@@ -114,7 +117,10 @@ export default function BusinessDetails() {
 			const json = await res.json();
 			if (!res.ok) throw new Error(json.message);
 
-			const { createdAt, updatedAt, ...cleaned } = json.data;
+			const cleaned = { ...json.data };
+			delete cleaned.createdAt;
+			delete cleaned.updatedAt;
+
 			setFormData({
 				...cleaned,
 				keywords: cleaned.keywords?.split(",") || [],
