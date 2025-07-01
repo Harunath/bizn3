@@ -1,6 +1,9 @@
 "use client";
+
+import { useState, useEffect, useCallback } from "react";
 import { PersonalDetails, TitleTypes } from "@repo/db/client";
-import { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Props {
 	userId: string;
@@ -12,8 +15,6 @@ export default function PersonalDetailsComp({
 	personalDetails,
 }: Props) {
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [success, setSuccess] = useState<string | null>(null);
 	const [title, setTitle] = useState<TitleTypes | "">("");
 	const [firstName, setFirstName] = useState<string>("");
 	const [lastName, setLastName] = useState<string>("");
@@ -22,6 +23,7 @@ export default function PersonalDetailsComp({
 	const [displayName, setDisplayName] = useState<string>("");
 	const [recordExists, setRecordExists] = useState(false);
 
+	// Pre-fill data from props
 	useEffect(() => {
 		if (personalDetails) {
 			setTitle(personalDetails.title || "");
@@ -34,63 +36,75 @@ export default function PersonalDetailsComp({
 		}
 	}, [personalDetails]);
 
+	// Auto-generate display name from first/last
 	useEffect(() => {
 		setDisplayName(`${firstName} ${lastName}`.trim());
 	}, [firstName, lastName]);
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setLoading(true);
-		setError(null);
-		setSuccess(null);
+	const handleSubmit = useCallback(
+		async (e: React.FormEvent) => {
+			e.preventDefault();
+			setLoading(true);
 
-		const payload = {
-			title: title ? title : undefined,
-			firstname: firstName.trim(),
-			lastname: lastName.trim(),
-			gender: gender ? gender : undefined,
-			suffix: (suffix ?? "").trim(),
-			displayname: displayName.trim(),
-		};
+			const payload = {
+				title: title ? title : undefined,
+				firstname: firstName.trim(),
+				lastname: lastName.trim(),
+				gender: gender ? gender : undefined,
+				suffix: (suffix ?? "").trim(),
+				displayname: displayName.trim(),
+			};
 
-		try {
-			const res = await fetch(
-				`/api/user/${userId}/my-profile/personal-details`,
-				{
-					method: recordExists ? "PUT" : "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(payload),
-				}
-			);
-			const result = await res.json();
-			if (!res.ok)
-				throw new Error(result.message || "Failed to submit details");
+			try {
+				const res = await fetch(
+					`/api/user/${userId}/my-profile/personal-details`,
+					{
+						method: recordExists ? "PUT" : "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(payload),
+					}
+				);
+				const result = await res.json();
+				if (!res.ok)
+					throw new Error(result.message || "Failed to submit details");
 
-			setSuccess(
-				recordExists
-					? "Personal details updated successfully!"
-					: "Personal details created successfully!"
-			);
-			setRecordExists(true);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Unknown error");
-		} finally {
-			setLoading(false);
-		}
-	};
+				toast.success(
+					recordExists
+						? "Personal details updated successfully!"
+						: "Personal details created successfully!"
+				);
+
+				setRecordExists(true);
+			} catch (err) {
+				toast.error(
+					err instanceof Error ? err.message : "Unknown error occurred"
+				);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[
+			title,
+			firstName,
+			lastName,
+			gender,
+			suffix,
+			displayName,
+			userId,
+			recordExists,
+		]
+	);
 
 	return (
-		<div className="min-h-screen  flex justify-center items-start  md:p-6">
+		<div className="min-h-screen flex justify-center items-start md:p-6">
+			<ToastContainer position="top-right" autoClose={3000} />
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl">
-				{loading && <p className="text-center text-red-600">Loading...</p>}
-				{error && <p className="text-center text-red-600">{error}</p>}
-				{success && <p className="text-center text-green-600">{success}</p>}
-
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl">
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{/* Left Column */}
 					<div className="space-y-4">
+						{/* Title */}
 						<div>
 							<label htmlFor="title" className="block font-semibold mb-1">
 								Title
@@ -113,6 +127,7 @@ export default function PersonalDetailsComp({
 							</select>
 						</div>
 
+						{/* First Name */}
 						<div>
 							<label htmlFor="firstName" className="block font-semibold mb-1">
 								First Name
@@ -128,6 +143,7 @@ export default function PersonalDetailsComp({
 							/>
 						</div>
 
+						{/* Last Name */}
 						<div>
 							<label htmlFor="lastName" className="block font-semibold mb-1">
 								Last Name
@@ -146,6 +162,7 @@ export default function PersonalDetailsComp({
 
 					{/* Right Column */}
 					<div className="space-y-4">
+						{/* Gender */}
 						<div>
 							<label className="block font-semibold mb-1">Gender</label>
 							<div className="flex items-center gap-4">
@@ -176,6 +193,7 @@ export default function PersonalDetailsComp({
 							</div>
 						</div>
 
+						{/* Suffix */}
 						<div>
 							<label htmlFor="suffix" className="block font-semibold mb-1">
 								Suffix
@@ -190,6 +208,7 @@ export default function PersonalDetailsComp({
 							/>
 						</div>
 
+						{/* Display Name */}
 						<div>
 							<label htmlFor="displayName" className="block font-semibold mb-1">
 								Display Name
@@ -212,7 +231,31 @@ export default function PersonalDetailsComp({
 						type="submit"
 						disabled={loading}
 						className="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 font-semibold disabled:opacity-50 transition">
-						{recordExists ? "Update" : "Create"}
+						{loading ? (
+							<svg
+								className="animate-spin h-5 w-5 text-white mx-auto"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24">
+								<circle
+									className="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									strokeWidth="4"
+								/>
+								<path
+									className="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+								/>
+							</svg>
+						) : recordExists ? (
+							"Update"
+						) : (
+							"Create"
+						)}
 					</button>
 				</div>
 			</form>

@@ -12,8 +12,8 @@ const page = () => {
 			</h1>
 
 			<p className="text-lg md:text-xl text-gray-700 text-center mb-10 max-w-2xl">
-				As a Gold member, you&aposre on the fast track. Your dashboard will soon
-				show performance stats, insights, and more.
+				As a Gold member, you&apos;re on the fast track. Your dashboard will
+				soon show performance stats, insights, and more.
 			</p>
 
 			{/* Profile Link */}
