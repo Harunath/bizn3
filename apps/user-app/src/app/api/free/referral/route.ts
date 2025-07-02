@@ -72,16 +72,53 @@ export const POST = async (req: NextRequest) => {
 				{ status: 400 }
 			);
 		}
-		const isReceiverMember = await prisma.club.findFirst({
+
+		const homeClub = await prisma.club.findUnique({
 			where: {
 				id: session.user.homeClub,
-				members: {
-					some: {
-						id: receiverId,
-					},
-				},
 			},
-			select: { id: true }, // Only select what's needed
+			select: {
+				chapterId: true,
+			},
+		});
+
+		const chapterId = homeClub?.chapterId;
+		if (!chapterId) {
+			// Handle error or empty result
+			return NextResponse.json(
+				{ error: "Could not find the chapter" },
+				{ status: 400 }
+			);
+		}
+
+		const isReceiverMember = await prisma.user.findFirst({
+			where: {
+				AND: [
+					{ id: receiverId },
+					{
+						OR: [
+							{
+								membershipType: "VIP",
+								homeClub: {
+									chapterId,
+								},
+							},
+							{
+								homeClub: {
+									chapterId,
+								},
+							},
+							{
+								clubs: {
+									some: {
+										id: session.user.homeClub,
+									},
+								},
+							},
+						],
+					},
+				],
+			},
 		});
 
 		if (!isReceiverMember) {
