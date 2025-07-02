@@ -5,11 +5,11 @@ import { toast } from "react-toastify";
 
 export default function GainsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
-		goals: [] as string[],
-		accomplishments: [] as string[],
+		goals: "",
+		accomplishments: "",
+		networks: "",
+		skills: "",
 		interests: [] as string[],
-		networks: [] as string[],
-		skills: [] as string[],
 		newInterest: "",
 	});
 
@@ -25,11 +25,11 @@ export default function GainsProfile({ userId }: { userId: string }) {
 					const data = await res.json();
 					setFormData((prev) => ({
 						...prev,
-						goals: data.data.goals || [],
-						accomplishments: data.data.accomplishments || [],
+						goals: (data.data.goals || []).join("\n"),
+						accomplishments: (data.data.accomplishments || []).join("\n"),
+						networks: (data.data.networks || []).join("\n"),
+						skills: (data.data.skills || []).join("\n"),
 						interests: data.data.interests || data.data.intrests || [],
-						networks: data.data.networks || [],
-						skills: data.data.skills || [],
 					}));
 					setIsEditMode(true);
 				}
@@ -46,11 +46,7 @@ export default function GainsProfile({ userId }: { userId: string }) {
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
-		const lines = value
-			.split("\n")
-			.map((line) => line.trim())
-			.filter(Boolean);
-		setFormData((prev) => ({ ...prev, [name]: lines }));
+		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -58,16 +54,30 @@ export default function GainsProfile({ userId }: { userId: string }) {
 		setSubmitting(true);
 
 		try {
+			const payload = {
+				goals: formData.goals
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				accomplishments: formData.accomplishments
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				networks: formData.networks
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				skills: formData.skills
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				intrests: formData.interests,
+			};
+
 			const res = await fetch(`/api/user/${userId}/bios/gains-profile`, {
 				method: isEditMode ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					goals: formData.goals,
-					accomplishments: formData.accomplishments,
-					networks: formData.networks,
-					skills: formData.skills,
-					intrests: formData.interests,
-				}),
+				body: JSON.stringify(payload),
 			});
 
 			if (!res.ok) throw new Error("Failed to submit");
@@ -111,12 +121,18 @@ export default function GainsProfile({ userId }: { userId: string }) {
 		}
 	};
 
-	if (loading) return <div className="p-8 text-center">Loading...</div>;
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8  shadow-xl space-y-6 mx-auto">
+			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6 mx-auto">
 			<TextareaField
 				name="goals"
 				label="Goals"
@@ -132,6 +148,7 @@ export default function GainsProfile({ userId }: { userId: string }) {
 				onChange={handleChange}
 			/>
 
+			{/* Interests Section */}
 			<div>
 				<label className="block font-semibold text-black mb-1">Interests</label>
 				<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
@@ -213,7 +230,7 @@ function TextareaField({
 }: {
 	name: string;
 	label: string;
-	value: string[];
+	value: string;
 	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 	required?: boolean;
 }) {
@@ -225,7 +242,7 @@ function TextareaField({
 			</label>
 			<textarea
 				name={name}
-				value={value.join("\n")}
+				value={value}
 				onChange={onChange}
 				rows={4}
 				required={required}

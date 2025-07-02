@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function BusinessDetails() {
 	const [formData, setFormData] = useState({
@@ -27,7 +29,6 @@ export default function BusinessDetails() {
 	const [exist, setExist] = useState(false);
 	const [initialLoading, setInitialLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [message, setMessage] = useState("");
 	const session = useSession();
 	const [userId, setUserId] = useState<string | null>(null);
 
@@ -39,35 +40,34 @@ export default function BusinessDetails() {
 
 	useEffect(() => {
 		if (!userId) return;
-
 		const fetchBusinessDetails = async () => {
 			try {
 				const res = await fetch(`/api/user/${userId}/business`, {
 					method: "GET",
 					headers: { "Content-Type": "application/json" },
 				});
-
 				if (!res.ok) throw new Error("Failed to fetch business details");
-
 				const data = await res.json();
 				if (data?.data) {
+					const cleaned = { ...data.data };
+					delete cleaned.createdAt;
+					delete cleaned.updatedAt;
+
 					setFormData({
-						...data.data,
-						keywords: data.data.keywords ? data.data.keywords.split(",") : [],
+						...cleaned,
+						keywords: cleaned.keywords ? cleaned.keywords.split(",") : [],
 						newKeyword: "",
 					});
 					setExist(true);
 				}
 			} catch (error) {
-				console.error("Error fetching business details:", error);
-				setMessage(
+				toast.error(
 					error instanceof Error ? error.message : "Something went wrong"
 				);
 			} finally {
 				setInitialLoading(false);
 			}
 		};
-
 		fetchBusinessDetails();
 	}, [userId]);
 
@@ -101,9 +101,7 @@ export default function BusinessDetails() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!userId) return;
-
 		setIsSubmitting(true);
-		setMessage("");
 
 		try {
 			const payload = {
@@ -111,25 +109,27 @@ export default function BusinessDetails() {
 				keywords: formData.keywords.join(","),
 				newKeyword: undefined,
 			};
-
 			const res = await fetch(`/api/user/${userId}/business`, {
 				method: exist ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(payload),
 			});
-
 			const json = await res.json();
 			if (!res.ok) throw new Error(json.message);
 
+			const cleaned = { ...json.data };
+			delete cleaned.createdAt;
+			delete cleaned.updatedAt;
+
 			setFormData({
-				...json.data,
-				keywords: json.data.keywords?.split(",") || [],
+				...cleaned,
+				keywords: cleaned.keywords?.split(",") || [],
 				newKeyword: "",
 			});
 			setExist(true);
-			setMessage("Business details saved successfully.");
+			toast.success("Business details updated successfully.");
 		} catch (error) {
-			setMessage(
+			toast.error(
 				error instanceof Error ? error.message : "Something went wrong"
 			);
 		} finally {
@@ -139,17 +139,17 @@ export default function BusinessDetails() {
 
 	if (initialLoading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-				<p className="text-lg text-gray-600">Loading business details...</p>
+			<div className="min-h-screen flex items-center justify-center bg-white">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="min-h-screen  flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start p-6">
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-slate-100 p-8  shadow-xl space-y-8">
+				className="w-full max-w-5xl bg-slate-100 p-8 shadow-xl space-y-8">
 				<h2 className="text-2xl font-bold text-black mb-4">Business Details</h2>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -168,7 +168,6 @@ export default function BusinessDetails() {
 							].includes(key)
 						)
 							return null;
-
 						return (
 							<div key={key}>
 								<label className="block text-sm font-semibold text-gray-700 mb-1 capitalize">
@@ -197,7 +196,6 @@ export default function BusinessDetails() {
 					})}
 				</div>
 
-				{/* Keyword Tags Input */}
 				<div>
 					<label className="block font-semibold text-black mb-1">
 						Keywords
@@ -240,7 +238,6 @@ export default function BusinessDetails() {
 					</div>
 				</div>
 
-				{/* Company Logo */}
 				{formData.companyLogoUrl && (
 					<div>
 						<h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -256,7 +253,6 @@ export default function BusinessDetails() {
 					</div>
 				)}
 
-				{/* Business Images */}
 				{formData.images.length > 0 && (
 					<div>
 						<h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -286,14 +282,15 @@ export default function BusinessDetails() {
 					</button>
 				</div>
 
-				{message && (
-					<p
-						className={`mt-2 text-sm font-medium ${
-							message.includes("success") ? "text-green-700" : "text-red-700"
-						}`}>
-						{message}
-					</p>
-				)}
+				<ToastContainer
+					position="top-right"
+					autoClose={3000}
+					hideProgressBar={false}
+					closeOnClick
+					pauseOnHover
+					draggable
+					theme="light"
+				/>
 			</form>
 		</div>
 	);

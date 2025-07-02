@@ -25,13 +25,14 @@ export default function WeeklyPresentation({
 	const [globalError, setGlobalError] = useState<string | null>(null);
 
 	useEffect(() => {
-		async function fetchPresentations() {
+		const fetchPresentations = async () => {
 			try {
 				setGlobalError(null);
 				const res = await fetch(
 					`/api/user/${userId}/bios/weekly-presentations`
 				);
 				if (!res.ok) throw new Error("Could not load previous presentations");
+
 				const data = await res.json();
 				setPresentations(data.data || []);
 			} catch (err) {
@@ -40,7 +41,8 @@ export default function WeeklyPresentation({
 			} finally {
 				setLoading(false);
 			}
-		}
+		};
+
 		fetchPresentations();
 	}, [userId]);
 
@@ -60,7 +62,7 @@ export default function WeeklyPresentation({
 
 	const handleSave = async (index: number) => {
 		const form = presentations[index];
-		if (!form || !form.title?.trim() || !form.descriptions?.trim()) {
+		if (!form?.title.trim() || !form.descriptions.trim()) {
 			setPresentations((prev) =>
 				prev.map((item, i) =>
 					i === index
@@ -135,7 +137,13 @@ export default function WeeklyPresentation({
 		setPresentations((prev) => [...prev, { title: "", descriptions: "" }]);
 	};
 
-	if (loading) return <div className="p-6 text-center">Loading...</div>;
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen flex justify-center p-4 md:p-6">
@@ -179,7 +187,7 @@ export default function WeeklyPresentation({
 							}
 							rows={4}
 							disabled={savingIndex !== null}
-							className="w-full  bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 
 						{presentation.error && (

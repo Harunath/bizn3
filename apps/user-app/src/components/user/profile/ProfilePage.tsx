@@ -264,9 +264,11 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 						<FiEdit className="text-base" />
 						<span className="font-semibold">Edit</span>
 					</Link>
+
 					<h2 className="text-lg font-bold text-red-600 mb-4">
 						Business Details
 					</h2>
+
 					<div className="space-y-4">
 						<InfoRow
 							icon={<FiBriefcase />}
@@ -276,10 +278,14 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 							icon={<FiHome />}
 							value={`Company Name: ${user.businessDetails.companyName || "—"}`}
 						/>
-						<InfoRow
-							icon={<FiTag />}
-							value={`Category ID: ${user.businessDetails.categoryId || "—"}`}
-						/>
+
+						{membershipType === "VIP" && (
+							<InfoRow
+								icon={<FiTag />}
+								value={`Category ID: ${user.businessDetails.categoryId || "—"}`}
+							/>
+						)}
+
 						<InfoRow
 							icon={<FiList />}
 							value={`General Category: ${user.businessDetails.generalCategory || "—"}`}
