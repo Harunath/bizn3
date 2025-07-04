@@ -1,26 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@repo/db/client";
+import prisma, { ReferralStatus } from "@repo/db/client";
 
-export const GET = async (
-	_req: NextRequest,
+export const POST = async (
+	req: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) => {
 	try {
 		const slugs = await params;
 		const id = slugs.id;
-		const referral = await prisma.referral.findUnique({
+		const { action } = await req.json();
+		let RAction;
+		if (action == "ACCEPTED") {
+			RAction = ReferralStatus.ACCEPTED;
+		} else {
+			RAction = ReferralStatus.REJECTED;
+		}
+		const referral = await prisma.referral.update({
 			where: { id: id },
-			include: {
-				creator: {
-					omit: {
-						password: true,
-					},
-				},
-				receiver: {
-					omit: {
-						password: true,
-					},
-				},
+			data: {
+				status: RAction,
 			},
 		});
 

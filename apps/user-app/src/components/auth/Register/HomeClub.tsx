@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Country, Zone, Region, Chapter, Club } from "@repo/db/client";
 import { useSession } from "next-auth/react";
+import RedCircleLoading from "../../common/loading/RedCircleLoading";
 
 interface chaptersAndClubsType extends Chapter {
 	clubs: Club[];
@@ -20,7 +21,13 @@ const colors = {
 	white: "text-white bg-black",
 };
 
-const fetchData = async (type: string, id?: string) => {
+const fetchData = async (
+	type: string,
+	OpenLoader: () => void,
+	CloseLoader: () => void,
+	id?: string
+) => {
+	OpenLoader();
 	try {
 		const uri = id ? `api/${type}?id=${id}` : `api/${type}`;
 		const response = await fetch(uri);
@@ -31,10 +38,17 @@ const fetchData = async (type: string, id?: string) => {
 	} catch (error) {
 		console.error(error);
 		return [];
+	} finally {
+		CloseLoader();
 	}
 };
 
-const fetchChapters = async (id: string) => {
+const fetchChapters = async (
+	id: string,
+	OpenLoader: () => void,
+	CloseLoader: () => void
+) => {
+	OpenLoader();
 	try {
 		const uri = `api/locations/regions/clubs/${id}`;
 		const response = await fetch(uri);
@@ -45,6 +59,8 @@ const fetchChapters = async (id: string) => {
 	} catch (error) {
 		console.error(error);
 		return [];
+	} finally {
+		CloseLoader();
 	}
 };
 
@@ -61,23 +77,43 @@ const HomeClub = () => {
 	const [selectedChapter, setSelectedChapter] = useState<string | null>();
 	const [selectedClub, setSelectedClub] = useState<string | null>(null);
 
+	const [loading, setLoading] = useState(false);
+
 	const session = useSession();
 	const { update } = session;
 	const router = useRouter();
 
+	const OpenLoader = () => {
+		setLoading(true);
+	};
+	const CloseLoader = () => {
+		setLoading(false);
+	};
 	useEffect(() => {
-		fetchData("locations/countries").then(setCountries);
+		fetchData("locations/countries", OpenLoader, CloseLoader).then(
+			setCountries
+		);
 	}, []);
 
 	useEffect(() => {
 		if (selectedCountry) {
-			fetchData("locations/zones", selectedCountry).then(setZones);
+			fetchData(
+				"locations/zones",
+				OpenLoader,
+				CloseLoader,
+				selectedCountry
+			).then(setZones);
 		}
 	}, [selectedCountry]);
 
 	useEffect(() => {
 		if (selectedZone) {
-			fetchData("locations/regions", selectedZone).then(setRegions);
+			fetchData(
+				"locations/regions",
+				OpenLoader,
+				CloseLoader,
+				selectedZone
+			).then(setRegions);
 		}
 	}, [selectedZone]);
 
@@ -85,11 +121,12 @@ const HomeClub = () => {
 		if (selectedRegion) {
 			setChapters([]);
 			setSelectedChapter(null);
-			fetchChapters(selectedRegion).then(setChapters);
+			fetchChapters(selectedRegion, OpenLoader, CloseLoader).then(setChapters);
 		}
 	}, [selectedRegion]);
 
 	const handleJoin = async () => {
+		setLoading(true);
 		if (selectedClub) {
 			const res = await fetch("/api/user/clubs/homeclub", {
 				method: "POST",
@@ -109,7 +146,9 @@ const HomeClub = () => {
 				router.push("/");
 			}
 		}
+		setLoading(false);
 	};
+	if (loading) return <RedCircleLoading />;
 	return (
 		<motion.div
 			className="p-6 bg-white rounded-xl shadow-xl max-w-md mx-auto mt-10 space-y-4"

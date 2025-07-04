@@ -1,22 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { Steps, useUser } from "../../../lib/store/user";
 
-export default function PhoneVerification({
-	phone,
-	nextStep,
-	skip,
-}: {
-	phone: string;
-	nextStep: () => void;
-	skip: () => void;
-}) {
+export default function PhoneVerification({ phone }: { phone: string }) {
 	const [status, setStatus] = useState<"idle" | "sent" | "error" | "limit">(
 		"idle"
 	);
 	const [attempts, setAttempts] = useState(0);
 	const [loading, setLoading] = useState(false);
 	const [otp, setOtp] = useState("");
+	const { setStep, setPhoneSkipped } = useUser();
 
 	const sendVerification = async () => {
 		if (attempts >= 3) {
@@ -58,7 +52,7 @@ export default function PhoneVerification({
 		if (data.message == "success") {
 			setAttempts((prev) => prev + 1);
 			setStatus("sent");
-			nextStep();
+			setStep(Steps.BUSINESS);
 		} else {
 			setStatus("error");
 		}
@@ -83,7 +77,7 @@ export default function PhoneVerification({
 							Enter OTP:{" "}
 							<input
 								id="otp"
-								className="border border-blue-300"
+								className="border border-blue-300 p-2 mb-2"
 								type="text"
 								value={otp}
 								onChange={(e) => setOtp(e.target.value)}
@@ -107,12 +101,15 @@ export default function PhoneVerification({
 				<p className="text-red-600">Failed to send. Try again.</p>
 			)}
 			{status === "limit" && (
-				<p className="text-red-600">You’ve reached the max attempts (3).</p>
+				<p className="text-red-600">You{"’"}ve reached the max attempts (3).</p>
 			)}
 
 			<button
-				onClick={skip}
-				className="text-blue-600 underline hover:text-blue-800 cursor-pointer">
+				onClick={() => {
+					setPhoneSkipped(false);
+					setStep(Steps.BUSINESS);
+				}}
+				className="ml-4 bg-red-600 hover:bg-red-500 px-4 py-2 rounded disabled:opacity-50 text-white underline hover:text-slate-100 cursor-pointer">
 				Skip
 			</button>
 		</div>

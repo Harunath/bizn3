@@ -4,6 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserMembershipType } from "@repo/db/client";
+import { toast } from "react-toastify";
 
 type ReferralType = "SELF" | "THIRD_PARTY";
 
@@ -116,6 +117,7 @@ export default function ReferralForm() {
 		setSubmitting(false);
 
 		if (res.ok) {
+			toast.success("Referral is sent successfully");
 			setSuccess(true);
 			// Reset form
 			setReceiverQuery("");
@@ -126,7 +128,7 @@ export default function ReferralForm() {
 			setComments("");
 			setThirdPartyDetails({ name: "", otherInfo: "" });
 		} else {
-			alert("Failed to create referral");
+			toast.error("Failed to create referral");
 		}
 	};
 
