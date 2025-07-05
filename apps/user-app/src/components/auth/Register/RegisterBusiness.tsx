@@ -234,7 +234,7 @@ const RegisterBusiness = ({ userId }: { userId: string }) => {
 						</div>
 					)}
 					{imagePreviews && imagePreviews.length > 0 && (
-						<div className="w-[400px] flex gap-x-4 mt-2 overflow-x-auto flex-nowrap scrollbar-hide">
+						<div className="w-[300px] flex gap-x-4 mt-2 overflow-x-auto flex-nowrap scrollbar-hide">
 							{imagePreviews.map((src, idx) => (
 								<div
 									key={idx}

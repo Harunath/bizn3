@@ -16,7 +16,7 @@ export default async function Layout({
 
 	return (
 		<WithRole allowedRole={UserMembershipType.GOLD} session={session}>
-			<div className=" w-screen">
+			<div className="min-h-screen w-screen">
 				<Navbar links={links} />
 				<div className="pt-16 px-2">
 					<BackButton />
