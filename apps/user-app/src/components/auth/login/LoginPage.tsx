@@ -23,7 +23,6 @@ export default function LoginPage() {
 			const getUser = async () => {
 				const res = await fetch(`/api/user/${session.user.id}`);
 				const data = await res.json();
-				console.log();
 				if (data.message == "success") {
 					if (data.data.registrationCompleted) {
 						router.push("/");
@@ -92,7 +91,6 @@ export default function LoginPage() {
 						</h1>
 					</div>
 
-					<h2 className="text-3xl font-bold mb-2">Welcome back</h2>
 					<p className="mb-6 text-gray-600">Please enter your details</p>
 
 					{error && <p className="text-red-500 text-sm mb-4">{error}</p>}

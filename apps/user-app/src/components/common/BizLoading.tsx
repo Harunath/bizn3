@@ -117,13 +117,8 @@ const BizLoading = () => {
 				}
 				const data = await res.json();
 				if (data.message == "success") {
+					console.log("inside data");
 					if (data.data.registrationCompleted) {
-						router.push("/");
-					} else {
-						if (!data.data.businessId || !data.data.homeClub) {
-							router.push("/register");
-							return;
-						}
 						switch (data.data.membershipType) {
 							case UserMembershipType.VIP:
 								setRoute("/vip/dashboard");
@@ -136,6 +131,11 @@ const BizLoading = () => {
 								break;
 							default:
 								router.push("/login");
+						}
+					} else {
+						if (!data.data.businessId || !data.data.homeClub) {
+							router.push("/register");
+							return;
 						}
 					}
 				}
