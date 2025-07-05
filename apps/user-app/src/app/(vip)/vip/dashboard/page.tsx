@@ -7,8 +7,8 @@ import { FiArrowRightCircle, FiUsers, FiUserPlus } from "react-icons/fi";
 const page = () => {
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-16 px-4 flex flex-col items-center">
-			<h1 className="text-4xl md:text-5xl font-bold text-black mb-4 text-center">
-				👑 VIP Dashboard
+			<h1 className="text-4xl md:text-5xl font-bold text-black mb-4 text-center  max-w-full">
+				👑 VIP (Chapter Membership) Dashboard
 			</h1>
 
 			<p className="text-lg md:text-xl text-gray-700 text-center mb-10 max-w-2xl">
