@@ -165,10 +165,6 @@ const RegisterBusiness = ({ userId }: { userId: string }) => {
 	return (
 		<div className="min-w-[360px] w-[360px] lg:w-[80%] flex justify-center items-center">
 			{loading && <RedCircleLoading />}
-			<div className="hidden lg:block w-1/3">
-				<p className="text-4xl text-red-600 text-center">Biz Network</p>
-				<p className="text-xl text-red-600 text-center">Registration</p>
-			</div>
 			<form
 				onSubmit={handleSubmit}
 				className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-2">

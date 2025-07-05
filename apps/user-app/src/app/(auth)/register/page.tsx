@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import React from "react";
 import RegisterSteps from "../../../components/auth/Register/RegisterSteps";
 import prisma from "@repo/db/client";
