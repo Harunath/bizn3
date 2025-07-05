@@ -110,23 +110,37 @@ const BizLoading = () => {
 		}
 
 		if (session?.user) {
-			if (!session.user.businessId || !session.user.homeClub) {
-				router.push("/register");
-				return;
-			}
-			switch (session.user.membershipType) {
-				case UserMembershipType.VIP:
-					setRoute("/vip/dashboard");
-					break;
-				case UserMembershipType.GOLD:
-					setRoute("/gold/dashboard");
-					break;
-				case UserMembershipType.FREE:
-					setRoute("/free/dashboard");
-					break;
-				default:
-					router.push("/login");
-			}
+			const getUser = async () => {
+				const res = await fetch(`/api/user/${session.user.id}`);
+				if (!res.ok) {
+					router.push("/logout");
+				}
+				const data = await res.json();
+				if (data.message == "success") {
+					if (data.data.registrationCompleted) {
+						router.push("/");
+					} else {
+						if (!data.data.businessId || !data.data.homeClub) {
+							router.push("/register");
+							return;
+						}
+						switch (data.data.membershipType) {
+							case UserMembershipType.VIP:
+								setRoute("/vip/dashboard");
+								break;
+							case UserMembershipType.GOLD:
+								setRoute("/gold/dashboard");
+								break;
+							case UserMembershipType.FREE:
+								setRoute("/free/dashboard");
+								break;
+							default:
+								router.push("/login");
+						}
+					}
+				}
+			};
+			getUser();
 		}
 	}, [status, session, router]);
 
