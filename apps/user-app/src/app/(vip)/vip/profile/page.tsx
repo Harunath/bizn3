@@ -3,6 +3,7 @@ import SignOutButton from "../../../../components/common/SignOutButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/auth";
 import ProfilePage from "../../../../components/user/profile/ProfilePage";
+import prisma from "@repo/db/client";
 
 const page = async () => {
 	const session = await getServerSession(authOptions);
@@ -22,6 +23,10 @@ const page = async () => {
 	const data = await res.json();
 	console.log(data.data);
 	const user = data.data;
+
+	const contactDetailsRes = await prisma.contactDetails.findUnique({
+		where: { userId: user.id },
+	});
 	return (
 		<div>
 			<div className="flex items-center justify-between p-4 flex-wrap">
@@ -49,7 +54,10 @@ const page = async () => {
 					</SignOutButton>
 				</div>
 			</div>
-			<ProfilePage user={user} />
+			<ProfilePage
+				user={user}
+				contactDetailsRes={contactDetailsRes ? contactDetailsRes : null}
+			/>
 		</div>
 	);
 };
