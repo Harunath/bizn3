@@ -604,8 +604,8 @@ model BusinessDetails {
   userId               String   @unique
 
   generalCategory      String?
-  category    BusinessCategory? @relation(fields: [categoryId], references: [id])
-  categoryId  String? 
+  category             BusinessCategory? @relation(fields: [categoryId], references: [id])
+  categoryId           String? 
 
 
   createdAt            DateTime @default(now())

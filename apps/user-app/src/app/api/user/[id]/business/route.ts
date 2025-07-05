@@ -57,7 +57,6 @@ export const POST = async (req: NextRequest) => {
 			BusinessDescription,
 			keywords,
 			generalCategory,
-			categoryId,
 		} = body;
 
 		if (!businessName || !Array.isArray(images)) {
@@ -95,7 +94,6 @@ export const POST = async (req: NextRequest) => {
 				BusinessDescription: BusinessDescription || null,
 				keywords: keywords || null,
 				generalCategory: generalCategory || null,
-				categoryId: categoryId || null,
 				user: { connect: { id: session.user.id } },
 			},
 		});

@@ -2,6 +2,10 @@
 import { useState } from "react";
 import { z } from "zod";
 import { upload } from "@repo/common/upload";
+import { toast } from "react-toastify";
+import { getSession } from "next-auth/react";
+import { Steps, useUser } from "../../../lib/store/user";
+import RedCircleLoading from "../../common/loading/RedCircleLoading";
 
 // Define the Zod schema for BusinessDetails
 const businessDetailsSchema = z.object({
@@ -36,7 +40,7 @@ const businessDetailsSchema = z.object({
 // Infer the TypeScript type from the Zod schema
 type BusinessDetails = z.infer<typeof businessDetailsSchema>;
 
-const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
+const RegisterBusiness = ({ userId }: { userId: string }) => {
 	const [businessName, setBusinessName] = useState("");
 	const [images, setImages] = useState<string[]>([]);
 	const [category, setCategory] = useState("");
@@ -45,13 +49,74 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 	const [errors, setErrors] = useState<z.ZodError<BusinessDetails> | null>(
 		null
 	);
+	const [imagePreviews, setImagePreviews] = useState<string[]>();
+	const [rawFiles, setRawFiles] = useState<File[]>();
+	const [loadingImages, setLoadingImages] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const { setStep } = useUser();
+
+	const refreshSession = async () => {
+		const updatedSession = await getSession();
+		console.log("Refreshed session:", updatedSession);
+	};
+
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setLoadingImages(true);
+		const files = e.target.files;
+		if (!files) return;
+		if (files.length > 5) {
+			setLoadingImages(false);
+		}
+		const filesArray = Array.from(files);
+
+		const readers = filesArray.map((file) => {
+			return new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve(reader.result as string);
+				reader.onerror = reject;
+				reader.readAsDataURL(file);
+			});
+		});
+
+		Promise.all(readers).then((base64Images) => {
+			setImagePreviews((prev = []) => [...prev, ...base64Images]);
+			setRawFiles((prev = []) => [...prev, ...filesArray]);
+		});
+		setLoadingImages(false);
+	};
+
+	const handleImageUpload = async (): Promise<string[]> => {
+		if (!rawFiles || !rawFiles.length) return [];
+		if (rawFiles.length > 5) {
+			toast.info("max images limit is 5");
+			return [];
+		}
+		const res = await fetch("/api/user/upload-image", {
+			method: "POST",
+		});
+		const result = await res.json();
+		const { signature, timestamp, folder, apiKey, cloudName } = result;
+		const filesArray = Array.from(rawFiles);
+		const urls = await upload({
+			signature,
+			files: filesArray,
+			timestamp,
+			folder,
+			apiKey,
+			cloudName,
+		});
+		return urls;
+	};
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
+		setLoading(true);
+
+		const uploadedImages = await handleImageUpload();
 
 		const businessDetailsData: BusinessDetails = {
 			businessName,
-			images,
+			images: uploadedImages,
 			category,
 			panNumber: panNumber || undefined,
 			gstNumber: gstNumber || undefined,
@@ -62,76 +127,44 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 
 		if (validationResult.success) {
 			setErrors(null);
-			// api call;
-			const res = await fetch("/api/user/business", {
+
+			const res = await fetch(`/api/user/${userId}/business`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					name: businessName,
-					images,
-					category,
+					businessName,
+					images: uploadedImages,
+					generalCategory: category,
 				}),
 			});
+
 			const data = await res.json();
-			if (data.message == "success" && data.data.id) {
-				console.log(data.data);
-				// Optionally reset the form here
+			console.log(data);
+
+			if (data.message == "success") {
+				toast.success(
+					`${data.data.businessName} business is successfully created`
+				);
+
+				refreshSession();
+				setStep(Steps.HOMECLUB);
 				setBusinessName("");
 				setImages([]);
 				setCategory("");
 				setPanNumber(undefined);
 				setGstNumber(undefined);
-				nextStep();
 			}
+			setLoading(false);
 		} else {
 			setErrors(validationResult.error);
+			setLoading(false);
 		}
 	};
-
-	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const files = e.target.files;
-		if (!files) return;
-		const res = await fetch("/api/user/upload-image", {
-			method: "POST",
-		});
-		const result = await res.json();
-		const { signature, timestamp, folder, apiKey, cloudName } = result;
-		const filesArray = Array.from(files);
-		const urls = await upload({
-			signature,
-			files: filesArray,
-			timestamp,
-			folder,
-			apiKey,
-			cloudName,
-		});
-		setImages([...urls]);
-	};
-	// const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-	// 	const files = event.target.files;
-	// 	if (files) {
-	// 		const newImages: string[] = [];
-	// 		for (let i = 0; i < files.length; i++) {
-	// 			const file = files[i]; // Get the file at the current index
-	// 			if (file) {
-	// 				// Check if the file exists before processing it
-	// 				const reader = new FileReader();
-	// 				reader.onloadend = () => {
-	// 					if (reader.result && typeof reader.result === "string") {
-	// 						newImages.push(reader.result);
-	// 						setImages((prevImages) => [...prevImages, ...newImages]);
-	// 					}
-	// 				};
-	// 				reader.readAsDataURL(file);
-	// 			}
-	// 		}
-	// 	}
-	// };
-
 	return (
 		<div className="min-w-[360px] w-[360px] lg:w-[80%] flex justify-center items-center">
+			{loading && <RedCircleLoading />}
 			<div className="hidden lg:block w-1/3">
 				<p className="text-4xl text-red-600 text-center">Biz Network</p>
 				<p className="text-xl text-red-600 text-center">Registration</p>
@@ -197,9 +230,16 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 						onChange={handleImageChange}
 						disabled={images.length >= 5}
 					/>
-					{images && (
+					{loadingImages && (
+						<div className=" relative">
+							<div className=" absolute backdrop-blur-sm inset-0 flex justify-center items-center">
+								<div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900"></div>
+							</div>
+						</div>
+					)}
+					{imagePreviews && imagePreviews.length > 0 && (
 						<div className="w-[400px] flex gap-x-4 mt-2 overflow-x-auto flex-nowrap scrollbar-hide">
-							{images.map((src, idx) => (
+							{imagePreviews.map((src, idx) => (
 								<div
 									key={idx}
 									className="relative group w-auto h-60 flex-shrink-0">
@@ -209,9 +249,14 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 										className="rounded shadow w-auto h-60 object-fill"
 									/>
 									<button
-										onClick={() =>
-											setImages((prev) => prev.filter((_, i) => i !== idx))
-										}
+										onClick={() => {
+											setImagePreviews((prev = []) =>
+												prev.filter((_, i) => i !== idx)
+											);
+											setRawFiles((prev = []) =>
+												prev.filter((_, i) => i !== idx)
+											);
+										}}
 										className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs hidden group-hover:block">
 										&times;
 									</button>
@@ -219,7 +264,13 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 							))}
 						</div>
 					)}
-
+					{imagePreviews && imagePreviews.length > 5 && (
+						<div>
+							<p className="text-red-500 text-xs italic">
+								max images limit is 5
+							</p>
+						</div>
+					)}
 					{errors?.formErrors.fieldErrors.images && (
 						<p className="text-red-500 text-xs italic">
 							{errors.formErrors.fieldErrors.images.join(", ")}
@@ -285,8 +336,23 @@ const RegisterBusiness = ({ nextStep }: { nextStep: () => void }) => {
 
 				<div className="flex items-center justify-between">
 					<button
-						className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-						type="submit">
+						className={`bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+							!imagePreviews ||
+							loading ||
+							loadingImages ||
+							!businessName ||
+							!category
+								? " cursor-not-allowed"
+								: " cursor-pointer"
+						}`}
+						type="submit"
+						disabled={
+							!imagePreviews ||
+							loading ||
+							loadingImages ||
+							!businessName ||
+							!category
+						}>
 						Submit Details
 					</button>
 				</div>
