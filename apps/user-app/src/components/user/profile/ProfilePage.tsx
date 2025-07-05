@@ -305,17 +305,17 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 							<div className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3">
 								<span>Business Images</span>
 							</div>
-							<div className="flex space-x-4 overflow-x-auto pb-2">
+							<div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory">
 								{user.businessDetails.images.map(
 									(image: string, index: number) => (
 										<div
 											key={index}
-											className="flex-shrink-0 w-60 h-60 relative rounded border">
+											className="relative flex-shrink-0 w-60 h-60 snap-center rounded-lg border border-gray-300 shadow-sm bg-white overflow-hidden">
 											<Image
 												src={image}
 												alt={`Business image ${index + 1}`}
 												fill
-												className="object-cover rounded"
+												className="object-contain"
 											/>
 										</div>
 									)

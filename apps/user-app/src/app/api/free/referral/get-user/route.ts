@@ -38,6 +38,7 @@ export const POST = async (req: NextRequest) => {
 			where: {
 				OR: [
 					// VIP users
+					{ homeClubId: session.user.homeClub },
 					{
 						membershipType: "VIP",
 						homeClub: {
@@ -45,11 +46,11 @@ export const POST = async (req: NextRequest) => {
 						},
 					},
 					// Users connected via homeClub
-					{
-						homeClub: {
-							chapterId,
-						},
-					},
+					// {
+					// 	homeClub: {
+					// 		chapterId,
+					// 	},
+					// },
 					// Users connected via any club memberships
 					{
 						clubs: {
