@@ -9,7 +9,7 @@ const baseRegisterSchema = z.object({
 	firstname: z.string().min(1, "First name is required"),
 	lastname: z.string().min(1, "Last name is required"),
 	email: z.string().email("Invalid email address"),
-	phone: z.string().min(10, "Phone number must be at least 10 digits"),
+	phone: z.string().length(10, "Phone number must be 10 digits"),
 	password: z
 		.string()
 		.min(8, "Password must be at least 8 characters")
@@ -88,7 +88,11 @@ function Register() {
 			const res = await fetch("/api/auth/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ ...formData, token }),
+				body: JSON.stringify({
+					...formData,
+					phone: `+91${formData.phone}`,
+					token,
+				}),
 			});
 			const data = await res.json();
 			if (data.success) {
@@ -130,12 +134,28 @@ function Register() {
 						value={formData.email}
 						onChange={handleChange}
 					/>
-					<CustomTextInput
-						label="Phone"
-						name="phone"
-						value={formData.phone}
-						onChange={handleChange}
-					/>
+					<div className="w-full">
+						<label
+							htmlFor="phone"
+							className="block text-sm font-medium text-gray-700 mb-1">
+							Phone
+						</label>
+						<div className="flex">
+							<span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-blue-400 bg-gray-100 text-gray-700 text-sm">
+								+91
+							</span>
+							<input
+								type="text"
+								name="phone"
+								id="phone"
+								maxLength={10}
+								value={formData.phone}
+								onChange={handleChange}
+								className="w-full p-2 border border-blue-400 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								placeholder="Enter 10-digit number"
+							/>
+						</div>
+					</div>
 
 					<div className="col-span-1 relative">
 						<CustomTextInput
