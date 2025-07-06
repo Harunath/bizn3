@@ -89,9 +89,10 @@ export default function ReferralDetailsDialog({
 									<ReferralActionButtons id={referral.id} />
 								)}
 
-								{referral.status === "ACCEPTED" && (
-									<ReferralStatusUpdater referral={referral} />
-								)}
+								{referral.status != "WAITING" &&
+									referral.status != "REJECTED" && (
+										<ReferralStatusUpdater referral={referral} />
+									)}
 
 								<div className="mt-6 flex justify-end">
 									<button

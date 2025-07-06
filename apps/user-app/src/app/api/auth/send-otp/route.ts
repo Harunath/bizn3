@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { sendVerificationEmail } from "../../../../lib/nodemailer";
 import prisma from "@repo/db/client";
 
-const OTP_SECRET = process.env.OTP_SECRET || "supersecret";
+const OTP_SECRET = process.env.OTP_SECRET as string;
 
 export async function POST(req: Request) {
 	try {
