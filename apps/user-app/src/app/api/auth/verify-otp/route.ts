@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-const OTP_SECRET = process.env.OTP_SECRET || "supersecret";
+const OTP_SECRET = process.env.OTP_SECRET as string;
 
 export async function POST(req: Request) {
 	try {
