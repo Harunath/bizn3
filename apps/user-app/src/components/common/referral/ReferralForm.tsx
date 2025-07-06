@@ -133,14 +133,14 @@ export default function ReferralForm() {
 	};
 
 	return (
-		<div className="max-w-2xl mx-auto p-6 bg-slate-100 space-y-6 my-10 border border-gray-200">
+		<div className="max-w-2xl mx-auto p-6 bg-white space-y-6 my-10 border border-gray-200">
 			<div className="text-center space-y-1">
 				<h1 className="text-3xl font-bold tracking-tight text-black">
 					<span className="text-red-600">Biz-</span>Network
 					<sup className="text-xs align-top">®</sup> Referral Form
 				</h1>
 
-				<p className="text-sm text-gray-500 italic">
+				<p className="text-sm text-black italic">
 					(Be Sure To Announce This At The Meeting)
 				</p>
 			</div>
@@ -241,7 +241,7 @@ export default function ReferralForm() {
 			{/* Third Party Details */}
 			{referralType === "THIRD_PARTY" && (
 				<div className="bg-gray-50 p-4 rounded border space-y-4">
-					<h3 className="text-md font-semibold text-gray-800">
+					<h3 className="text-md font-semibold text-black">
 						Third Party Details
 					</h3>
 					<div>
