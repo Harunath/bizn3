@@ -4,6 +4,10 @@ import { PaymentPage } from "./paymentPage"; // Adjust import path based on your
 import { useState, useEffect } from "react";
 
 export function CheckoutPage({ sessionId }: { sessionId: string }) {
+	console.log(
+		"process.env.NEXT_PUBLIC_CASHFREE_NODE_ENV :",
+		process.env.NEXT_PUBLIC_CASHFREE_NODE_ENV as string
+	);
 	const [error, setError] = useState<string | null>(null);
 
 	// Trigger order creation when the component mounts or based on user action
@@ -31,12 +35,7 @@ export function CheckoutPage({ sessionId }: { sessionId: string }) {
 			{sessionId && !error && (
 				<PaymentPage
 					paymentSessionId={sessionId}
-					mode={
-						(process.env.NEXT_PUBLIC_CASHFREE_NODE_ENV as string) ===
-						"production"
-							? "production"
-							: "sandbox"
-					}
+					mode={"production"}
 					onError={handlePaymentError}
 				/>
 			)}
