@@ -48,8 +48,9 @@ model Franchise {
   isActive           Boolean          @default(true)
   isActiveDescription String?         @default("Franchise is active")
   franchiseType      FranchiseType
+  upgradeRequest     UpgradeRequest[]
 
-    // Relationships
+  // Relationships
   adminId            String?
   admin              Admin?            @relation(fields: [adminId], references: [id])
 
@@ -118,6 +119,36 @@ model FranchiseAdmin {
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 }
+
+model UpgradeRequest {
+  id            String   @id @default(cuid())
+
+  clubIds         String[]
+  chapterId       String?
+  categoryId      String?
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  requestedTier UserMembershipType
+  status        RequestStatus @default(PENDING)
+  franchiseId   String
+  paymentId     String? @unique
+  paymentDetails  Payment? @relation(fields: [paymentId],references: [id])
+  reviewedBy    Franchise  @relation(fields: [franchiseId], references: [id])
+  createdAt     DateTime @default(now())
+  reviewedAt    DateTime?
+
+  @@index([franchiseId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 
 // Country model - Created by Admin
 model Country {
@@ -203,6 +234,7 @@ model Chapter {
   regionalFranchise  Franchise        @relation(fields: [regionalFranchiseId], references: [id])
   clubs              Club[]
   chapterLeaders     ChapterLeader[]
+  categoryAssignments         ChapterCategoryAssignment[]
 
   chapterEvents      Event[]
 
@@ -212,6 +244,19 @@ model Chapter {
   updatedAt          DateTime         @updatedAt
   
   @@unique([name, regionId]) // Chapter names must be unique within a region
+}
+
+model ChapterCategoryAssignment {
+  id           String           @id @default(cuid())
+  chapterId    String
+  categoryId   String
+  userId       String @unique
+
+  chapter      Chapter          @relation(fields: [chapterId], references: [id])
+  category     BusinessCategory @relation(fields: [categoryId], references: [id])
+  user         User             @relation(fields: [userId], references: [id])
+
+  @@unique([chapterId, categoryId]) // ✅ Enforce only one user per category per chapter
 }
 
 // ChapterLeader model - Three leaders per chapter
@@ -339,14 +384,10 @@ enum FranchiseType {
 //user app models
 enum UserMembershipType {
   FREE
-  VIP
   GOLD
+  VIP
 }
 
-enum ReferralType {
-  SELF
-  THIRD_PARTY
-}
 
 enum EventType {
   VIRTUAL
@@ -375,6 +416,8 @@ model User {
   topsProfile       TopsProfile?
   gainsProfile      GainsProfile?
   weeklyPresentations  WeeklyPresentations[]
+  upgradeRequest    UpgradeRequest[]
+  categoryAssignment          ChapterCategoryAssignment?
 
   firstname      String
   lastname       String
@@ -406,6 +449,9 @@ model User {
   // Referral System
   referralsCreated   Referral[] @relation("ReferralCreator")
   referralsReceived  Referral[] @relation("ReferralReceiver")
+
+  ThankYouNoteSender   ThankYouNote[] @relation("ThankYouNoteSender")
+  ThankYouNoteReceiver   ThankYouNote[] @relation("ThankYouNoteReceiver")
   
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -533,25 +579,46 @@ model WeeklyPresentations {
   descriptions String
 
   user        User     @relation(fields: [userId], references: [id])
-  userId      String   @unique
+  userId      String
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
 
-
 model BusinessDetails {
-  id          String   @id @default(uuid())
-  businessName String
-  images      String[]
-  category    String
-  panNumber   String?  @unique
-  panNumberVerified Boolean @default(false)
-  gstNumber   String?  @unique
-  gstNumberVerified Boolean @default(false)
-  verified    Boolean  @default(false)
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String   @unique
+  id                   String   @id @default(uuid())
+  businessName         String
+  images               String[]
+  panNumber            String?  @unique
+  panNumberVerified    Boolean  @default(false)
+  tanNumber            String?  @unique
+  gstNumber            String?  @unique
+  gstNumberVerified    Boolean  @default(false)
+  verified             Boolean  @default(false)
+  companyName          String?         
+  companyLogoUrl       String?
+  gstRegisteredState   String?
+  BusinessDescription  String?
+  keywords             String?
+  user                 User     @relation(fields: [userId], references: [id])
+  userId               String   @unique
+
+  generalCategory      String?
+  category             BusinessCategory? @relation(fields: [categoryId], references: [id])
+  categoryId           String? 
+
+
+  createdAt            DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+ 
+}
+ 
+
+model BusinessCategory{
+  id String @id @default(cuid())
+  name String @unique
+  businesses BusinessDetails[]
+  categoryAssignments         ChapterCategoryAssignment[]
 }
 
 enum EventOwnerType {
@@ -596,22 +663,64 @@ enum ReferralStatus {
   COMPLETED
 }
 
+enum PriorityType {
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+  LEVEL_4
+  LEVEL_5
+}
+
+enum ReferralType {
+  SELF
+  THIRD_PARTY
+}
+
 // Referral Model
 model Referral {
   id             String      @id @default(cuid())
   type           ReferralType
-  
+
   creator        User        @relation("ReferralCreator", fields: [creatorId], references: [id])
   creatorId      String
   
   receiver       User        @relation("ReferralReceiver", fields: [receiverId], references: [id])
   receiverId     String
   
+  priority       PriorityType @default(LEVEL_1)
   businessDetails String?
+  phone          String?
+  Email          String?
   thirdPartyDetails Json?
-  status         ReferralStatus @default(WAITING)
+  comments       String?
   updates        String[]
-  
+
+  status         ReferralStatus @default(WAITING)
+
+  thankYouNote   ThankYouNote? @relation("ReferralThankYouNote")
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+enum ThankYouNoteBusinessType {
+  NEW
+  REPEAT
+}
+
+model ThankYouNote {
+  id             String      @id @default(cuid())
+
+  referralId     String     @unique
+  referal        Referral   @relation("ReferralThankYouNote", fields: [referralId], references:[id])
+  senderId       String
+  sender         User        @relation("ThankYouNoteSender", fields: [senderId], references:[id])
+  receiverId     String
+  receiver       User        @relation("ThankYouNoteReceiver", fields: [receiverId], references:[id])
+  amount        String
+  businessType  ThankYouNoteBusinessType @default(NEW)
+  comment       String
+
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
@@ -666,6 +775,8 @@ model Payment {
   updatedAt           DateTime     @updatedAt
   processedAt         DateTime?    
   order               Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  upgradeRequest     UpgradeRequest?
 }
 
 enum PaymentStatus {

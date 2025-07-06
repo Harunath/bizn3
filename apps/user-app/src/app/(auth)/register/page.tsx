@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import React from "react";
 import RegisterSteps from "../../../components/auth/Register/RegisterSteps";
 import prisma from "@repo/db/client";
@@ -6,6 +8,7 @@ import { authOptions } from "../../../lib/auth";
 import { redirect } from "next/navigation";
 
 import { User, BusinessDetails, Club } from "@repo/db/client";
+import Register from "../../../components/auth/Register/Register";
 export interface RegisterUserProps
 	extends Omit<
 		User,
@@ -44,21 +47,20 @@ const page = async () => {
 				updatedAt: true,
 			},
 		});
+		console.log("user ", user?.firstname);
 		if (!user) {
 			redirect("/logout");
-		} else if (!user.registrationCompleted) {
+		} else if (user && !user.registrationCompleted) {
 			return (
 				<div>
 					<RegisterSteps user={user} session={session} />
 				</div>
 			);
-		}
+		} else if (user && user.registrationCompleted) redirect("/logout");
 	}
-	return (
-		<div>
-			<RegisterSteps />
-		</div>
-	);
+	if (!session) {
+		return <Register />;
+	}
 };
 
 export default page;

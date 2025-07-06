@@ -1,188 +1,169 @@
 "use client";
 
-import { useState } from "react";
-
-type AddressType = {
-	addressLane1: string;
-	addressLane2?: string;
-	city?: string;
-	state: string;
-	country: string;
-	pincode?: string;
-};
+import { useEffect, useState, useCallback } from "react";
+import { Address } from "@repo/db/client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface AddressProps {
 	userId: string;
+	addressProp: Address;
 }
 
-export default function Address({ userId }: AddressProps) {
-	const [address, setAddress] = useState<AddressType>({
-		addressLane1: "Hyderabad",
-		addressLane2: "",
-		city: "",
-		state: "Telangana",
-		country: "IN",
-		pincode: "",
-	});
-
+export default function AddressComp({ userId, addressProp }: AddressProps) {
+	const [addressLane1, setAddressLane1] = useState("");
+	const [addressLane2, setAddressLane2] = useState("");
+	const [city, setCity] = useState("");
+	const [state, setState] = useState("");
+	const [country, setCountry] = useState("");
+	const [pincode, setPincode] = useState("");
+	const [exist, setExist] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [message, setMessage] = useState("");
-
-	const handleChange = (key: keyof AddressType, value: string) => {
-		setAddress((prev) => ({ ...prev, [key]: value }));
-	};
 
 	const apiBase = `/api/user/${userId}/my-profile/address`;
+
+	useEffect(() => {
+		if (addressProp) {
+			setExist(true);
+			setAddressLane1(addressProp.addressLane1 || "");
+			setAddressLane2(addressProp.addressLane2 || "");
+			setCity(addressProp.city || "");
+			setState(addressProp.state || "");
+			setCountry(addressProp.country || "");
+			setPincode(addressProp.pincode || "");
+		}
+	}, [addressProp]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		setMessage("");
+
+		const payload = {
+			addressLane1,
+			addressLane2,
+			city,
+			state,
+			country,
+			pincode,
+		};
+
 		try {
 			const res = await fetch(apiBase, {
-				method: "POST",
+				method: exist ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(address),
+				body: JSON.stringify(payload),
 			});
 
-			if (!res.ok) throw new Error("Failed to save address");
+			const result = await res.json();
 
-			setMessage("Address saved successfully.");
-		} catch (error) {
-			if (error instanceof Error) {
-				setMessage(error.message);
-			} else {
-				setMessage("Something went wrong");
+			if (!res.ok) {
+				throw new Error(result.message || "Failed to save address");
 			}
-		} finally {
-			setLoading(false);
-		}
-	};
 
-	const handleUpdate = async () => {
-		setLoading(true);
-		setMessage("");
-		try {
-			const res = await fetch(apiBase, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(address),
-			});
-
-			if (!res.ok) throw new Error("Failed to update address");
-
-			setMessage("Address updated successfully.");
+			const successMsg = exist
+				? "Address updated successfully!"
+				: "Address saved successfully!";
+			toast.success(successMsg);
+			setExist(true);
 		} catch (error) {
-			if( error instanceof Error) {
-				setMessage(error.message);
-			}
-			setMessage("Something went wrong");
+			const errMsg =
+				error instanceof Error ? error.message : "Something went wrong";
+			toast.error(errMsg);
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start p-4 md:p-6">
+			<ToastContainer position="top-right" autoClose={3000} />
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-8">
-				{/* Address Section */}
-				<div className="space-y-4">
-					<h2 className="text-xl font-bold text-black">Address</h2>
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-8">
+				<h2 className="text-xl font-bold text-black">Personal Address</h2>
 
-					<div>
-						<label className="block font-semibold mb-1">Address Lane 1</label>
-						<input
-							type="text"
-							value={address.addressLane1}
-							onChange={(e) => handleChange("addressLane1", e.target.value)}
-							className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
+				{/* Form Fields */}
+				<div className="space-y-4">
+					<InputField
+						label="Address Lane 1"
+						value={addressLane1}
+						setValue={setAddressLane1}
+						required
+					/>
+					<InputField
+						label="Address Lane 2"
+						value={addressLane2}
+						setValue={setAddressLane2}
+					/>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<InputField label="City" value={city} setValue={setCity} />
+						<InputField
+							label="State"
+							value={state}
+							setValue={setState}
 							required
 						/>
 					</div>
 
-					<div>
-						<label className="block font-semibold mb-1">Address Lane 2</label>
-						<input
-							type="text"
-							value={address.addressLane2 || ""}
-							onChange={(e) => handleChange("addressLane2", e.target.value)}
-							className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<InputField
+							label="Country"
+							value={country}
+							setValue={setCountry}
+							required
 						/>
-					</div>
-
-					<div className="grid grid-cols-2 gap-6">
-						<div>
-							<label className="block font-semibold mb-1">City</label>
-							<input
-								type="text"
-								value={address.city || ""}
-								onChange={(e) => handleChange("city", e.target.value)}
-								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
-							/>
-						</div>
-						<div>
-							<label className="block font-semibold mb-1">State</label>
-							<input
-								type="text"
-								value={address.state}
-								onChange={(e) => handleChange("state", e.target.value)}
-								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
-								required
-							/>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-6">
-						<div>
-							<label className="block font-semibold mb-1">Country</label>
-							<input
-								type="text"
-								value={address.country}
-								onChange={(e) => handleChange("country", e.target.value)}
-								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
-								required
-							/>
-						</div>
-						<div>
-							<label className="block font-semibold mb-1">PIN Code</label>
-							<input
-								type="text"
-								value={address.pincode || ""}
-								onChange={(e) => handleChange("pincode", e.target.value)}
-								className="w-full border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600"
-							/>
-						</div>
+						<InputField
+							label="PIN Code"
+							value={pincode}
+							setValue={setPincode}
+						/>
 					</div>
 				</div>
 
-				{/* Submit Buttons */}
-				<div className="flex justify-end gap-4 pt-6">
-					<button
-						type="button"
-						disabled={loading}
-						onClick={handleUpdate}
-						className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 font-semibold disabled:opacity-50">
-						{loading ? "Updating..." : "Update"}
-					</button>
+				{/* Submit Button */}
+				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
 						disabled={loading}
-						className="bg-black text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
-						{loading ? "Saving..." : "Save"}
+						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+						{loading ? "Saving..." : exist ? "Update" : "Save"}
 					</button>
 				</div>
-
-				{message && (
-					<p
-						className={`mt-4 font-semibold ${
-							message.includes("success") ? "text-green-700" : "text-red-700"
-						}`}>
-						{message}
-					</p>
-				)}
 			</form>
 		</div>
 	);
 }
+
+// Memoized and optimized InputField
+const InputField = ({
+	label,
+	value,
+	setValue,
+	required = false,
+}: {
+	label: string;
+	value: string;
+	setValue: (val: string) => void;
+	required?: boolean;
+}) => {
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setValue(e.target.value);
+		},
+		[setValue]
+	);
+
+	return (
+		<div>
+			<label className="block font-semibold mb-1 text-black">{label}</label>
+			<input
+				type="text"
+				value={value}
+				onChange={handleChange}
+				required={required}
+				className="w-full bg-white border border-black rounded px-4 py-2 focus:ring-2 focus:ring-red-600 focus:outline-none"
+			/>
+		</div>
+	);
+};

@@ -10,13 +10,13 @@ export default async function Layout({
 }: Readonly<{ children: React.ReactNode }>) {
 	const session = await getServerSession(authOptions); // Fetch session on the server
 	const links = [
-		{ name: "Dashboard", href: "/gold/dashboard" },
-		{ name: "Profile", href: "/gold/profile" },
+		{ name: "Dashboard", href: "/vip/dashboard" },
+		{ name: "Profile", href: "/vip/profile" },
 	];
 
 	return (
-		<WithRole allowedRole={UserMembershipType.GOLD} session={session}>
-			<div className=" w-screen">
+		<WithRole allowedRole={UserMembershipType.VIP} session={session}>
+			<div className="min-h-screen w-screen">
 				<Navbar links={links} />
 				<div className="pt-16 px-2">
 					<BackButton />

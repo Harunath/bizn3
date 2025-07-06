@@ -3,8 +3,7 @@ import React, { ReactNode } from "react";
 
 const layout = ({ children }: { children: ReactNode }) => {
 	return (
-		<div className="min-h-screen w-screen bg-white text-black">
-			{/* <Navbar /> */}
+		<div className="min-h-screen w-screen bg-slate-100 text-black">
 			<div>{children}</div>
 		</div>
 	);

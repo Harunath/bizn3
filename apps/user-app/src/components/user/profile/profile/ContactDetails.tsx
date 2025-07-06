@@ -1,34 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiTrash } from "react-icons/fi";
+import { ContactDetails } from "@repo/db/client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ContactDetailsProps {
 	userId: string;
+	contactDetails: ContactDetails;
 }
 
-export default function ContactDetails({ userId }: ContactDetailsProps) {
-	const [fullName, setFullName] = useState("");
-	const [city, setCity] = useState("");
-	const [state, setState] = useState("");
+export default function ContactDetailsComp({
+	userId,
+	contactDetails,
+}: ContactDetailsProps) {
+	const [address, setAddress] = useState("");
 	const [phone, setPhone] = useState("");
 	const [mobileNumber, setMobileNumber] = useState("");
 	const [homeNumber, setHomeNumber] = useState("");
-	const [pager, setPager] = useState("");
-	const [voiceMail, setVoiceMail] = useState("");
-	const [email, setEmail] = useState("");
-	const [emailVerified, setEmailVerified] = useState(false);
 	const [website, setWebsite] = useState("");
-	const [socialLinks, setSocialLinks] = useState([""]);
+	const [socialLinks, setSocialLinks] = useState<string[]>([]);
+	const [recordExists, setRecordExists] = useState(false);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if (contactDetails) {
+			try {
+				const parsedAddress =
+					typeof contactDetails.billingAddress === "string"
+						? JSON.parse(contactDetails.billingAddress)
+						: contactDetails.billingAddress;
+
+				setAddress(
+					parsedAddress !== undefined && parsedAddress !== null
+						? String(parsedAddress)
+						: ""
+				);
+			} catch {
+				setAddress(
+					contactDetails.billingAddress !== undefined &&
+						contactDetails.billingAddress !== null
+						? String(contactDetails.billingAddress)
+						: ""
+				);
+			}
+
+			setPhone(contactDetails.phone || "");
+			setMobileNumber(contactDetails.mobile || "");
+			setHomeNumber(contactDetails.houseNo || "");
+			setWebsite(contactDetails.website || "");
+			setSocialLinks(contactDetails.links || []);
+			setRecordExists(true);
+		}
+	}, [contactDetails]);
 
 	const handleAddSocialLink = () => {
-		setSocialLinks([...socialLinks, ""]);
+		setSocialLinks((prev) => [...prev, ""]);
 	};
 
 	const handleSocialChange = (index: number, value: string) => {
-		const newLinks = [...socialLinks];
-		newLinks[index] = value;
-		setSocialLinks(newLinks);
+		const updated = [...socialLinks];
+		updated[index] = value;
+		setSocialLinks(updated);
 	};
 
 	const handleDeleteSocialLink = (index: number) => {
@@ -37,90 +71,70 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setLoading(true);
 
-		const dataToSend = {
-			fullName,
-			city,
-			state,
+		const payload = {
+			billingAddress: address.trim(),
 			phone,
-			mobileNumber,
-			homeNumber,
-			pager,
-			voiceMail,
-			email,
-			emailVerified,
+			mobile: mobileNumber,
+			houseNo: homeNumber,
 			website,
-			socialLinks: socialLinks.filter((link) => link.trim() !== ""),
+			links: socialLinks.filter((link) => link.trim() !== ""),
 		};
 
 		try {
-			const response = await fetch(
+			const res = await fetch(
 				`/api/user/${userId}/my-profile/contact-details`,
 				{
-					method: "POST",
+					method: recordExists ? "PUT" : "POST",
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify(dataToSend),
+					body: JSON.stringify(payload),
 				}
 			);
 
-			if (!response.ok) {
-				throw new Error("Failed to save contact details");
+			const result = await res.json();
+
+			if (!res.ok) {
+				throw new Error(result.message || "Failed to save contact details.");
 			}
 
-			alert("Contact details saved successfully!");
-			// Optional: Reset form or update UI here
+			toast.success(
+				recordExists
+					? "Contact details updated successfully!"
+					: "Contact details saved successfully!"
+			);
+			setRecordExists(true);
 		} catch (error) {
-			alert(`Error: ${(error as Error).message}`);
+			toast.error((error as Error).message || "Failed to save contact details");
+		} finally {
+			setLoading(false);
 		}
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start p-4 md:p-6">
+			<ToastContainer position="top-right" autoClose={3000} />
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6">
-				{/* Full Name */}
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6">
+				{/* Name & Address */}
 				<div>
 					<label className="block font-semibold text-black mb-1">
-						Full Name
+						Name and Address
 					</label>
 					<input
 						type="text"
-						value={fullName}
-						onChange={(e) => setFullName(e.target.value)}
-						placeholder="Enter Full Name"
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+						value={address}
+						onChange={(e) => setAddress(e.target.value)}
+						placeholder="Enter full name and billing address"
+						className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
 
-				{/* City & State */}
-				<div className="grid grid-cols-2 gap-6">
-					<div>
-						<label className="block font-semibold text-black mb-1">City</label>
-						<input
-							type="text"
-							value={city}
-							onChange={(e) => setCity(e.target.value)}
-							placeholder="Enter City"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">State</label>
-						<input
-							type="text"
-							value={state}
-							onChange={(e) => setState(e.target.value)}
-							placeholder="Enter State"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-				</div>
-
-				{/* Phone Numbers */}
-				<div className="grid grid-cols-2 gap-6">
+				{/* Phone Fields */}
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label className="block font-semibold text-black mb-1">
 							Phone<span className="text-red-600">*</span>
@@ -129,9 +143,9 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 							type="tel"
 							value={phone}
 							onChange={(e) => setPhone(e.target.value)}
-							placeholder="Enter Phone Number"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 							required
+							placeholder="Enter Phone Number"
+							className="w-full border bg-white border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 					</div>
 					<div>
@@ -143,68 +157,21 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 							value={mobileNumber}
 							onChange={(e) => setMobileNumber(e.target.value)}
 							placeholder="Enter Mobile Number"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">Home</label>
-						<input
-							type="text"
-							value={homeNumber}
-							onChange={(e) => setHomeNumber(e.target.value)}
-							placeholder="Enter Home Number"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">Pager</label>
-						<input
-							type="text"
-							value={pager}
-							onChange={(e) => setPager(e.target.value)}
-							placeholder="Enter Pager Details"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							Voice Mail
-						</label>
-						<input
-							type="text"
-							value={voiceMail}
-							onChange={(e) => setVoiceMail(e.target.value)}
-							placeholder="Enter Voice Mail"
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full border bg-white border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 					</div>
 				</div>
 
-				{/* Email */}
+				{/* Home Number */}
 				<div>
-					<label className="block font-semibold text-black mb-1">
-						Email<span className="text-red-600">*</span>
-					</label>
+					<label className="block font-semibold text-black mb-1">Home</label>
 					<input
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						placeholder="Enter Email Address"
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						required
+						type="text"
+						value={homeNumber}
+						onChange={(e) => setHomeNumber(e.target.value)}
+						placeholder="Enter Home Number"
+						className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
-					{emailVerified ? (
-						<p className="text-green-700 mt-2 font-semibold">
-							Email address verified
-						</p>
-					) : (
-						<button
-							type="button"
-							onClick={() => setEmailVerified(true)}
-							className="mt-2 text-sm text-red-600 underline hover:text-red-700">
-							Mark as Verified
-						</button>
-					)}
 				</div>
 
 				{/* Website */}
@@ -215,24 +182,26 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 						value={website}
 						onChange={(e) => setWebsite(e.target.value)}
 						placeholder="Enter Website URL"
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+						className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
 				</div>
 
-				{/* Social Media Links */}
+				{/* Social Links */}
 				<div>
 					<label className="block font-semibold text-black mb-1">
 						Social Networking Links
 					</label>
 
 					{socialLinks.map((link, index) => (
-						<div key={index} className="flex items-center mb-3 gap-3">
+						<div
+							key={index}
+							className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-3">
 							<input
 								type="url"
 								placeholder={`Social Link ${index + 1}`}
 								value={link}
 								onChange={(e) => handleSocialChange(index, e.target.value)}
-								className="flex-1 border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+								className="w-full bg-white md:flex-1 border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 							/>
 							<button
 								type="button"
@@ -253,12 +222,13 @@ export default function ContactDetails({ userId }: ContactDetailsProps) {
 					</button>
 				</div>
 
-				{/* Actions */}
-				<div className="flex justify-end gap-4 pt-6">
+				{/* Submit Button */}
+				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
-						className="bg-black text-white px-6 py-2 rounded hover:opacity-90 font-semibold">
-						Save
+						disabled={loading}
+						className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+						{loading ? "Saving..." : recordExists ? "Update" : "Save"}
 					</button>
 				</div>
 			</form>

@@ -1,38 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function GainsProfile({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
-		goals: [] as string[],
-		accomplishments: [] as string[],
+		goals: "",
+		accomplishments: "",
+		networks: "",
+		skills: "",
 		interests: [] as string[],
-		networks: [] as string[],
-		skills: [] as string[],
+		newInterest: "",
 	});
 
 	const [loading, setLoading] = useState(true);
+	const [isEditMode, setIsEditMode] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 
 	useEffect(() => {
 		const fetchProfile = async () => {
 			try {
-				const res = await fetch(`/api/user/${userId}/bios/gains-profile`, {
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-				});
-				if (!res.ok) throw new Error("Failed to fetch profile");
-				const data = await res.json();
-				setFormData({
-					goals: data.goals || [],
-					accomplishments: data.accomplishments || [],
-					interests: data.interests || data.intrests || [],
-					networks: data.networks || [],
-					skills: data.skills || [],
-				});
-			} catch (error) {
-				console.error("Error fetching profile:", error);
+				const res = await fetch(`/api/user/${userId}/bios/gains-profile`);
+				if (res.ok) {
+					const data = await res.json();
+					setFormData((prev) => ({
+						...prev,
+						goals: (data.data.goals || []).join("\n"),
+						accomplishments: (data.data.accomplishments || []).join("\n"),
+						networks: (data.data.networks || []).join("\n"),
+						skills: (data.data.skills || []).join("\n"),
+						interests: data.data.interests || data.data.intrests || [],
+					}));
+					setIsEditMode(true);
+				}
+			} catch (err) {
+				console.error("Fetch error:", err);
+				toast.error("Failed to load Gains Profile");
 			} finally {
 				setLoading(false);
 			}
@@ -43,123 +46,209 @@ export default function GainsProfile({ userId }: { userId: string }) {
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
-		const lines = value
-			.split("\n")
-			.map((line) => line.trim())
-			.filter(Boolean);
-		setFormData((prev) => ({ ...prev, [name]: lines }));
+		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
-
-	const formatArray = (arr: string[]) => arr.join("\n");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setSubmitting(true);
+
 		try {
+			const payload = {
+				goals: formData.goals
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				accomplishments: formData.accomplishments
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				networks: formData.networks
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				skills: formData.skills
+					.split("\n")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				intrests: formData.interests,
+			};
+
 			const res = await fetch(`/api/user/${userId}/bios/gains-profile`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(formData),
+				method: isEditMode ? "PUT" : "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
 			});
-			if (!res.ok) throw new Error("Failed to save profile");
-			alert("Profile saved successfully!");
+
+			if (!res.ok) throw new Error("Failed to submit");
+
+			toast.success(
+				isEditMode
+					? "Gains Profile updated successfully!"
+					: "Gains Profile saved successfully!"
+			);
+			if (!isEditMode) setIsEditMode(true);
 		} catch (error) {
-			console.error("Error saving profile:", error);
-			alert("Something went wrong while saving the profile.");
+			console.error("Save error:", error);
+			toast.error("An error occurred while saving Gains Profile.");
+		} finally {
+			setSubmitting(false);
 		}
 	};
 
-	if (loading) return <div className="p-8 text-center">Loading...</div>;
+	const handleAddInterest = () => {
+		const interest = formData.newInterest.trim();
+		if (interest && !formData.interests.includes(interest)) {
+			setFormData((prev) => ({
+				...prev,
+				interests: [...prev.interests, interest],
+				newInterest: "",
+			}));
+		}
+	};
+
+	const handleRemoveInterest = (item: string) => {
+		setFormData((prev) => ({
+			...prev,
+			interests: prev.interests.filter((i) => i !== item),
+		}));
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			handleAddInterest();
+		}
+	};
+
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
-			<form
-				onSubmit={handleSubmit}
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6">
-				{/* Goals */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Goals<span className="text-red-600">*</span>
-					</label>
-					<textarea
-						name="goals"
-						value={formatArray(formData.goals)}
-						onChange={handleChange}
-						rows={5}
-						required
-						placeholder="Enter your family, relationship, and business goals (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+		<form
+			onSubmit={handleSubmit}
+			className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6 mx-auto">
+			<TextareaField
+				name="goals"
+				label="Goals"
+				value={formData.goals}
+				onChange={handleChange}
+				required
+			/>
 
-				{/* Accomplishments */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Accomplishments
-					</label>
-					<textarea
-						name="accomplishments"
-						value={formatArray(formData.accomplishments)}
-						onChange={handleChange}
-						rows={4}
-						placeholder="Enter your key accomplishments (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
+			<TextareaField
+				name="accomplishments"
+				label="Accomplishments"
+				value={formData.accomplishments}
+				onChange={handleChange}
+			/>
 
-				{/* Interests */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Interests
-					</label>
-					<textarea
-						name="interests"
-						value={formatArray(formData.interests)}
-						onChange={handleChange}
-						rows={4}
-						placeholder="List your interests (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+			{/* Interests Section */}
+			<div>
+				<label className="block font-semibold text-black mb-1">Interests</label>
+				<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+					<input
+						type="text"
+						value={formData.newInterest}
+						onChange={(e) =>
+							setFormData((prev) => ({
+								...prev,
+								newInterest: e.target.value,
+							}))
+						}
+						onKeyDown={handleKeyDown}
+						placeholder="Type and press Enter"
+						className="flex-grow bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
-				</div>
-
-				{/* Networks */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Networks
-					</label>
-					<textarea
-						name="networks"
-						value={formatArray(formData.networks)}
-						onChange={handleChange}
-						rows={3}
-						placeholder="Mention the networks you're part of (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
-
-				{/* Skills */}
-				<div>
-					<label className="block font-semibold text-black mb-1">Skills</label>
-					<textarea
-						name="skills"
-						value={formatArray(formData.skills)}
-						onChange={handleChange}
-						rows={4}
-						placeholder="List your skills (one per line)..."
-						className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
-					/>
-				</div>
-
-				{/* Actions */}
-				<div className="flex justify-end gap-4 pt-6">
 					<button
-						type="submit"
-						className="bg-black text-white px-6 py-2 rounded hover:opacity-90 font-semibold">
-						Save
+						type="button"
+						onClick={handleAddInterest}
+						className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+						Add
 					</button>
 				</div>
-			</form>
+				<div className="flex flex-wrap gap-2">
+					{formData.interests.map((item, idx) => (
+						<span
+							key={idx}
+							className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+							{item}
+							<button
+								type="button"
+								onClick={() => handleRemoveInterest(item)}
+								className="text-red-600 hover:text-red-800">
+								&times;
+							</button>
+						</span>
+					))}
+				</div>
+			</div>
+
+			<TextareaField
+				name="networks"
+				label="Networks"
+				value={formData.networks}
+				onChange={handleChange}
+			/>
+
+			<TextareaField
+				name="skills"
+				label="Skills"
+				value={formData.skills}
+				onChange={handleChange}
+			/>
+
+			<div className="flex justify-end pt-4">
+				<button
+					type="submit"
+					disabled={submitting}
+					className="bg-red-600 text-white px-6 py-2 rounded hover:opacity-90 font-semibold disabled:opacity-50">
+					{submitting
+						? isEditMode
+							? "Updating..."
+							: "Saving..."
+						: isEditMode
+							? "Update"
+							: "Save"}
+				</button>
+			</div>
+		</form>
+	);
+}
+
+function TextareaField({
+	name,
+	label,
+	value,
+	onChange,
+	required = false,
+}: {
+	name: string;
+	label: string;
+	value: string;
+	onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+	required?: boolean;
+}) {
+	return (
+		<div>
+			<label className="block font-semibold text-black mb-1">
+				{label}
+				{required && <span className="text-red-600">*</span>}
+			</label>
+			<textarea
+				name={name}
+				value={value}
+				onChange={onChange}
+				rows={4}
+				required={required}
+				placeholder={`Enter ${label.toLowerCase()} (one per line)...`}
+				className="w-full bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+			/>
 		</div>
 	);
 }

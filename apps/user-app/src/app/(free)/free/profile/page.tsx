@@ -3,7 +3,7 @@ import SignOutButton from "../../../../components/common/SignOutButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/auth";
 import ProfilePage from "../../../../components/user/profile/ProfilePage";
-import Link from "next/link";
+import prisma from "@repo/db/client";
 
 const page = async () => {
 	const session = await getServerSession(authOptions);
@@ -23,16 +23,29 @@ const page = async () => {
 	const data = await res.json();
 	console.log(data.data);
 	const user = data.data;
+
+	const contactDetailsRes = await prisma.contactDetails.findUnique({
+		where: { userId: user.id },
+	});
+
 	return (
 		<div>
 			<div className="flex items-center justify-between p-4 flex-wrap">
 				<div className="flex-1 flex justify-center items-baseline-last gap-x-2 flex-wrap">
-					<span className="text-4xl font-semibold text-red-600">
-						{session.user.firstname}
-					</span>
-					<h1 className="text-4xl font-medium text-center">
-						Biz Network Profile
-					</h1>
+					<div className="text-center md:text-left">
+						<h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-x-1">
+							<span className="text-red-600">Biz</span>
+							<span className="text-black">-Network</span>
+							<span className="text-sm align-top">®</span>
+						</h1>
+
+						<p className="text-gray-600 text-sm mt-1">
+							Welcome back,{" "}
+							<span className="font-semibold text-red-600">
+								{session.user.firstname}
+							</span>
+						</p>
+					</div>
 				</div>
 				<div className="w-fit">
 					<SignOutButton>
@@ -42,9 +55,10 @@ const page = async () => {
 					</SignOutButton>
 				</div>
 			</div>
-			<Link href="/free/profile/bios">Bios</Link>
-			<Link className="ml-2" href="/free/profile/personal-details">personal details</Link>
-			<ProfilePage user={user} />
+			<ProfilePage
+				user={user}
+				contactDetailsRes={contactDetailsRes ? contactDetailsRes : null}
+			/>
 		</div>
 	);
 };

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface WeeklyPresentationProps {
 	userId: string;
@@ -23,25 +25,24 @@ export default function WeeklyPresentation({
 	const [globalError, setGlobalError] = useState<string | null>(null);
 
 	useEffect(() => {
-		async function fetchPresentations() {
+		const fetchPresentations = async () => {
 			try {
 				setGlobalError(null);
 				const res = await fetch(
 					`/api/user/${userId}/bios/weekly-presentations`
 				);
-				if (!res.ok) throw new Error("Failed to fetch presentations");
+				if (!res.ok) throw new Error("Could not load previous presentations");
+
 				const data = await res.json();
 				setPresentations(data.data || []);
 			} catch (err) {
-				setGlobalError(
-					typeof err === "object" && err !== null && "message" in err
-						? (err as { message: string }).message
-						: "Failed to load data"
-				);
+				console.error("Fetch presentations failed", err);
+				setGlobalError("Unable to load previous data. You can still add.");
 			} finally {
 				setLoading(false);
 			}
-		}
+		};
+
 		fetchPresentations();
 	}, [userId]);
 
@@ -61,9 +62,7 @@ export default function WeeklyPresentation({
 
 	const handleSave = async (index: number) => {
 		const form = presentations[index];
-		if (!form) return;
-
-		if (!form.title.trim() || !form.descriptions.trim()) {
+		if (!form?.title.trim() || !form.descriptions.trim()) {
 			setPresentations((prev) =>
 				prev.map((item, i) =>
 					i === index
@@ -75,20 +74,24 @@ export default function WeeklyPresentation({
 		}
 
 		setSavingIndex(index);
-		setPresentations((prev) =>
-			prev.map((item, i) =>
-				i === index ? { ...item, error: undefined, success: false } : item
-			)
-		);
+		const isUpdating = !!form.id;
 
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/weekly-presentations`, {
-				method: "POST",
+				method: isUpdating ? "PUT" : "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					title: form.title.trim(),
-					descriptions: form.descriptions.trim(),
-				}),
+				body: JSON.stringify(
+					isUpdating
+						? {
+								presentationId: form.id,
+								title: form.title.trim(),
+								descriptions: form.descriptions.trim(),
+							}
+						: {
+								title: form.title.trim(),
+								descriptions: form.descriptions.trim(),
+							}
+				),
 			});
 
 			if (!res.ok) {
@@ -96,47 +99,58 @@ export default function WeeklyPresentation({
 				throw new Error(errorData.message || "Save failed");
 			}
 
-			setPresentations((prev) =>
-				prev.map((item, i) => (i === index ? { ...item, success: true } : item))
-			);
+			const responseData = await res.json();
+			const updatedId = responseData.data?.id;
 
-			setTimeout(() => {
-				setPresentations((prev) =>
-					prev.map((item, i) =>
-						i === index ? { ...item, success: false } : item
-					)
-				);
-			}, 3000);
-		} catch (error) {
 			setPresentations((prev) =>
 				prev.map((item, i) =>
 					i === index
 						? {
 								...item,
-								error:
-									error && typeof error === "object" && "message" in error
-										? (error as { message: string }).message
-										: "An error occurred",
-						  }
+								id: updatedId || item.id,
+								success: true,
+								error: undefined,
+							}
 						: item
 				)
 			);
+
+			toast.success(
+				`Presentation ${isUpdating ? "updated" : "saved"} successfully!`
+			);
+		} catch (error) {
+			const msg =
+				typeof error === "object" && error !== null && "message" in error
+					? (error as { message: string }).message
+					: "An error occurred";
+			setPresentations((prev) =>
+				prev.map((item, i) => (i === index ? { ...item, error: msg } : item))
+			);
+			toast.error(msg);
 		} finally {
 			setSavingIndex(null);
 		}
 	};
 
 	const addNewPresentation = () => {
+		if (presentations.length >= 2) return;
 		setPresentations((prev) => [...prev, { title: "", descriptions: "" }]);
 	};
 
-	if (loading) return <div className="p-6 text-center">Loading...</div>;
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center p-6">
-			<div className="w-full max-w-3xl space-y-8">
+		<div className="min-h-screen flex justify-center p-4 md:p-6">
+			<ToastContainer position="top-center" autoClose={3000} />
+			<div className="w-full max-w-4xl space-y-8">
 				{globalError && (
-					<div className="bg-red-100 text-red-700 border border-red-400 p-4 rounded mb-4 text-center">
+					<div className="bg-yellow-100 text-yellow-800 border border-yellow-400 p-4 rounded text-center">
 						{globalError}
 					</div>
 				)}
@@ -150,7 +164,7 @@ export default function WeeklyPresentation({
 				{presentations.map((presentation, index) => (
 					<div
 						key={presentation.id ?? index}
-						className="bg-white p-6 rounded-lg shadow border space-y-4">
+						className="bg-slate-100 p-6 rounded-lg shadow border space-y-4">
 						<h3 className="text-lg font-bold">
 							Presentation {index + 1}
 							{index === 0 && <span className="text-red-500"> *</span>}
@@ -162,7 +176,7 @@ export default function WeeklyPresentation({
 							value={presentation.title}
 							onChange={(e) => handleChange(index, "title", e.target.value)}
 							disabled={savingIndex !== null}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 
 						<textarea
@@ -173,22 +187,23 @@ export default function WeeklyPresentation({
 							}
 							rows={4}
 							disabled={savingIndex !== null}
-							className="w-full border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
+							className="w-full bg-white border border-black rounded px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-600"
 						/>
 
 						{presentation.error && (
 							<p className="text-red-600 text-sm">{presentation.error}</p>
-						)}
-						{presentation.success && (
-							<p className="text-green-600 text-sm">Saved successfully!</p>
 						)}
 
 						<div className="text-right">
 							<button
 								onClick={() => handleSave(index)}
 								disabled={savingIndex === index}
-								className="bg-black text-white px-5 py-2 rounded hover:opacity-90 disabled:opacity-50">
-								{savingIndex === index ? "Saving..." : "Save"}
+								className="bg-red-600 text-white px-5 py-2 rounded hover:opacity-90 disabled:opacity-50">
+								{savingIndex === index
+									? "Saving..."
+									: presentation.id
+										? "Update"
+										: "Save"}
 							</button>
 						</div>
 					</div>
@@ -197,8 +212,12 @@ export default function WeeklyPresentation({
 				<div className="text-center pt-4">
 					<button
 						onClick={addNewPresentation}
-						disabled={savingIndex !== null}
-						className="text-black border border-black px-4 py-2 rounded hover:bg-black hover:text-white transition font-semibold">
+						disabled={savingIndex !== null || presentations.length >= 2}
+						className={`text-black border border-black px-4 py-2 rounded transition font-semibold ${
+							presentations.length >= 2
+								? "opacity-50 cursor-not-allowed"
+								: "hover:bg-black hover:text-white"
+						}`}>
 						➕ Add Presentation
 					</button>
 				</div>

@@ -1,36 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+	useEffect,
+	useState,
+	ChangeEvent,
+	FormEvent,
+	KeyboardEvent,
+} from "react";
+import { toast } from "react-toastify";
 
 export default function MyBio({ userId }: { userId: string }) {
 	const [formData, setFormData] = useState({
 		yearsInBusiness: "",
-		previousJobs: "",
-		hobbies: "",
-		interests: "",
-		city: "",
 		yearsInCity: "",
+		previousJobs: [] as string[],
 		burningDesire: "",
-		unknownFact: "",
+		hobbiesIntrests: [] as string[],
+		NoOneKnowsAboutMe: "",
+		cityOfResidence: "",
 		keyToSuccess: "",
+		newValues: {
+			previousJobs: "",
+			hobbiesIntrests: "",
+		},
 	});
 
 	const [loading, setLoading] = useState(true);
+	const [updating, setUpdating] = useState(false);
+	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
 		const fetchBio = async () => {
 			try {
-				const res = await fetch(`/api/user/${userId}/bios/my-bio`, {
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
+				const res = await fetch(`/api/user/${userId}/bios/my-bio`);
+				if (!res.ok) throw new Error("Failed to fetch bio");
+
+				const { data } = await res.json();
+
+				setFormData({
+					yearsInBusiness: data.yearsInBusiness?.toString() || "",
+					yearsInCity: data.yearsInCity?.toString() || "",
+					previousJobs: data.previousJobs || [],
+					burningDesire: data.burningDesire || "",
+					hobbiesIntrests: data.hobbiesIntrests || [],
+					NoOneKnowsAboutMe: data.NoOneKnowsAboutMe || "",
+					cityOfResidence: data.cityOfResidence || "",
+					keyToSuccess: data.keyToSuccess || "",
+					newValues: {
+						previousJobs: "",
+						hobbiesIntrests: "",
 					},
 				});
-				if (!res.ok) throw new Error("Failed to fetch bio");
-				const data = await res.json();
-				setFormData(data);
-			} catch (error) {
-				console.error("Error fetching bio:", error);
+
+				setUpdating(true);
+			} catch {
+				console.log("No bio found, defaulting to create.");
 			} finally {
 				setLoading(false);
 			}
@@ -39,173 +63,277 @@ export default function MyBio({ userId }: { userId: string }) {
 		fetchBio();
 	}, [userId]);
 
+	const handleTempChange = (key: string, value: string) => {
+		setFormData((prev) => ({
+			...prev,
+			newValues: { ...prev.newValues, [key]: value },
+		}));
+	};
+
+	const handleAddItem = (key: string) => {
+		const value =
+			formData.newValues[key as keyof typeof formData.newValues].trim();
+		if (!value) return;
+
+		const arr = formData[key as keyof typeof formData];
+		if (Array.isArray(arr) && !arr.includes(value)) {
+			setFormData((prev) => ({
+				...prev,
+				[key]: [...(prev[key as keyof typeof formData] as string[]), value],
+				newValues: { ...prev.newValues, [key]: "" },
+			}));
+		}
+	};
+
+	const handleRemoveItem = (key: string, value: string) => {
+		setFormData((prev) => ({
+			...prev,
+			[key]: (prev[key as keyof typeof formData] as string[]).filter(
+				(item) => item !== value
+			),
+		}));
+	};
+
 	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
+		setSaving(true);
+
 		try {
 			const res = await fetch(`/api/user/${userId}/bios/my-bio`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				method: updating ? "PUT" : "POST",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),
 			});
-			if (!res.ok) throw new Error("Failed to save bio");
-			alert("Bio saved successfully!");
-		} catch (error) {
-			console.error(error);
-			alert("An error occurred while saving bio.");
-		}
-	};
 
-	if (loading) return <div className="p-8 text-center">Loading...</div>;
+			if (!res.ok) throw new Error("Failed to save bio");
+
+			toast.success(
+				updating
+					? "My Bio updated successfully!"
+					: "My Bio created successfully!"
+			);
+			setUpdating(true);
+		} catch (error) {
+			toast.error((error as Error).message || "Failed to save My Bio");
+		} finally {
+			setSaving(false);
+		}
+		};
+
+	if (loading)
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex justify-center items-start p-6">
+		<div className="min-h-screen flex justify-center items-start">
 			<form
-				className="w-full max-w-5xl bg-white p-8 rounded-lg shadow space-y-6"
+				className="w-full max-w-5xl bg-slate-100 p-6 md:p-8 shadow-xl space-y-6"
 				onSubmit={handleSubmit}>
-				{/* Years in Business */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Years In Business
-					</label>
-					<input
-						type="number"
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<FormField
+						label="Years In Business"
 						name="yearsInBusiness"
+						type="number"
 						value={formData.yearsInBusiness}
 						onChange={handleChange}
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
 					/>
-				</div>
-
-				{/* Previous Types of Jobs */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Previous Types of Jobs
-					</label>
-					<textarea
-						name="previousJobs"
-						value={formData.previousJobs}
+					<FormField
+						label="Years in that City"
+						name="yearsInCity"
+						type="number"
+						value={formData.yearsInCity}
 						onChange={handleChange}
-						rows={3}
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
 					/>
-				</div>
-
-				{/* Hobbies & Interests */}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							Hobbies
-						</label>
-						<textarea
-							name="hobbies"
-							value={formData.hobbies}
-							onChange={handleChange}
-							rows={3}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							Interests
-						</label>
-						<textarea
-							name="interests"
-							value={formData.interests}
-							onChange={handleChange}
-							rows={3}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-						/>
-					</div>
-				</div>
-
-				{/* City and Years in City */}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							City of Residence
-						</label>
-						<input
-							type="text"
-							name="city"
-							value={formData.city}
-							onChange={handleChange}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-					<div>
-						<label className="block font-semibold text-black mb-1">
-							Years in that City
-						</label>
-						<input
-							type="number"
-							name="yearsInCity"
-							value={formData.yearsInCity}
-							onChange={handleChange}
-							className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-						/>
-					</div>
-				</div>
-
-				{/* Burning Desire */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						My Burning Desire is to
-					</label>
-					<textarea
-						name="burningDesire"
-						value={formData.burningDesire}
+					<FormField
+						label="City of Residence"
+						name="cityOfResidence"
+						value={formData.cityOfResidence}
 						onChange={handleChange}
-						rows={3}
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
 					/>
 				</div>
 
-				{/* Unknown Fact */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						Something No One Here Knows About Me
-					</label>
-					<textarea
-						name="unknownFact"
-						value={formData.unknownFact}
-						onChange={handleChange}
-						rows={4}
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-					/>
-				</div>
+				<TextAreaField
+					label="My Burning Desire is to"
+					name="burningDesire"
+					value={formData.burningDesire}
+					onChange={handleChange}
+				/>
+				<TextAreaField
+					label="Something No One Here Knows About Me"
+					name="NoOneKnowsAboutMe"
+					value={formData.NoOneKnowsAboutMe}
+					onChange={handleChange}
+				/>
+				<TextAreaField
+					label="My Key to Success"
+					name="keyToSuccess"
+					value={formData.keyToSuccess}
+					onChange={handleChange}
+				/>
 
-				{/* Key to Success */}
-				<div>
-					<label className="block font-semibold text-black mb-1">
-						My Key to Success
-					</label>
-					<textarea
-						name="keyToSuccess"
-						value={formData.keyToSuccess}
-						onChange={handleChange}
-						rows={3}
-						className="w-full border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
-					/>
-				</div>
+				<ArrayInputField
+					label="Previous Jobs"
+					fieldKey="previousJobs"
+					values={formData.previousJobs}
+					tempValue={formData.newValues.previousJobs}
+					onTempChange={handleTempChange}
+					onAdd={handleAddItem}
+					onRemove={handleRemoveItem}
+				/>
 
-				{/* Actions */}
-				<div className="flex justify-end gap-4 pt-6">
+				<ArrayInputField
+					label="Hobbies & Interests"
+					fieldKey="hobbiesIntrests"
+					values={formData.hobbiesIntrests}
+					tempValue={formData.newValues.hobbiesIntrests}
+					onTempChange={handleTempChange}
+					onAdd={handleAddItem}
+					onRemove={handleRemoveItem}
+				/>
+
+				<div className="flex justify-end pt-6">
 					<button
 						type="submit"
-						className="bg-black text-white px-6 py-2 rounded hover:opacity-90 font-semibold">
-						Save
+						disabled={saving}
+						className={`px-6 py-2 rounded font-semibold text-white ${updating ? "bg-red-600" : "bg-black"} hover:opacity-90 disabled:opacity-50`}>
+						{saving
+							? updating
+								? "Updating..."
+								: "Saving..."
+							: updating
+								? "Update"
+								: "Save"}
 					</button>
 				</div>
 			</form>
 		</div>
 	);
 }
+
+function FormField({
+	label,
+	name,
+	value,
+	onChange,
+	type = "text",
+}: {
+	label: string;
+	name: string;
+	value: string | number;
+	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	type?: "text" | "number";
+}) {
+	return (
+		<div>
+			<label className="block font-semibold text-black mb-1">{label}</label>
+			<input
+				type={type}
+				name={name}
+				value={String(value)}
+				onChange={onChange}
+				className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+			/>
+		</div>
+	);
+}
+
+function TextAreaField({
+	label,
+	name,
+	value,
+	onChange,
+}: {
+	label: string;
+	name: string;
+	value: string;
+	onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+}) {
+	return (
+		<div>
+			<label className="block font-semibold text-black mb-1">{label}</label>
+			<textarea
+				name={name}
+				value={value}
+				onChange={onChange}
+				rows={3}
+				className="w-full bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
+			/>
+		</div>
+	);
+}
+
+type ArrayInputFieldProps = {
+	label: string;
+	fieldKey: string;
+	values: string[];
+	tempValue: string;
+	onTempChange: (key: string, value: string) => void;
+	onAdd: (key: string) => void;
+	onRemove: (key: string, value: string) => void;
+	placeholder?: string;
+};
+
+const ArrayInputField = ({
+	label,
+	fieldKey,
+	values,
+	tempValue,
+	onTempChange,
+	onAdd,
+	onRemove,
+	placeholder = "Type and press Enter",
+}: ArrayInputFieldProps) => {
+	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			onAdd(fieldKey);
+		}
+	};
+
+	return (
+		<div className="mb-4">
+			<label className="block font-semibold text-black mb-1">{label}</label>
+			<div className="flex flex-col md:flex-row items-start md:items-center gap-2 mb-2">
+				<input
+					type="text"
+					value={tempValue}
+					onChange={(e) => onTempChange(fieldKey, e.target.value)}
+					onKeyDown={handleKeyDown}
+					placeholder={placeholder}
+					className="flex-grow bg-white border border-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+				/>
+				<button
+					type="button"
+					onClick={() => onAdd(fieldKey)}
+					className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+					Add
+				</button>
+			</div>
+			<div className="flex flex-wrap gap-2">
+				{values.map((val, idx) => (
+					<span
+						key={idx}
+						className="flex items-center gap-1 px-3 py-1 bg-gray-200 rounded-full text-sm">
+						{val}
+						<button
+							type="button"
+							onClick={() => onRemove(fieldKey, val)}
+							className="text-red-600 hover:text-red-800">
+							&times;
+						</button>
+					</span>
+				))}
+			</div>
+		</div>
+	);
+};

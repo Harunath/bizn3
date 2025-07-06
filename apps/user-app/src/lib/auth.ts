@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
 								id: true,
 							},
 						},
-						homeClub: true,
+						homeClubId: true,
 						membershipType: true,
 					},
 				});
@@ -112,7 +112,7 @@ export const authOptions: NextAuthOptions = {
 					token.membershipType = member?.membershipType;
 					token.businessId = member?.businessDetails?.id;
 					token.registrationCompleted = member?.registrationCompleted;
-					token.homeClub = member?.homeClub;
+					token.homeClub = member?.homeClubId;
 				}
 			}
 			return token;
