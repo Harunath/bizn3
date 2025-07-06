@@ -22,12 +22,10 @@ export default function WeeklyPresentation({
 	const [presentations, setPresentations] = useState<Presentation[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [savingIndex, setSavingIndex] = useState<number | null>(null);
-	const [globalError, setGlobalError] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchPresentations = async () => {
 			try {
-				setGlobalError(null);
 				const res = await fetch(
 					`/api/user/${userId}/bios/weekly-presentations`
 				);
@@ -37,7 +35,6 @@ export default function WeeklyPresentation({
 				setPresentations(data.data || []);
 			} catch (err) {
 				console.error("Fetch presentations failed", err);
-				setGlobalError("Unable to load previous data. You can still add.");
 			} finally {
 				setLoading(false);
 			}
@@ -149,13 +146,9 @@ export default function WeeklyPresentation({
 		<div className="min-h-screen flex justify-center p-4 md:p-6">
 			<ToastContainer position="top-center" autoClose={3000} />
 			<div className="w-full max-w-4xl space-y-8">
-				{globalError && (
-					<div className="bg-yellow-100 text-yellow-800 border border-yellow-400 p-4 rounded text-center">
-						{globalError}
-					</div>
-				)}
+				{/* globalError exists but is not shown */}
 
-				{presentations.length === 0 && !globalError && (
+				{presentations.length === 0 && (
 					<p className="text-center text-gray-600 py-6">
 						No presentations found. Add one below.
 					</p>

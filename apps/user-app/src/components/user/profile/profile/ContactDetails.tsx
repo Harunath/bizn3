@@ -137,7 +137,7 @@ export default function ContactDetailsComp({
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div>
 						<label className="block font-semibold text-black mb-1">
-							Phone<span className="text-red-600">*</span>
+							Primary Business Contact<span className="text-red-600">*</span>
 						</label>
 						<input
 							type="tel"
@@ -150,7 +150,7 @@ export default function ContactDetailsComp({
 					</div>
 					<div>
 						<label className="block font-semibold text-black mb-1">
-							Mobile Number
+							Secondary Business Contact
 						</label>
 						<input
 							type="tel"

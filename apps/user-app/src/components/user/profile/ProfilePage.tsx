@@ -71,7 +71,7 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 		session?.user.membershipType ?? UserMembershipType.FREE;
 
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-12 px-4 sm:px-6 lg:px-8">
+		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-12 px-4 sm:px-6 lg:px-8 bg-white">
 			{/* Profile Image + Membership Badge */}
 			<div className="border border-gray-200 p-4 bg-slate-100 shadow-2xl">
 				<div className="relative flex justify-center items-center mb-4">

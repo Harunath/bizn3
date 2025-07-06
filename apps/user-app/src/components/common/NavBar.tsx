@@ -36,7 +36,7 @@ export default function Navbar({ links }: { links?: linksType[] }) {
 						<span className="text-black inline-flex items-center">
 							-Network<span className="text-sm align-top">®</span>
 						</span>
-						<span className="text-xs font-semibold bg-yellow-400 text-gray-900 px-2 py-0.5 rounded-full">
+						<span className="text-xs font-semibold bg-green-600 text-gray-900 px-2 py-0.5 ml-2">
 							BETA
 						</span>
 					</span>
