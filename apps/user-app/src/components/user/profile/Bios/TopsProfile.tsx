@@ -27,7 +27,9 @@ export default function TopsProfile({ userId }: { userId: string }) {
 						topProduct: (data.data.topProduct || []).join("\n"),
 						topProblemSolved: (data.data.topProblemSolved || []).join("\n"),
 						story: (data.data.story || []).join("\n"),
-						idealReferralPartner: (data.data.idealReferralPartner || []).join("\n"),
+						idealReferralPartner: (data.data.idealReferralPartner || []).join(
+							"\n"
+						),
 					});
 					setIsEditMode(true);
 				}
@@ -131,11 +133,11 @@ export default function TopsProfile({ userId }: { userId: string }) {
 			/>
 
 			<TextAreaField
-				label="My Favourite BNI Story"
+				label="My Favourite Biz-Network Story"
 				name="story"
 				value={formData.story}
 				onChange={handleChange}
-				placeholder="Share your favorite BNI experiences (one per line)..."
+				placeholder="Share your favorite Biz-Network experiences (one per line)..."
 			/>
 
 			<TextAreaField
