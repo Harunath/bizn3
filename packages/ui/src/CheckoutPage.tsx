@@ -32,7 +32,8 @@ export function CheckoutPage({ sessionId }: { sessionId: string }) {
 				<PaymentPage
 					paymentSessionId={sessionId}
 					mode={
-						process.env.CASHFREE_NODE_ENV === "production"
+						(process.env.NEXT_PUBLIC_CASHFREE_NODE_ENV as string) ===
+						"production"
 							? "production"
 							: "sandbox"
 					}
