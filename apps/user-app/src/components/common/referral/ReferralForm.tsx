@@ -20,6 +20,7 @@ interface User {
 		};
 	};
 }
+type PriorityType = "LEVEL_1" | "LEVEL_2" | "LEVEL_3" | "LEVEL_4" | "LEVEL_5";
 
 export default function ReferralForm() {
 	const [referralType, setReferralType] = useState<ReferralType>("SELF");
@@ -30,6 +31,7 @@ export default function ReferralForm() {
 	const router = useRouter();
 
 	const { data: session, status } = useSession();
+	const [priority, setPriority] = useState<PriorityType>("LEVEL_1");
 
 	useEffect(() => {
 		if (status === "loading") return;
@@ -111,6 +113,7 @@ export default function ReferralForm() {
 				comments,
 				thirdPartyDetails:
 					referralType === "THIRD_PARTY" ? thirdPartyDetails : undefined,
+				priority: priority || "LEVEL_1",
 			}),
 		});
 
@@ -285,6 +288,24 @@ export default function ReferralForm() {
 					className="w-full border px-4 py-2 rounded resize-none focus:ring-2 focus:ring-red-500"
 					rows={3}
 				/>
+			</div>
+			{/* Priority Selector */}
+			<div>
+				<label className="block font-semibold text-sm mb-1">
+					Priority Level <span className="text-red-500">*</span>
+				</label>
+				<select
+					value={priority}
+					onChange={(e) => setPriority(e.target.value as PriorityType)}
+					className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-red-500"
+					required>
+					<option value="">-- Select Priority --</option>
+					<option value="LEVEL_1">🔥 LEVEL 1 - Urgent</option>
+					<option value="LEVEL_2">🔥 LEVEL 2 - High</option>
+					<option value="LEVEL_3">🌤 LEVEL 3 - Medium</option>
+					<option value="LEVEL_4">❄️ LEVEL 4 - Low</option>
+					<option value="LEVEL_5">❄️ LEVEL 5 - Least</option>
+				</select>
 			</div>
 
 			{/* Submit */}
