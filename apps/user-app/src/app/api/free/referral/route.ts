@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import prisma, { PriorityType } from "@repo/db/client"; // adjust path
+import prisma, { PriorityType, ReferralStatus } from "@repo/db/client"; // adjust path
 import { authOptions } from "../../../../lib/auth";
 
-export const GET = async () => {
+export const GET = async (req: Request) => {
 	try {
 		const session = await getServerSession(authOptions);
 
@@ -11,9 +11,34 @@ export const GET = async () => {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
+		const { searchParams } = new URL(req.url);
+
+		// Extract query parameters
+		const statuses = searchParams.getAll("status"); // supports multiple ?status=ACCEPTED
+		const page = parseInt(searchParams.get("page") || "1");
+		const limit = parseInt(searchParams.get("limit") || "10");
+
+		const offset = (page - 1) * limit;
+
+		if (!session || !session.user?.id || !session.user?.homeClub) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		// Build filter
+		// Ensure statuses are of type ReferralStatus[]
+		const validStatuses = statuses.filter((s) =>
+			Object.values(ReferralStatus).includes(s as ReferralStatus)
+		) as ReferralStatus[];
+
+		const statusFilter =
+			validStatuses.length > 0
+				? { status: { in: validStatuses } }
+				: { status: { not: ReferralStatus.COMPLETED } };
+
 		const referrals = await prisma.referral.findMany({
 			where: {
 				receiverId: session.user.id,
+				...statusFilter,
 			},
 			include: {
 				creator: {
@@ -26,14 +51,36 @@ export const GET = async () => {
 					},
 				},
 			},
+			orderBy: {
+				createdAt: "desc",
+			},
+			skip: offset,
+			take: limit,
+		});
+
+		// Total count for pagination
+		const total = await prisma.referral.count({
+			where: {
+				receiverId: session.user.id,
+				...statusFilter,
+			},
 		});
 
 		return NextResponse.json(
-			{ success: true, data: referrals },
-			{ status: 201 }
+			{
+				success: true,
+				data: referrals,
+				pagination: {
+					page,
+					limit,
+					total,
+					totalPages: Math.ceil(total / limit),
+				},
+			},
+			{ status: 200 }
 		);
 	} catch (err) {
-		console.error("Error fetching referral:", err);
+		console.error("Error fetching referrals:", err);
 		return NextResponse.json(
 			{ error: "Internal server error" },
 			{ status: 500 }
