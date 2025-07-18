@@ -4,8 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import ReferralDetailsDialog from "./ReferralDetailsDialog";
-import { Referral, ReferralStatus, UserMembershipType } from "@repo/db/client";
+import {
+	Referral,
+	ReferralStatus,
+	ThankYouNote,
+	UserMembershipType,
+} from "@repo/db/client";
 import { IoMdArrowDropdown } from "react-icons/io";
+import { ThankYouNoteDialog } from "./ThankYouNoteDialog";
 
 interface CreatorType {
 	id: string;
@@ -16,6 +22,7 @@ interface CreatorType {
 
 export type ReferralType = Omit<Referral, "creator"> & {
 	creator: CreatorType;
+	thankYouNote: ThankYouNote;
 };
 
 const statusOptions: ReferralStatus[] = [
@@ -95,25 +102,6 @@ export default function GetReferrals() {
 
 		router.replace(`${pathname}?${params.toString()}`);
 	};
-
-	// const toggleStatusFilter = (status: ReferralStatus) => {
-	// 	const params = new URLSearchParams(searchParams.toString());
-	// 	const existing = params.getAll("status");
-
-	// 	if (existing.includes(status)) {
-	// 		// Remove it
-	// 		const updated = existing.filter((s) => s !== status);
-	// 		params.delete("status");
-	// 		updated.forEach((s) => params.append("status", s));
-	// 	} else {
-	// 		params.append("status", status);
-	// 	}
-
-	// 	// Reset page to 1 when changing filters
-	// 	params.set("page", "1");
-
-	// 	router.replace(`${pathname}?${params.toString()}`);
-	// };
 
 	const changePage = (newPage: number) => {
 		updateQueryParam("page", newPage.toString());
@@ -238,7 +226,16 @@ export default function GetReferrals() {
 												{referral.type.toLowerCase()}
 											</td>
 											<td className="px-4 py-3 border-b">{referral.phone}</td>
-											<td className="px-4 py-3 border-b">{referral.status}</td>
+											<td className="px-4 py-3 border-b">
+												{referral.status !== "COMPLETED" ? (
+													referral.status
+												) : (
+													<ThankYouNoteDialog
+														referralId={referral.id}
+														existingNote={referral.thankYouNote}
+													/>
+												)}
+											</td>
 											<td className="px-4 py-3 border-b">
 												<ReferralDetailsDialog
 													referral={referral}

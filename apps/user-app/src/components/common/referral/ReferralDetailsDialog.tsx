@@ -85,7 +85,8 @@ export default function ReferralDetailsDialog({
 
 								<hr className="my-4" />
 
-								{referral.status === "WAITING" && (
+								{(referral.status === "WAITING" ||
+									referral.status === "REJECTED") && (
 									<ReferralActionButtons id={referral.id} />
 								)}
 

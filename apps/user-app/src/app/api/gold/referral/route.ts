@@ -50,6 +50,7 @@ export const GET = async (req: Request) => {
 						profileImage: true,
 					},
 				},
+				thankYouNote: true,
 			},
 			orderBy: {
 				createdAt: "desc",

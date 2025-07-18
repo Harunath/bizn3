@@ -29,27 +29,27 @@ export default function ReferralStatusUpdater({
 	};
 
 	// Hide dropdown if status is COMPLETED
-	if (status === ReferralStatus.COMPLETED) return null;
 
-	return (
-		<div className="flex gap-2 items-center justify-start">
-			<select
-				value={status}
-				onChange={handleChange}
-				disabled={isPending}
-				className="border rounded px-2 py-1 bg-white">
-				<option disabled>Update Status</option>
-				<option value="" disabled={status === ReferralStatus.IN_PROGRESS}>
-					select status
-				</option>
-				<option
-					value={ReferralStatus.IN_PROGRESS}
-					disabled={status === ReferralStatus.IN_PROGRESS}>
-					In Progress
-				</option>
+	if (status !== ReferralStatus.WAITING) {
+		return (
+			<div className="flex gap-2 items-center justify-start">
+				<select
+					value={status}
+					onChange={handleChange}
+					disabled={isPending}
+					className="border rounded px-2 py-1 bg-white">
+					<option disabled>Update Status</option>
+					<option
+						value={ReferralStatus.IN_PROGRESS}
+						disabled={status === ReferralStatus.IN_PROGRESS}>
+						In Progress
+					</option>
 
-				<option value={ReferralStatus.COMPLETED}>Completed</option>
-			</select>
-		</div>
-	);
+					<option value={ReferralStatus.COMPLETED}>Completed</option>
+				</select>
+			</div>
+		);
+	} else {
+		return null;
+	}
 }
