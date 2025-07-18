@@ -208,7 +208,7 @@ export const POST = async (req: NextRequest) => {
 				thirdPartyDetails,
 				comments,
 				updates: [],
-				priority,
+				priority: priority || PriorityType.LEVEL_1,
 			},
 		});
 

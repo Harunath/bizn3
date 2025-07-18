@@ -19,7 +19,7 @@ export default function ReferralStatusUpdater({
 		startTransition(async () => {
 			try {
 				await StatusUpdateAction(referral.id, newStatus);
-				setStatus(newStatus); // local update for UI
+				setStatus(newStatus);
 				toast.success("Status updated");
 			} catch (err) {
 				console.error(err);
@@ -28,7 +28,8 @@ export default function ReferralStatusUpdater({
 		});
 	};
 
-	if (status !== "ACCEPTED") return null;
+	// Hide dropdown if status is COMPLETED
+	if (status === ReferralStatus.COMPLETED) return null;
 
 	return (
 		<div className="flex gap-2 items-center justify-start">
@@ -36,9 +37,17 @@ export default function ReferralStatusUpdater({
 				value={status}
 				onChange={handleChange}
 				disabled={isPending}
-				className="border rounded px-2 py-1">
+				className="border rounded px-2 py-1 bg-white">
 				<option disabled>Update Status</option>
-				<option value={ReferralStatus.IN_PROGRESS}>In Progress</option>
+				<option value="" disabled={status === ReferralStatus.IN_PROGRESS}>
+					select status
+				</option>
+				<option
+					value={ReferralStatus.IN_PROGRESS}
+					disabled={status === ReferralStatus.IN_PROGRESS}>
+					In Progress
+				</option>
+
 				<option value={ReferralStatus.COMPLETED}>Completed</option>
 			</select>
 		</div>
