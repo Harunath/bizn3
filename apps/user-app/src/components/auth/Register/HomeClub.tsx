@@ -151,7 +151,7 @@ const HomeClub = () => {
 	if (loading) return <RedCircleLoading />;
 	return (
 		<motion.div
-			className="p-6 bg-white rounded-xl shadow-xl max-w-md mx-auto mt-10 space-y-4"
+			className="p-6 bg-white rounded-xl shadow-xl min-w-sm max-w-md mx-auto mt-10 space-y-4"
 			initial={{ opacity: 0, y: -10 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.6 }}>
