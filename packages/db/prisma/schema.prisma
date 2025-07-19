@@ -453,8 +453,8 @@ model User {
   ThankYouNoteSent   ThankYouNote[] @relation("ThankYouNoteSent")
   ThankYouNoteReceived   ThankYouNote[] @relation("ThankYouNoteReceived")
 
-  // testimonialsSent   Testimonials[] @relation("TestimonialsSent")
-  // testimonialsReceive   Testimonials[] @relation("TestimonialsReceived")
+  testimonialsSent   Testimonials[] @relation("TestimonialsSent")
+  testimonialsReceive   Testimonials[] @relation("TestimonialsReceived")
   
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -701,7 +701,7 @@ model Referral {
   status         ReferralStatus @default(WAITING)
 
   thankYouNote   ThankYouNote? @relation("ReferralThankYouNote")
-  // testimonials   Testimonials? @relation("ReferralTestimonials")
+  testimonials   Testimonials? @relation("ReferralTestimonials")
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -729,20 +729,20 @@ model ThankYouNote {
   updatedAt      DateTime    @updatedAt
 }
 
-// model Testimonials {
-//   id             String      @id @default(cuid())
+model Testimonials {
+  id             String      @id @default(cuid())
 
-//   referralId     String     @unique
-//   referal        Referral   @relation("ReferralTestimonials", fields: [referralId], references:[id])
-//   senderId       String  
-//   sender         User        @relation("TestimonialsSent", fields: [senderId], references:[id])
-//   receiverId     String
-//   receiver       User        @relation("TestimonialsReceived", fields: [receiverId], references:[id])
-//   comment       String
+  referralId     String     @unique
+  referal        Referral   @relation("ReferralTestimonials", fields: [referralId], references:[id])
+  senderId       String  
+  sender         User        @relation("TestimonialsSent", fields: [senderId], references:[id])
+  receiverId     String
+  receiver       User        @relation("TestimonialsReceived", fields: [receiverId], references:[id])
+  comment       String
 
-//   createdAt      DateTime    @default(now())
-//   updatedAt      DateTime    @updatedAt
-// }
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
 
 
 
