@@ -18,9 +18,9 @@ jobs:
 
       - name: Deploy Prisma Migrations
         run: |
-          if git diff --name-only HEAD~1 HEAD | grep -q prisma/migrations; then
+          if git diff --name-only HEAD~1 HEAD | grep -q packages/db/prisma/migrations; then
             echo "New migrations found. Deploying..."
-            npx prisma migrate deploy
+            npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma
           else
             echo "No new migrations. Skipping deploy."
           fi
