@@ -450,11 +450,8 @@ model User {
   referralsCreated   Referral[] @relation("ReferralCreator")
   referralsReceived  Referral[] @relation("ReferralReceiver")
 
-  ThankYouNoteSent   ThankYouNote[] @relation("ThankYouNoteSent")
-  ThankYouNoteReceived   ThankYouNote[] @relation("ThankYouNoteReceived")
-
-  testimonialsSent   Testimonials[] @relation("TestimonialsSent")
-  testimonialsReceive   Testimonials[] @relation("TestimonialsReceived")
+  ThankYouNoteSender   ThankYouNote[] @relation("ThankYouNoteSender")
+  ThankYouNoteReceiver   ThankYouNote[] @relation("ThankYouNoteReceiver")
   
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -701,7 +698,6 @@ model Referral {
   status         ReferralStatus @default(WAITING)
 
   thankYouNote   ThankYouNote? @relation("ReferralThankYouNote")
-  testimonials   Testimonials? @relation("ReferralTestimonials")
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
@@ -718,9 +714,9 @@ model ThankYouNote {
   referralId     String     @unique
   referal        Referral   @relation("ReferralThankYouNote", fields: [referralId], references:[id])
   senderId       String
-  sender         User        @relation("ThankYouNoteSent", fields: [senderId], references:[id])
+  sender         User        @relation("ThankYouNoteSender", fields: [senderId], references:[id])
   receiverId     String
-  receiver       User        @relation("ThankYouNoteReceived", fields: [receiverId], references:[id])
+  receiver       User        @relation("ThankYouNoteReceiver", fields: [receiverId], references:[id])
   amount        String
   businessType  ThankYouNoteBusinessType @default(NEW)
   comment       String
@@ -728,22 +724,6 @@ model ThankYouNote {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
-
-model Testimonials {
-  id             String      @id @default(cuid())
-
-  referralId     String     @unique
-  referal        Referral   @relation("ReferralTestimonials", fields: [referralId], references:[id])
-  senderId       String  
-  sender         User        @relation("TestimonialsSent", fields: [senderId], references:[id])
-  receiverId     String
-  receiver       User        @relation("TestimonialsReceived", fields: [receiverId], references:[id])
-  comment       String
-
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-}
-
 
 
 model GmailVerificationCode {

@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "RequestStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
+-- CreateEnum
 CREATE TYPE "ChapterLeaderRole" AS ENUM ('PRESIDENT', 'SECRETARY', 'TREASURER');
 
 -- CreateEnum
@@ -11,10 +14,7 @@ CREATE TYPE "EntityType" AS ENUM ('ADMIN', 'FRANCHISE');
 CREATE TYPE "FranchiseType" AS ENUM ('MASTER_FRANCHISE', 'SUPER_FRANCHISE', 'REGIONAL_FRANCHISE');
 
 -- CreateEnum
-CREATE TYPE "UserMembershipType" AS ENUM ('FREE', 'VIP', 'GOLD');
-
--- CreateEnum
-CREATE TYPE "ReferralType" AS ENUM ('SELF', 'THIRD_PARTY');
+CREATE TYPE "UserMembershipType" AS ENUM ('FREE', 'GOLD', 'VIP');
 
 -- CreateEnum
 CREATE TYPE "EventType" AS ENUM ('VIRTUAL', 'IN_PERSON');
@@ -30,6 +30,15 @@ CREATE TYPE "EventOwnerType" AS ENUM ('CLUB', 'CHAPTER');
 
 -- CreateEnum
 CREATE TYPE "ReferralStatus" AS ENUM ('ACCEPTED', 'REJECTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED');
+
+-- CreateEnum
+CREATE TYPE "PriorityType" AS ENUM ('LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'LEVEL_5');
+
+-- CreateEnum
+CREATE TYPE "ReferralType" AS ENUM ('SELF', 'THIRD_PARTY');
+
+-- CreateEnum
+CREATE TYPE "ThankYouNoteBusinessType" AS ENUM ('NEW', 'REPEAT');
 
 -- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PROCESSING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELLED');
@@ -110,6 +119,23 @@ CREATE TABLE "FranchiseAdmin" (
 );
 
 -- CreateTable
+CREATE TABLE "UpgradeRequest" (
+    "id" TEXT NOT NULL,
+    "clubIds" TEXT[],
+    "chapterId" TEXT,
+    "categoryId" TEXT,
+    "userId" TEXT NOT NULL,
+    "requestedTier" "UserMembershipType" NOT NULL,
+    "status" "RequestStatus" NOT NULL DEFAULT 'PENDING',
+    "franchiseId" TEXT NOT NULL,
+    "paymentId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "reviewedAt" TIMESTAMP(3),
+
+    CONSTRAINT "UpgradeRequest_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Country" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -168,6 +194,16 @@ CREATE TABLE "Chapter" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Chapter_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ChapterCategoryAssignment" (
+    "id" TEXT NOT NULL,
+    "chapterId" TEXT NOT NULL,
+    "categoryId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "ChapterCategoryAssignment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -369,15 +405,32 @@ CREATE TABLE "BusinessDetails" (
     "id" TEXT NOT NULL,
     "businessName" TEXT NOT NULL,
     "images" TEXT[],
-    "category" TEXT NOT NULL,
     "panNumber" TEXT,
     "panNumberVerified" BOOLEAN NOT NULL DEFAULT false,
+    "tanNumber" TEXT,
     "gstNumber" TEXT,
     "gstNumberVerified" BOOLEAN NOT NULL DEFAULT false,
     "verified" BOOLEAN NOT NULL DEFAULT false,
+    "companyName" TEXT,
+    "companyLogoUrl" TEXT,
+    "gstRegisteredState" TEXT,
+    "BusinessDescription" TEXT,
+    "keywords" TEXT,
     "userId" TEXT NOT NULL,
+    "generalCategory" TEXT,
+    "categoryId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "BusinessDetails_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "BusinessCategory" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "BusinessCategory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -404,14 +457,33 @@ CREATE TABLE "Referral" (
     "type" "ReferralType" NOT NULL,
     "creatorId" TEXT NOT NULL,
     "receiverId" TEXT NOT NULL,
+    "priority" "PriorityType" NOT NULL DEFAULT 'LEVEL_1',
     "businessDetails" TEXT,
+    "phone" TEXT,
+    "Email" TEXT,
     "thirdPartyDetails" JSONB,
-    "status" "ReferralStatus" NOT NULL DEFAULT 'WAITING',
+    "comments" TEXT,
     "updates" TEXT[],
+    "status" "ReferralStatus" NOT NULL DEFAULT 'WAITING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Referral_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ThankYouNote" (
+    "id" TEXT NOT NULL,
+    "referralId" TEXT NOT NULL,
+    "senderId" TEXT NOT NULL,
+    "receiverId" TEXT NOT NULL,
+    "amount" TEXT NOT NULL,
+    "businessType" "ThankYouNoteBusinessType" NOT NULL DEFAULT 'NEW',
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ThankYouNote_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -533,6 +605,18 @@ CREATE UNIQUE INDEX "FranchiseAdmin_email_key" ON "FranchiseAdmin"("email");
 CREATE UNIQUE INDEX "FranchiseAdmin_franchiseId_key" ON "FranchiseAdmin"("franchiseId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "UpgradeRequest_paymentId_key" ON "UpgradeRequest"("paymentId");
+
+-- CreateIndex
+CREATE INDEX "UpgradeRequest_franchiseId_idx" ON "UpgradeRequest"("franchiseId");
+
+-- CreateIndex
+CREATE INDEX "UpgradeRequest_userId_idx" ON "UpgradeRequest"("userId");
+
+-- CreateIndex
+CREATE INDEX "UpgradeRequest_status_idx" ON "UpgradeRequest"("status");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Country_name_key" ON "Country"("name");
 
 -- CreateIndex
@@ -555,6 +639,12 @@ CREATE UNIQUE INDEX "Chapter_code_key" ON "Chapter"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Chapter_name_regionId_key" ON "Chapter"("name", "regionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ChapterCategoryAssignment_userId_key" ON "ChapterCategoryAssignment"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ChapterCategoryAssignment_chapterId_categoryId_key" ON "ChapterCategoryAssignment"("chapterId", "categoryId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ChapterLeader_chapterLeaderId_key" ON "ChapterLeader"("chapterLeaderId");
@@ -599,16 +689,22 @@ CREATE UNIQUE INDEX "TopsProfile_userId_key" ON "TopsProfile"("userId");
 CREATE UNIQUE INDEX "GainsProfile_userId_key" ON "GainsProfile"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "WeeklyPresentations_userId_key" ON "WeeklyPresentations"("userId");
+CREATE UNIQUE INDEX "BusinessDetails_panNumber_key" ON "BusinessDetails"("panNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BusinessDetails_panNumber_key" ON "BusinessDetails"("panNumber");
+CREATE UNIQUE INDEX "BusinessDetails_tanNumber_key" ON "BusinessDetails"("tanNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BusinessDetails_gstNumber_key" ON "BusinessDetails"("gstNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BusinessDetails_userId_key" ON "BusinessDetails"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BusinessCategory_name_key" ON "BusinessCategory"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ThankYouNote_referralId_key" ON "ThankYouNote"("referralId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "GmailVerificationCode_email_key" ON "GmailVerificationCode"("email");
@@ -650,6 +746,15 @@ ALTER TABLE "Franchise" ADD CONSTRAINT "Franchise_regionId_fkey" FOREIGN KEY ("r
 ALTER TABLE "FranchiseAdmin" ADD CONSTRAINT "FranchiseAdmin_franchiseId_fkey" FOREIGN KEY ("franchiseId") REFERENCES "Franchise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "UpgradeRequest" ADD CONSTRAINT "UpgradeRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UpgradeRequest" ADD CONSTRAINT "UpgradeRequest_paymentId_fkey" FOREIGN KEY ("paymentId") REFERENCES "Payment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UpgradeRequest" ADD CONSTRAINT "UpgradeRequest_franchiseId_fkey" FOREIGN KEY ("franchiseId") REFERENCES "Franchise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Country" ADD CONSTRAINT "Country_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -672,6 +777,15 @@ ALTER TABLE "Chapter" ADD CONSTRAINT "Chapter_regionId_fkey" FOREIGN KEY ("regio
 
 -- AddForeignKey
 ALTER TABLE "Chapter" ADD CONSTRAINT "Chapter_regionalFranchiseId_fkey" FOREIGN KEY ("regionalFranchiseId") REFERENCES "Franchise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ChapterCategoryAssignment" ADD CONSTRAINT "ChapterCategoryAssignment_chapterId_fkey" FOREIGN KEY ("chapterId") REFERENCES "Chapter"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ChapterCategoryAssignment" ADD CONSTRAINT "ChapterCategoryAssignment_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "BusinessCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ChapterCategoryAssignment" ADD CONSTRAINT "ChapterCategoryAssignment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ChapterLeader" ADD CONSTRAINT "ChapterLeader_chapterLeaderId_fkey" FOREIGN KEY ("chapterLeaderId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -734,6 +848,9 @@ ALTER TABLE "WeeklyPresentations" ADD CONSTRAINT "WeeklyPresentations_userId_fke
 ALTER TABLE "BusinessDetails" ADD CONSTRAINT "BusinessDetails_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "BusinessDetails" ADD CONSTRAINT "BusinessDetails_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "BusinessCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_chapterId_fkey" FOREIGN KEY ("chapterId") REFERENCES "Chapter"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -744,6 +861,15 @@ ALTER TABLE "Referral" ADD CONSTRAINT "Referral_creatorId_fkey" FOREIGN KEY ("cr
 
 -- AddForeignKey
 ALTER TABLE "Referral" ADD CONSTRAINT "Referral_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ThankYouNote" ADD CONSTRAINT "ThankYouNote_referralId_fkey" FOREIGN KEY ("referralId") REFERENCES "Referral"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ThankYouNote" ADD CONSTRAINT "ThankYouNote_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ThankYouNote" ADD CONSTRAINT "ThankYouNote_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
