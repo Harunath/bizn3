@@ -1,29 +1,22 @@
-name: Deploy Prisma Migrations to Production
+name: Deploy Prisma Migrations
 
 on:
   push:
     branches:
-      - master # Change if your production branch is different
+      - master
 
 jobs:
-  migrate:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
         with:
-          node-version: 18
+          fetch-depth: 2  # <== This is the key fix
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Run Prisma Migrate Deploy (if there are new migrations)
-        env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      - name: Deploy Prisma Migrations
         run: |
           if git diff --name-only HEAD~1 HEAD | grep -q prisma/migrations; then
             echo "New migrations found. Deploying..."
@@ -31,3 +24,5 @@ jobs:
           else
             echo "No new migrations. Skipping deploy."
           fi
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
