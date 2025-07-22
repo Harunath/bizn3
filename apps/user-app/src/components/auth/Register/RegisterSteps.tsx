@@ -52,6 +52,10 @@ const RegisterSteps = ({
 			case Steps.PHONE:
 				return <Phone phone={user?.phone || ""} />;
 			case Steps.BUSINESS:
+				if (user.businessDetails) {
+					setStep(Steps.HOMECLUB);
+					return;
+				}
 				return <RegisterBusiness userId={user?.id} />;
 			case Steps.HOMECLUB:
 				return <HomeClub />;
