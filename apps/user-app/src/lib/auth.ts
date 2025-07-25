@@ -84,10 +84,11 @@ export const authOptions: NextAuthOptions = {
 		async redirect({ baseUrl }) {
 			return baseUrl + "/";
 		},
-		async jwt({ token, user }) {
-			if (user && user.email) {
+		async jwt({ token, user, trigger }) {
+			// Initial sign in
+			if ((user && user.email) || (trigger === "update" && token?.email)) {
 				const member = await prisma.user.findFirst({
-					where: { email: user.email },
+					where: { email: token.email || user.email },
 					select: {
 						id: true,
 						email: true,
@@ -104,15 +105,16 @@ export const authOptions: NextAuthOptions = {
 						membershipType: true,
 					},
 				});
+
 				if (member) {
-					token.id = member?.id;
-					token.email = member?.email;
-					token.firstname = member?.firstname;
-					token.lastname = member?.lastname;
-					token.membershipType = member?.membershipType;
-					token.businessId = member?.businessDetails?.id;
-					token.registrationCompleted = member?.registrationCompleted;
-					token.homeClub = member?.homeClubId;
+					token.id = member.id;
+					token.email = member.email;
+					token.firstname = member.firstname;
+					token.lastname = member.lastname;
+					token.membershipType = member.membershipType;
+					token.businessId = member.businessDetails?.id;
+					token.registrationCompleted = member.registrationCompleted;
+					token.homeClub = member.homeClubId;
 				}
 			}
 			return token;
