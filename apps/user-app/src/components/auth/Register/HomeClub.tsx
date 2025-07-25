@@ -79,8 +79,7 @@ const HomeClub = () => {
 
 	const [loading, setLoading] = useState(false);
 
-	const session = useSession();
-	const { update } = session;
+	const { update } = useSession();
 	const router = useRouter();
 
 	const OpenLoader = () => {
@@ -127,27 +126,55 @@ const HomeClub = () => {
 
 	const handleJoin = async () => {
 		setLoading(true);
-		if (selectedClub) {
+
+		try {
+			if (!selectedClub) {
+				toast.error("Please select a club first");
+				return;
+			}
+
 			const res = await fetch("/api/user/clubs/homeclub", {
 				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
 				body: JSON.stringify({ homeClubId: selectedClub }),
 			});
-			const result = await res.json();
-			if (result.message == "success") {
-				toast.success("successfully joined the club");
-				const res = await fetch("/api/auth/register/registrationCompleted", {
-					method: "POST",
-				});
-				await update();
-				const result = await res.json();
-				if (result.message == "success") {
-					toast.success("Registration completed successfully");
-				}
-				router.push("/");
+
+			if (!res.ok) {
+				throw new Error("Failed to join the club. Please try again.");
 			}
+
+			const result = await res.json();
+
+			if (result.message !== "success") {
+				throw new Error("Unexpected response from server");
+			}
+
+			toast.success("Successfully joined the club");
+
+			const updatedUser = result.updatedUser;
+
+			if (!updatedUser) {
+				throw new Error("Updated user data missing from response");
+			}
+
+			await update({ trigger: "update" });
+			toast.success("Registration completed successfully");
+			router.push("/");
+		} catch (error) {
+			if (error instanceof Error)
+				console.error("Error during joining club:", error);
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Something went wrong. Please try again."
+			);
+		} finally {
+			setLoading(false);
 		}
-		setLoading(false);
 	};
+
 	if (loading) return <RedCircleLoading />;
 	return (
 		<motion.div

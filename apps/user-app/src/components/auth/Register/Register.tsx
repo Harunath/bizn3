@@ -4,6 +4,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import LoadingAnimation from "../../common/LoadingAnimation";
 
 const baseRegisterSchema = z.object({
 	firstname: z.string().min(1, "First name is required"),
@@ -40,6 +42,7 @@ function Register() {
 		phone: "",
 		password: "",
 		confirmPassword: "",
+		tandc: false,
 		otp: "",
 	});
 	const [showPassword, setShowPassword] = useState(false);
@@ -48,6 +51,7 @@ function Register() {
 	const [otpSent, setOtpSent] = useState(false);
 	const [successMessage, setSuccessMessage] = useState("");
 	const [token, setToken] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	const router = useRouter();
 
@@ -84,6 +88,7 @@ function Register() {
 
 	const verifyOtp = async () => {
 		try {
+			setLoading(true);
 			registerSchema.parse(formData);
 			const res = await fetch("/api/auth/register", {
 				method: "POST",
@@ -97,7 +102,13 @@ function Register() {
 			const data = await res.json();
 			if (data.success) {
 				toast.success("Registered successfully!");
-				router.push("/login");
+				await signIn("credentials", {
+					redirect: false,
+					email: formData.email, // make sure session.user.email is defined
+					password: formData.password,
+					callbackUrl: "/",
+				});
+				router.push("/");
 			}
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -105,8 +116,12 @@ function Register() {
 			} else {
 				setError("An unexpected error occurred.");
 			}
+		} finally {
+			setLoading(false);
 		}
 	};
+
+	if (loading) return <LoadingAnimation />;
 
 	return (
 		<div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
@@ -208,9 +223,10 @@ function Register() {
 								onChange={handleChange}
 							/>
 						</div>
+
 						<button
 							onClick={handleGetOtp}
-							disabled={otpSent}
+							disabled={otpSent && !formData.tandc}
 							className={`min-w-fit h-10 px-4 py-2 text-sm font-medium rounded-md transition ${
 								otpSent
 									? "bg-gray-300 text-gray-600 cursor-not-allowed"

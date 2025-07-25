@@ -5,14 +5,11 @@ import prisma from "@repo/db/client";
 
 export const POST = async (req: NextRequest) => {
 	try {
-		console.log("hitting api/user/clubs");
-		console.log(authOptions);
 		const session = await getServerSession(authOptions);
 		if (!session || !session.user.id) {
 			return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 		}
 		const body = await req.json();
-		console.log(body);
 		const { homeClubId } = body;
 		if (!homeClubId) {
 			return NextResponse.json(
@@ -35,12 +32,35 @@ export const POST = async (req: NextRequest) => {
 			},
 			data: {
 				homeClubId,
+				registrationCompleted: true,
+			},
+			select: {
+				homeClubId: true,
+				registrationCompleted: true,
+				membershipType: true,
+				businessDetails: {
+					select: {
+						id: true,
+					},
+				},
 			},
 		});
-		return NextResponse.json(
-			{ message: "success", data: user.homeClubId },
-			{ status: 200 }
-		);
+		if (!user || !user.businessDetails?.id || !user.homeClubId)
+			return NextResponse.json(
+				{
+					message: "failed",
+				},
+				{ status: 400 }
+			);
+		return NextResponse.json({
+			message: "success",
+			updatedUser: {
+				homeClub: user.homeClubId,
+				registrationCompleted: user.registrationCompleted,
+				businessId: user.businessDetails?.id,
+				membershipType: user.membershipType,
+			},
+		});
 	} catch (e) {
 		console.log(e);
 		return NextResponse.json(
