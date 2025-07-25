@@ -210,8 +210,9 @@ export default function ReferralForm() {
 				/>
 				{!loading &&
 					receiverQuery.length >= 2 &&
-					receiverOptions.length == 0 && (
-						<p>No user found with {receiverQuery}</p>
+					receiverOptions.length == 0 &&
+					!selectedReceiver && (
+						<p className=" text-xs">No user found with {receiverQuery}</p>
 					)}
 				{((receiverOptions.length > 0 && !selectedReceiver) || loading) && (
 					<ul className="absolute z-30 w-full bg-white border mt-1 rounded shadow max-h-40 overflow-y-auto">
