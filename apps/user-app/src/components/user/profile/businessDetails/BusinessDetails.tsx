@@ -23,7 +23,6 @@ export default function BusinessDetails() {
 		BusinessDescription: "",
 		companyLogoUrl: "",
 		generalCategory: "",
-		categoryId: "",
 	});
 
 	const [exist, setExist] = useState(false);
