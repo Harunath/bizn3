@@ -27,6 +27,7 @@ export default function ReferralForm() {
 	const [receiverQuery, setReceiverQuery] = useState("");
 	const [receiverOptions, setReceiverOptions] = useState<User[]>([]);
 	const [selectedReceiver, setSelectedReceiver] = useState<User | null>(null);
+	const [loading, setLoading] = useState<boolean>(false);
 	const [uri, setUri] = useState("");
 	const router = useRouter();
 
@@ -77,21 +78,43 @@ export default function ReferralForm() {
 
 	// 🔍 Search receiver from backend
 	useEffect(() => {
-		const delayDebounce = setTimeout(() => {
+		const controller = new AbortController();
+		const { signal } = controller;
+
+		const fetchUsers = async () => {
 			if (receiverQuery.length < 2) return;
 
-			fetch(`/api/${uri}/referral/get-user`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ finder: receiverQuery }),
-			})
-				.then((res) => res.json())
-				.then((data) => {
-					setReceiverOptions(data.data || []);
+			setLoading(true);
+			console.log("loading", true);
+
+			try {
+				const res = await fetch(`/api/${uri}/referral/get-user`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ finder: receiverQuery }),
+					signal,
 				});
+
+				const data = await res.json();
+				setReceiverOptions(data.data || []);
+			} catch (error) {
+				if (error instanceof Error && error.name !== "AbortError") {
+					console.error("Fetch error:", error);
+				} else console.error("Fetch error:", " unknown");
+			} finally {
+				setLoading(false);
+				console.log("loading", false);
+			}
+		};
+
+		const delayDebounce = setTimeout(() => {
+			fetchUsers();
 		}, 300);
 
-		return () => clearTimeout(delayDebounce);
+		return () => {
+			clearTimeout(delayDebounce);
+			controller.abort();
+		};
 	}, [receiverQuery, uri]);
 
 	const handleSubmit = async () => {
@@ -185,8 +208,14 @@ export default function ReferralForm() {
 					placeholder="Enter name or email..."
 					className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-red-500"
 				/>
-				{receiverOptions.length > 0 && !selectedReceiver && (
+				{!loading &&
+					receiverQuery.length >= 2 &&
+					receiverOptions.length == 0 && (
+						<p>No user found with {receiverQuery}</p>
+					)}
+				{((receiverOptions.length > 0 && !selectedReceiver) || loading) && (
 					<ul className="absolute z-30 w-full bg-white border mt-1 rounded shadow max-h-40 overflow-y-auto">
+						{loading && <p className="px-4 py-2">Loading...</p>}
 						{receiverOptions.map((user) => (
 							<li
 								key={user.id}

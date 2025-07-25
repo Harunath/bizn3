@@ -164,6 +164,7 @@ export default function BusinessDetails() {
 								"verified",
 								"id",
 								"userId",
+								"categoryId",
 							].includes(key)
 						)
 							return null;
