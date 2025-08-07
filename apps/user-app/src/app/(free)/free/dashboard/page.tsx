@@ -105,7 +105,7 @@ const Page = () => {
 								My Sent Referrals
 							</h3>
 							<p className="text-sm text-gray-500 mt-1">
-								Track the connections you’ve initiated.
+								Track the connections you&apos;ve initiated.
 							</p>
 						</div>
 					</a>
