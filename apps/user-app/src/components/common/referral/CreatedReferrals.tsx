@@ -3,26 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
-import ReferralDetailsDialog from "./ReferralDetailsDialog";
 import {
 	Referral,
 	ReferralStatus,
-	ThankYouNote,
+	Testimonials,
 	UserMembershipType,
 } from "@repo/db/client";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { ThankYouNoteDialog } from "./ThankYouNoteDialog";
 
-interface CreatorType {
+interface UserType {
 	id: string;
 	firstname: string;
 	lastname: string;
 	profileImage: string;
 }
 
-export type ReferralType = Omit<Referral, "creator"> & {
-	creator: CreatorType;
-	thankYouNote: ThankYouNote;
+export type ReferralType = Omit<Referral, "creator" | "receiver"> & {
+	creator: UserType;
+	receiver: UserType;
+	testimonials: Testimonials;
 };
 
 const statusOptions: ReferralStatus[] = [
@@ -33,11 +32,21 @@ const statusOptions: ReferralStatus[] = [
 	"COMPLETED",
 ];
 
-export default function GetReferrals() {
+export default function CreatedReferrals() {
 	const { data: session, status } = useSession();
 	const [referrals, setReferrals] = useState<ReferralType[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [totalPages, setTotalPages] = useState(1);
+
+	const membershipEndpoints: Record<UserMembershipType, string> = {
+		FREE: "free",
+		GOLD: "gold",
+		VIP: "vip",
+	};
+
+	const userMembershipType = session?.user
+		?.membershipType as UserMembershipType;
+	const endpoint = membershipEndpoints[userMembershipType] || "no-membership";
 
 	const searchParams = useSearchParams();
 	const router = useRouter();
@@ -53,7 +62,6 @@ export default function GetReferrals() {
 		ReferralStatus[]
 	>(searchParams.getAll("status") as ReferralStatus[]);
 
-	// Update on URL changes (sync)
 	useEffect(() => {
 		setLocalStatusSelections(searchParams.getAll("status") as ReferralStatus[]);
 	}, [searchParams]);
@@ -71,7 +79,6 @@ export default function GetReferrals() {
 		params.delete("status");
 		localStatusSelections.forEach((s) => params.append("status", s));
 		params.set("page", "1");
-
 		router.replace(`${pathname}?${params.toString()}`);
 		setDropdownOpen(false);
 	};
@@ -85,21 +92,13 @@ export default function GetReferrals() {
 		setDropdownOpen(false);
 	};
 
-	const membershipEndpoints: Record<UserMembershipType, string> = {
-		FREE: "free",
-		GOLD: "gold",
-		VIP: "vip",
-	};
-
 	const updateQueryParam = (key: string, value: string | null) => {
 		const params = new URLSearchParams(searchParams.toString());
-
 		if (value === null) {
 			params.delete(key);
 		} else {
 			params.set(key, value);
 		}
-
 		router.replace(`${pathname}?${params.toString()}`);
 	};
 
@@ -109,12 +108,8 @@ export default function GetReferrals() {
 
 	useEffect(() => {
 		if (status !== "authenticated") return;
-		const membershipType = session.user.membershipType as UserMembershipType;
-
-		const endpoint = membershipEndpoints[membershipType] || "no-membership";
 
 		const queryParams = new URLSearchParams();
-
 		selectedStatuses.forEach((s) => queryParams.append("status", s));
 		queryParams.set("page", page.toString());
 		queryParams.set("limit", "10");
@@ -123,12 +118,9 @@ export default function GetReferrals() {
 			setLoading(true);
 			try {
 				const res = await fetch(
-					`/api/${endpoint}/referral?${queryParams.toString()}`,
-					{
-						cache: "no-store",
-					}
+					`/api/${endpoint}/referral/created-referrals?${queryParams.toString()}`,
+					{ cache: "no-store" }
 				);
-
 				if (!res.ok) throw new Error("Failed to fetch referrals");
 
 				const { data, pagination } = await res.json();
@@ -142,13 +134,13 @@ export default function GetReferrals() {
 		};
 
 		fetchReferrals();
-	}, [session, status, selectedStatuses.join(",")]);
-
-	// if (loading || status === "loading") return <LoadingAnimation />;
+	}, [session, status, selectedStatuses.join(","), page]);
 
 	return (
 		<div className="w-full max-w-5xl mx-auto p-6">
-			<h2 className="text-2xl font-bold text-gray-800 mb-4">Your Referrals</h2>
+			<h2 className="text-2xl font-bold text-gray-800 mb-4">
+				Referrals You Created
+			</h2>
 
 			{/* Filter Dropdown */}
 			<div className="relative inline-block mb-4" ref={dropdownRef}>
@@ -177,7 +169,6 @@ export default function GetReferrals() {
 								</div>
 							))}
 						</div>
-
 						<div className="flex justify-between p-2 border-t bg-gray-50">
 							<button
 								onClick={resetFilters}
@@ -205,11 +196,11 @@ export default function GetReferrals() {
 						<table className="min-w-full text-sm">
 							<thead className="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
 								<tr>
-									<th className="px-4 py-3 text-left border-b">From</th>
+									<th className="px-4 py-3 text-left border-b">To</th>
 									<th className="px-4 py-3 text-left border-b">Type</th>
 									<th className="px-4 py-3 text-left border-b">Phone</th>
 									<th className="px-4 py-3 text-left border-b">Status</th>
-									<th className="px-4 py-2 text-left border-b">Action</th>
+									{/* <th className="px-4 py-3 text-left border-b">Action</th> */}
 								</tr>
 							</thead>
 							<tbody>
@@ -219,32 +210,30 @@ export default function GetReferrals() {
 											key={referral.id}
 											className="hover:bg-gray-50 transition duration-150">
 											<td className="px-4 py-3 border-b">
-												{referral.creator.firstname}
+												{referral.receiver.firstname}
 											</td>
 											<td className="px-4 py-3 border-b">
 												{referral.type.toLowerCase()}
 											</td>
 											<td className="px-4 py-3 border-b">{referral.phone}</td>
-											<td className="px-4 py-3 border-b">
-												{referral.status !== "COMPLETED" ? (
-													referral.status
-												) : (
-													<ThankYouNoteDialog
-														referralId={referral.id}
-														existingNote={referral.thankYouNote}
-													/>
-												)}
-											</td>
-											<td className="px-4 py-3 border-b">
-												<ReferralDetailsDialog
-													referral={referral}
-													trigger={
-														<span className="text-blue-600 underline cursor-pointer">
-															View
-														</span>
-													}
-												/>
-											</td>
+											<td className="px-4 py-3 border-b">{referral.status}</td>
+											{/* <td className="px-4 py-3 border-b">
+												(
+													<span
+														className={`font-medium ${
+															referral.status === "ACCEPTED"
+																? "text-green-600"
+																: referral.status === "REJECTED"
+																	? "text-yellow-600"
+																	: referral.status === "IN_PROGRESS"
+																		? "text-blue-600"
+																		: "text-gray-500"
+														}`}>
+														{referral.status.charAt(0).toUpperCase() +
+															referral.status.slice(1).toLowerCase()}
+													</span>
+												)
+											</td> */}
 										</tr>
 									))
 								) : (
