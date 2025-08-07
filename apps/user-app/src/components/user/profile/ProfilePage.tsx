@@ -116,7 +116,7 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 
 				<div className="mt-6 bg-slate-150 px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between flex-wrap gap-2">
 					<div className="flex items-baseline gap-2">
-						<p className="text-sm text-gray-600 font-medium">Franchise Type:</p>
+						<p className="text-sm text-gray-600 font-medium">Membership Type:</p>
 						<p className="text-base font-semibold text-gray-900">
 							{membershipType}
 						</p>
