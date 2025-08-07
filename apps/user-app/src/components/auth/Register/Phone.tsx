@@ -116,7 +116,7 @@ export default function PhoneVerification({ phone }: { phone: string }) {
 				)}
 				{status === "limit" && (
 					<p className="text-red-600 text-sm">
-						You’ve reached the maximum attempts (3).
+						You&apos;ve reached the maximum attempts (3).
 					</p>
 				)}
 
