@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { User, BusinessDetails, UserMembershipType } from "@repo/db/client";
+import { UserMembershipType } from "@repo/db/client";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
 import { GoUnverified } from "react-icons/go";
 import Image from "next/image";
@@ -23,6 +23,7 @@ import {
 	FiGlobe as FiGlobeOutline,
 } from "react-icons/fi";
 import { HiOutlineBookmark } from "react-icons/hi";
+import { ProfileProps, ContactDetails } from "../../../lib/store/useUserStore";
 
 // Cloudinary badge URLs
 const BADGE_URLS: Record<UserMembershipType, string> = {
@@ -31,25 +32,10 @@ const BADGE_URLS: Record<UserMembershipType, string> = {
 	VIP: "https://res.cloudinary.com/degrggosz/image/upload/v1750931311/3_xolgia.png",
 };
 
-interface ProfileProps extends Omit<User, "password"> {
-	businessDetails: BusinessDetails;
+interface ProfilePageProps {
+	user: ProfileProps;
+	contactDetailsRes: ContactDetails | null;
 }
-type ContactDetails = {
-	phone: string | null;
-	createdAt: Date;
-	updatedAt: Date;
-	userId: string;
-	mobile: string | null;
-	website: string | null;
-	links: string[];
-	houseNo: string | null;
-	pager: string | null;
-	voiceMail: string | null;
-};
-type ProfilePageProps = {
-	user?: ProfileProps;
-	contactDetailsRes?: ContactDetails | null;
-};
 
 const SetMembershipUrl = (membershipType: UserMembershipType) => {
 	switch (membershipType) {
@@ -116,7 +102,9 @@ const ProfilePage = ({ user, contactDetailsRes }: ProfilePageProps) => {
 
 				<div className="mt-6 bg-slate-150 px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between flex-wrap gap-2">
 					<div className="flex items-baseline gap-2">
-						<p className="text-sm text-gray-600 font-medium">Membership Type:</p>
+						<p className="text-sm text-gray-600 font-medium">
+							Membership Type:
+						</p>
 						<p className="text-base font-semibold text-gray-900">
 							{membershipType}
 						</p>

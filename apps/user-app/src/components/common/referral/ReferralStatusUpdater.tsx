@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import { ReferralType } from "./GetReferrals";
 import { ReferralStatus } from "@repo/db/client";
-import { StatusUpdateAction } from "../../../app/action/referral/StatusUpdateAction";
+import { StatusUpdateAction } from "../../../lib/action/referral/StatusUpdateAction";
 import { toast } from "react-toastify";
 
 export default function ReferralStatusUpdater({

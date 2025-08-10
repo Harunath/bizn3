@@ -200,7 +200,7 @@ export default function BusinessDetails() {
 					<label className="block font-semibold text-black mb-1">
 						Keywords
 					</label>
-					<div className="flex items-center gap-2 mb-2">
+					<div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 mb-2">
 						<input
 							type="text"
 							placeholder="Type and press Enter"

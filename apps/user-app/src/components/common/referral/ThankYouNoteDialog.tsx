@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { upsertThankYouNoteAction } from "../../../app/action/referral/thankYouNoteActions";
+import { upsertThankYouNoteAction } from "../../../lib/action/referral/thankYouNoteActions";
 import { ThankYouNoteBusinessType } from "@repo/db/client";
 
 type Props = {
