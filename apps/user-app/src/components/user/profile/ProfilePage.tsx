@@ -34,7 +34,7 @@ const BADGE_URLS: Record<UserMembershipType, string> = {
 
 interface ProfilePageProps {
 	user: ProfileProps;
-	contactDetailsRes: ContactDetails;
+	contactDetailsRes: ContactDetails | null;
 }
 
 const SetMembershipUrl = (membershipType: UserMembershipType) => {

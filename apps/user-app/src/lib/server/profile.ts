@@ -34,7 +34,7 @@ export interface ProfilePropsWire {
 	email: string;
 	homeClubId: string | null;
 	membershipType: UserMembershipType;
-	businessDetails: BusinessDetailsWire | null;
+	businessDetails: BusinessDetailsWire;
 
 	emailVerified: boolean;
 	phone: string;
@@ -138,22 +138,21 @@ export async function getProfileByUserId(userId: string): Promise<{
 	// Cast Dates -> ISO strings for wire types
 	const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 
-	const userWire: ProfilePropsWire | null = user
-		? {
-				...user,
-				membershipStartDate: toISO(user.membershipStartDate)!,
-				membershipEndDate: toISO(user.membershipEndDate)!,
-				createdAt: user.createdAt.toISOString(),
-				updatedAt: user.updatedAt.toISOString(),
-				businessDetails: user.businessDetails
-					? {
-							...user.businessDetails,
-							createdAt: user.businessDetails.createdAt.toISOString(),
-							updatedAt: user.businessDetails.updatedAt.toISOString(),
-						}
-					: null,
-			}
-		: null;
+	const userWire: ProfilePropsWire | null =
+		user && user.businessDetails
+			? {
+					...user,
+					membershipStartDate: toISO(user.membershipStartDate)!,
+					membershipEndDate: toISO(user.membershipEndDate)!,
+					createdAt: user.createdAt.toISOString(),
+					updatedAt: user.updatedAt.toISOString(),
+					businessDetails: {
+						...user.businessDetails,
+						createdAt: user.businessDetails.createdAt.toISOString(),
+						updatedAt: user.businessDetails.updatedAt.toISOString(),
+					},
+				}
+			: null;
 
 	const contactWire: ContactDetailsWire | null = contact
 		? {
