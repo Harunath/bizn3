@@ -61,6 +61,5 @@ export default function ProfileClient({
 
 	if (!u || !contactDetails) return <div className="p-4">Loading…</div>;
 
-	if (u && contactDetails)
-		return <ProfilePage user={u} contactDetailsRes={contactDetails} />;
+	return <ProfilePage user={u} contactDetailsRes={contactDetails || []} />;
 }
