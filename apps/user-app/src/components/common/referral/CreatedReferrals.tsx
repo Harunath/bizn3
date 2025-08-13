@@ -22,6 +22,10 @@ export type ReferralType = Omit<Referral, "creator" | "receiver"> & {
 	creator: UserType;
 	receiver: UserType;
 	testimonials: Testimonials;
+	thankYouNote?: {
+		amount: string;
+		comment: string;
+	};
 };
 
 const statusOptions: ReferralStatus[] = [
@@ -137,7 +141,7 @@ export default function CreatedReferrals() {
 	}, [session, status, selectedStatuses.join(","), page]);
 
 	return (
-		<div className="w-full max-w-5xl mx-auto p-6">
+		<div className="w-full max-w-6xl mx-auto p-6">
 			<h2 className="text-2xl font-bold text-gray-800 mb-4">
 				Referrals You Created
 			</h2>
@@ -200,7 +204,9 @@ export default function CreatedReferrals() {
 									<th className="px-4 py-3 text-left border-b">Type</th>
 									<th className="px-4 py-3 text-left border-b">Phone</th>
 									<th className="px-4 py-3 text-left border-b">Status</th>
-									{/* <th className="px-4 py-3 text-left border-b">Action</th> */}
+									<th className="px-4 py-3 text-left border-b">
+										Thank You Note
+									</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -209,31 +215,48 @@ export default function CreatedReferrals() {
 										<tr
 											key={referral.id}
 											className="hover:bg-gray-50 transition duration-150">
-											<td className="px-4 py-3 border-b">
-												{referral.receiver.firstname}
+											<td className="px-4 py-3 border-b font-medium text-gray-800">
+												{referral.receiver.firstname}{" "}
+												{referral.receiver.lastname}
 											</td>
-											<td className="px-4 py-3 border-b">
+											<td className="px-4 py-3 border-b capitalize">
 												{referral.type.toLowerCase()}
 											</td>
 											<td className="px-4 py-3 border-b">{referral.phone}</td>
-											<td className="px-4 py-3 border-b">{referral.status}</td>
-											{/* <td className="px-4 py-3 border-b">
-												(
-													<span
-														className={`font-medium ${
-															referral.status === "ACCEPTED"
-																? "text-green-600"
-																: referral.status === "REJECTED"
-																	? "text-yellow-600"
-																	: referral.status === "IN_PROGRESS"
-																		? "text-blue-600"
-																		: "text-gray-500"
-														}`}>
-														{referral.status.charAt(0).toUpperCase() +
-															referral.status.slice(1).toLowerCase()}
+											<td className="px-4 py-3 border-b">
+												<span
+													className={`px-2 py-1 rounded text-xs font-medium
+													${
+														referral.status === "ACCEPTED"
+															? "bg-green-100 text-green-700"
+															: referral.status === "REJECTED"
+																? "bg-red-100 text-red-700"
+																: referral.status === "IN_PROGRESS"
+																	? "bg-blue-100 text-blue-700"
+																	: referral.status === "WAITING"
+																		? "bg-yellow-100 text-yellow-700"
+																		: "bg-gray-100 text-gray-700"
+													}`}>
+													{referral.status}
+												</span>
+											</td>
+											<td className="px-4 py-3 border-b">
+												{referral.thankYouNote ? (
+													<div className="flex flex-col gap-1">
+														<span className="text-sm text-gray-800">
+															💰 Amount:{" "}
+															<strong>{referral.thankYouNote.amount}</strong>
+														</span>
+														<span className="text-sm text-gray-600">
+															📝 {referral.thankYouNote.comment}
+														</span>
+													</div>
+												) : (
+													<span className="text-gray-400 text-sm">
+														No Thank You Note
 													</span>
-												)
-											</td> */}
+												)}
+											</td>
 										</tr>
 									))
 								) : (
@@ -260,8 +283,8 @@ export default function CreatedReferrals() {
 										onClick={() => changePage(pageNumber)}
 										className={`px-3 py-1 border rounded ${
 											pageNumber === page
-												? "bg-blue-600 text-white"
-												: "bg-white text-gray-700 border-gray-300"
+												? "bg-blue-600 text-white border-blue-600"
+												: "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
 										}`}>
 										{pageNumber}
 									</button>
