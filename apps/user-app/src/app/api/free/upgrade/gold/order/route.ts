@@ -49,7 +49,7 @@ export const POST = async (req: NextRequest) => {
 		const franchiseId = chapter?.regionalFranchise.id;
 		const body = await req.json();
 		const { clubs } = body;
-		const amount = 10;
+		const amount = 5000;
 
 		if (!clubs || !franchiseId) {
 			return NextResponse.json(
