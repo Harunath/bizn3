@@ -18,7 +18,7 @@ const Footer = () => {
 						className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
 						{/* Company Info */}
 						<motion.div whileHover={{ scale: 1.02 }}>
-							<h2 className="text-xl font-bold text-white mb-3">Biz-Network</h2>
+							<h2 className="text-xl font-bold text-white mb-3"><span className="text-red-600">Biz</span>-Network®</h2>
 							<p className="text-sm leading-relaxed">
 								Connecting professionals and businesses for growth, powered by
 								Biz-Network® B2B Network.

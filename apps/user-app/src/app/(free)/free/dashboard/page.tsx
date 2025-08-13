@@ -102,7 +102,7 @@ const Page = () => {
 						<div className="flex flex-col items-center text-red-600">
 							<FiUserPlus className="text-4xl mb-3 group-hover:scale-110 transition-transform" />
 							<h3 className="text-xl font-semibold text-gray-800 group-hover:text-red-700">
-								My Sent Referrals
+								Referrals I sent 
 							</h3>
 							<p className="text-sm text-gray-500 mt-1">
 								Track the connections you&apos;ve initiated.
