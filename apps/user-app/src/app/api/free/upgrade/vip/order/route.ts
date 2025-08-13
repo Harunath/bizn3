@@ -28,7 +28,7 @@ export const POST = async (req: NextRequest) => {
 
 		const body = await req.json();
 		const { categoryId } = body;
-		const amount = 10;
+		const amount = 12000;
 
 		if (!categoryId) {
 			return NextResponse.json(
