@@ -18,9 +18,7 @@ export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
 	const q = (searchParams.get("q") || "").trim(); // name query (firstname/lastname)
 	const category = (searchParams.get("category") || "").trim();
-	const businessType = (searchParams.get("businessType") || "").trim();
 	const keywordsRaw = (searchParams.get("keywords") || "").trim();
-	const location = (searchParams.get("location") || "").trim();
 	const sortBy = (searchParams.get("sortBy") || "relevance") as
 		| "relevance"
 		| "recent"
@@ -36,11 +34,7 @@ export async function GET(req: NextRequest) {
 		: [];
 
 	const hasName = q.length > 0;
-	const hasBizFilters =
-		Boolean(category) ||
-		Boolean(businessType) ||
-		kw.length > 0 ||
-		Boolean(location);
+	const hasBizFilters = Boolean(category) || kw.length > 0 || Boolean(location);
 
 	// ---------- helpers ----------
 	const nameFilter: Prisma.UserWhereInput | undefined = hasName
@@ -65,30 +59,18 @@ export async function GET(req: NextRequest) {
 			});
 		}
 
-		if (businessType) {
-			and.push({ businessType: { equals: businessType } });
-		}
+		// if (kw.length) {
+		// 	// --- M2M keywords pivot (rename these 3 identifiers to your actual relation names) ---
+		// 	// relation on BusinessDetails: `keywordsOnBusinesses`
+		// 	// pivot model has relation `keyword`, terminal model has field `name`
+		// 	and.push({
+		// 		keywords: {
+		// 			contains: kw.map((k) => ({
 
-		if (location) {
-			and.push({
-				OR: [
-					{ city: { contains: location, mode: "insensitive" } },
-					{ state: { contains: location, mode: "insensitive" } },
-					{ country: { contains: location, mode: "insensitive" } },
-				],
-			});
-		}
-
-		if (kw.length) {
-			// --- M2M keywords pivot (rename these 3 identifiers to your actual relation names) ---
-			// relation on BusinessDetails: `keywordsOnBusinesses`
-			// pivot model has relation `keyword`, terminal model has field `name`
-			and.push({
-				keywordsOnBusinesses: {
-					some: { keyword: { name: { in: kw, mode: "insensitive" } } },
-				},
-			});
-		}
+		// 			})),
+		// 		},
+		// 	});
+		// }
 
 		return and.length ? { AND: and } : {};
 	};
