@@ -14,7 +14,7 @@ export const sendVerificationEmail = async (email: string, otp: string) => {
 			from: `"BIZ NETWORK" <hellobiznetworking@gmail.com>`,
 			to: email,
 			subject: "Verify Your Email",
-			html: `
+			html: ` 
       <div style="max-width: 600px; margin: auto; padding: 20px; background-color: #ffffff; font-family: Arial, sans-serif; color: #333333; border: 1px solid #dddddd; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
           <h1 style="color: #d32f2f; margin: 0; font-size: 28px;">Biz Network<sup style="font-size: 14px; color: #555;">®</sup></h1>

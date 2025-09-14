@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useSession } from "next-auth/react";
-import { FranchiseType } from "@repo/db/client";
+import LoadingAnimation from "../../common/LoadingAnimation";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
@@ -15,35 +15,51 @@ export default function LoginPage() {
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
-	const { data: session } = useSession();
-	console.log(session, " session");
+	const { data: session, status } = useSession();
 	useEffect(() => {
-		setLoading(true);
-		console.log(session, " session");
-		if (session && session.user) {
-			if (session.user.isAdmin) {
-				router.push("/admin/dashboard");
-			} else if (session.user.isFranchiseAdmin) {
-				if (session.user.franchiseType === FranchiseType.MASTER_FRANCHISE) {
-					router.push("/master-franchise/dashboard");
-				} else if (
-					session.user.franchiseType === FranchiseType.SUPER_FRANCHISE
-				) {
-					router.push("/super-franchise/dashboard");
-				} else if (
-					session.user.franchiseType === FranchiseType.REGIONAL_FRANCHISE
-				)
-					router.push("/regional-franchise/dashboard");
-				else {
-					logOut();
-				}
+		console.log("inside useEffect :", status, session);
+		if (status !== "authenticated") return;
+		console.log("inside useEffect 1:");
+		if (!session.user) return;
+		console.log("inside useEffect 2:");
+		if (session.user.isAdmin) {
+			router.replace("/admin/dashboard");
+			return;
+		}
+		console.log("inside useEffect 4:");
+		if (session.user.isFranchiseAdmin) {
+			switch (session.user.franchiseType) {
+				case "MASTER_FRANCHISE":
+					router.replace("/master-franchise/dashboard");
+					return;
+				case "SUPER_FRANCHISE":
+					router.replace("/super-franchise/dashboard");
+					return;
+				case "REGIONAL_FRANCHISE":
+					router.replace("/regional-franchise/dashboard");
+					return;
+				default:
+					// Bad/missing franchiseType -> sign out safely
+					signOut({ redirect: false });
+					return;
 			}
 		}
-		setLoading(false);
-	}, [session]);
-	const logOut = async () => {
-		await signOut({ redirect: false });
-	};
+	}, [status, session, router]);
+
+	// 1) While NextAuth is figuring things out
+	if (status === "loading") {
+		return (
+			<div className="grid min-h-dvh place-items-center">
+				<p className="text-sm text-zinc-500">Checking session…</p>
+			</div>
+		);
+	}
+
+	// 2) If already authenticated, the effect above will redirect; show a tiny placeholder
+	if (status === "authenticated") {
+		return <LoadingAnimation />;
+	}
+
 	const handleGoogleSignIn = async () => {
 		setLoading(true);
 		try {
