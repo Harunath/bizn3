@@ -6,37 +6,59 @@ import prisma from "@repo/db/client";
 export const GET = async () => {
 	try {
 		const session = await getServerSession(authOptions);
-		if (!session || !session.user || !session.user.id) {
+		if (!session?.user?.id) {
 			return NextResponse.json({ message: "unauthorized" }, { status: 403 });
 		}
-		const user = await prisma.franchiseAdmin.findUnique({
-			where: {
-				id: session.user.id,
-			},
+
+		// Get the region for this Franchise Admin
+		const fa = await prisma.franchiseAdmin.findUnique({
+			where: { id: session.user.id },
 			select: {
 				franchise: {
 					select: {
-						region: {
-							select: {
-								chapters: true,
-							},
-						},
+						region: { select: { id: true } },
 					},
 				},
 			},
 		});
-		if (!user || !user.franchise.region) {
+
+		const regionId = fa?.franchise?.region?.id;
+		if (!regionId) {
 			return NextResponse.json(
-				{ message: "User or region do exist" },
+				{ message: "User or region do not exist" },
 				{ status: 400 }
 			);
 		}
-		return NextResponse.json(
-			{ message: "success", data: user.franchise.region.chapters },
-			{ status: 200 }
-		);
+
+		// Fetch chapters for the region with club counts
+		const chapters = await prisma.chapter.findMany({
+			where: { regionId },
+			select: {
+				id: true,
+				name: true,
+				code: true,
+				regionId: true,
+				description: true,
+				updatedAt: true,
+				_count: { select: { clubs: true } },
+			},
+			orderBy: { name: "asc" }, // default sort; UI can still re-sort client-side
+		});
+
+		// Flatten _count into clubCount for easier use on the client
+		const data = chapters.map((c) => ({
+			id: c.id,
+			name: c.name,
+			code: c.code,
+			regionId: c.regionId,
+			description: c.description,
+			updatedAt: c.updatedAt,
+			clubCount: c._count.clubs,
+		}));
+
+		return NextResponse.json({ message: "success", data }, { status: 200 });
 	} catch (e) {
-		console.log(e);
+		console.error("[GET_CHAPTERS]", e);
 		return NextResponse.json(
 			{ message: "Internal Service Error" },
 			{ status: 500 }

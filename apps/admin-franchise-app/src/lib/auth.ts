@@ -23,6 +23,7 @@ export const authOptions: NextAuthOptions = {
 				if (!credentials?.email || !credentials?.password) {
 					throw new Error("Invalid email or password");
 				}
+				console.log("credentials :", credentials);
 				const franchiseAdmin = await prisma.franchiseAdmin.findFirst({
 					where: { email: credentials.email },
 					select: {
@@ -107,7 +108,7 @@ export const authOptions: NextAuthOptions = {
 				},
 			});
 			if (franchiseAdmin) {
-				console.log(franchiseAdmin, " franchiseAdmin");
+				console.log("franchise admin :", franchiseAdmin);
 				return true;
 			}
 			return "/unauthorized";
