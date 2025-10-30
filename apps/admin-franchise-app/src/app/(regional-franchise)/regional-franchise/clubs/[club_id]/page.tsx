@@ -11,7 +11,7 @@ const page = async ({
 	const slug = await params;
 	return (
 		<div>
-			slub : {slug.club_id}
+			Club Id : {slug.club_id}
 			<ClubPage clubId={slug.club_id} />
 		</div>
 	);

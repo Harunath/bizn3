@@ -3,7 +3,7 @@
 import { useUser } from "./useUser";
 import ProfileCard from "./ProfileCard";
 import HomeClubEditor from "./HomeClubEditor";
-import ClubsEditor from "./ClubsEditor";
+// import ClubsEditor from "./ClubsEditor";
 
 export default function AdminUserDetail({ userId }: { userId: string }) {
 	const { user, mutate, isLoading, error } = useUser(userId);
@@ -36,11 +36,11 @@ export default function AdminUserDetail({ userId }: { userId: string }) {
 						chapterId={user.chapter?.id ?? null}
 						onChanged={() => mutate()}
 					/>
-					<ClubsEditor
+					{/* <ClubsEditor
 						userId={userId}
 						clubs={user.clubs}
 						onChanged={() => mutate()}
-					/>
+					/> */}
 				</div>
 			</div>
 		</div>

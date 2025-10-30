@@ -1,13 +1,19 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Card from "./Card";
+import { toast } from "react-toastify";
 
-type Item = { id: string; name: string; chapterId: string };
+type Item = {
+	id: string;
+	name: string;
+	chapterId: string;
+	counts?: { homeClubMembers: number };
+};
 
 export default function HomeClubEditor({
 	userId,
 	current,
-	chapterId,
+	// chapterId,
 	onChanged,
 }: {
 	userId: string;
@@ -16,22 +22,27 @@ export default function HomeClubEditor({
 	onChanged: () => void;
 }) {
 	const [q, setQ] = useState("");
-	const [options, setOptions] = useState<Item[]>([]);
-	const [sel, setSel] = useState(current?.id ?? "");
+	const [club, setClub] = useState<Item>();
 
-	useEffect(() => {
-		const url = new URL("/api/admin/lookups/clubs", window.location.origin);
-		if (chapterId) url.searchParams.set("chapterId", chapterId);
-		if (q) url.searchParams.set("q", q);
-		fetch(url.toString())
-			.then((r) => r.json())
-			.then((d) => setOptions(d.items));
-	}, [q, chapterId]);
-
+	const [sel, setSel] = useState<string>();
+	const searchClub = async () => {
+		if (!q) {
+			toast.info("Please enter a Club id");
+			return;
+		}
+		const res = await fetch(`/api/regional-franchise/clubs/${q}`);
+		if (!res.ok) {
+			toast.error("Club not found");
+			return;
+		}
+		const data = await res.json();
+		setClub(data.data);
+		console.log("Found club:", club);
+	};
 	async function save() {
 		if (!sel) return;
-		const res = await fetch(`/api/admin/users/${userId}/home-club`, {
-			method: "PUT",
+		const res = await fetch(`/api/user/${userId}/homeclub`, {
+			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ clubId: sel }),
 		});
@@ -40,10 +51,10 @@ export default function HomeClubEditor({
 
 	const hint = useMemo(
 		() =>
-			chapterId
-				? "Filtered to user's chapter"
-				: "Assign a chapter first to restrict options",
-		[chapterId]
+			sel
+				? "On save, the user's home club will be updated to the selected club."
+				: "Select a club to set as the user's home club.",
+		[sel]
 	);
 
 	return (
@@ -57,24 +68,44 @@ export default function HomeClubEditor({
 						onChange={(e) => setQ(e.target.value)}
 						className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
 					/>
-					<select
-						value={sel}
-						onChange={(e) => setSel(e.target.value)}
-						className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm">
-						<option value="">— Select home club —</option>
-						{options.map((o) => (
-							<option key={o.id} value={o.id}>
-								{o.name}
-							</option>
-						))}
-					</select>
 				</div>
 				<button
-					onClick={save}
+					onClick={searchClub}
 					className="h-10 shrink-0 self-end rounded-xl border px-3 text-sm hover:bg-zinc-50">
-					Save
+					Search
 				</button>
 			</div>
+			{club && club.id ? (
+				<div className="mt-4 flex items-center justify-between">
+					<div>
+						<p className="font-medium">{club.name}</p>
+						<p className="text-xs text-zinc-500">ID: {club.id}</p>
+						{club?.counts?.homeClubMembers && (
+							<p className="text-xs text-zinc-500">
+								Current members no. : {club?.counts?.homeClubMembers}
+							</p>
+						)}
+					</div>
+					<button
+						onClick={() => setSel(club.id)}
+						className="rounded-xl border px-3 py-1.5 text-sm hover:bg-zinc-50">
+						Select
+					</button>
+				</div>
+			) : null}
+			{sel ? (
+				<div className="mt-4 flex items-center justify-between">
+					<div>
+						<p className="font-medium">Selected club ID: {sel}</p>
+					</div>
+					<button
+						onClick={save}
+						className="rounded-xl border px-3 py-1.5 text-sm hover:bg-zinc-50">
+						Save
+					</button>
+				</div>
+			) : null}
+
 			{current ? (
 				<p className="mt-3 text-xs text-zinc-500">Current: {current.name}</p>
 			) : null}

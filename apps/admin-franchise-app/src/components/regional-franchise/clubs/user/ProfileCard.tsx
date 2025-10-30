@@ -1,4 +1,5 @@
 "use client";
+import { UserMembershipType } from "@prisma/client";
 import Card from "./Card";
 import { useState } from "react";
 
@@ -27,7 +28,7 @@ export default function ProfileCard({
 
 	async function save() {
 		setSaving(true);
-		const res = await fetch(`/api/regional-franchise//${user.id}`, {
+		const res = await fetch(`/api/regional-franchise/${user.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(form),
@@ -65,10 +66,16 @@ export default function ProfileCard({
 					/>
 				</L>
 				<L label="Membership type">
-					<I
+					<select
 						value={form.MembershipType}
-						onChange={(e) => setForm((v) => ({ ...v, phone: e.target.value }))}
-					/>
+						onChange={(e) =>
+							setForm((v) => ({ ...v, MembershipType: e.target.value }))
+						}
+						className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-200">
+						<option value={UserMembershipType.FREE}>FREE</option>
+						<option value={UserMembershipType.GOLD}>GOLD</option>
+						<option value={UserMembershipType.VIP}>VIP</option>
+					</select>
 				</L>
 				<button
 					onClick={save}
