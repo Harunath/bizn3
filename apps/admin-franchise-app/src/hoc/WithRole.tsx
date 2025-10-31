@@ -17,7 +17,7 @@ const WithRole = ({ allowedRole, children, session }: WithRoleProps) => {
 	useEffect(() => {
 		if (!session || session.user.franchiseType !== allowedRole) {
 			console.log(session?.user.franchiseType);
-			router.replace("/unauthorized"); // Redirect unauthorized users
+			router.replace("/logout"); // Redirect unauthorized users
 		}
 	}, [session, router, allowedRole]);
 

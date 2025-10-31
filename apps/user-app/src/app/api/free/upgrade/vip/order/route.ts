@@ -66,9 +66,9 @@ export const POST = async (req: NextRequest) => {
 			order_note: "Upgrade membership to VIP",
 			customer_details: {
 				customer_id: userDetails.id,
-				customer_email: userDetails.email ?? "",
-				customer_phone: userDetails.phone ?? "",
-				customer_name: userDetails.firstname ?? "" + userDetails.lastname ?? "",
+				customer_email: userDetails.email,
+				customer_phone: userDetails.phone,
+				customer_name: userDetails.firstname + userDetails.lastname,
 			},
 		};
 
@@ -95,7 +95,7 @@ export const POST = async (req: NextRequest) => {
 				},
 			},
 		});
-
+		console.log("order created :", order);
 		return NextResponse.json(
 			{
 				message: "Order created",
