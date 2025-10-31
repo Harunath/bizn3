@@ -123,6 +123,13 @@ export const POST = async (
 									},
 								},
 							}),
+							prisma.chapterCategoryAssignment.create({
+								data: {
+									userId: upgradeRequest.userId,
+									chapterId: upgradeRequest.chapterId,
+									categoryId: upgradeRequest.categoryId,
+								},
+							}),
 						]
 					: []),
 			]);
