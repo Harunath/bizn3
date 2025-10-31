@@ -6,7 +6,7 @@ import UpgradeRequests from "../../../../components/regional-franchise/UpgradeRe
 const page = () => {
 	return (
 		<div>
-			Regional-franchise dashboard
+			Common dashboard
 			<div className="flex items-center gap-x-4 p-4 mb-6 border-b border-gray-200">
 				<BiArrowFromLeft className="text-lg text-gray-600" />
 				<Link
@@ -15,9 +15,9 @@ const page = () => {
 					Chapters
 				</Link>
 			</div>
-			<h2 className=" text-3xl text-red-500">regional-franchise dashboard</h2>
+			<h2 className=" text-3xl text-red-500">Common dashboard</h2>
 			<p>
-				Welcome to the regional franchise dashboard! Here you can manage your
+				Welcome to the common franchise dashboard! Here you can manage your
 				franchise operations, including creating and managing chapters, and
 				chapter leaders. Use the link above to navigate to different sections of
 				the admin panel.
